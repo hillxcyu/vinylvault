@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  vinyl-vault:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vinyl-vault-app
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_CLOUD_PROJECT=vital-octagon-19612
+      - GOOGLE_CLOUD_LOCATION=global
+      - GOOGLE_GENAI_USE_VERTEXAI=true
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/adc.json
+    volumes:
+      - ~/.config/gcloud/application_default_credentials.json:/app/adc.json:ro
+      - .:/app
+    restart: unless-stopped

@@ -1,0 +1,22 @@
+# Environment & Credentials
+.env
+*.env
+adc.json
+secrets/
+*.pem
+*.key
+
+# Python Bytecode & Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Data Store Temporary Caches (optional)
+/*.webarchive
+
+# System Files
+.DS_Store
+Thumbs.db
+*.log

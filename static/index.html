@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vinyl Vault - Smart Vinyl Collection Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #121212; color: #e5e7eb; font-family: system-ui, -apple-system, sans-serif; }
+    .vinyl-spin { animation: spin 12s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .glass-panel { background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    
+    /* Prevent mobile browser auto-zoom on input focus */
+    @media screen and (max-width: 768px) {
+      input[type="text"], input[type="search"], textarea, select {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 flex flex-col">
+
+  <!-- Navigation Bar with Tabs & Header Stats -->
+  <nav class="sticky top-0 z-40 glass-panel border-b border-gray-800 px-4 py-3 mb-6">
+    <div class="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xl">
+          <i class="fa-solid fa-compact-disc"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-xl tracking-tight text-white flex items-center gap-2">
+            Vinyl Vault
+          </h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800 shadow-inner">
+          <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
+            <i class="fa-solid fa-circle-play"></i> Now Spinning
+          </button>
+          <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2">
+            <i class="fa-solid fa-box-archive"></i> My Crate
+            <span id="recordCountBadge" class="text-xs font-semibold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">0</span>
+          </button>
+        </div>
+
+        <button onclick="openScannerModal()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-full text-xs sm:text-sm shadow-md flex items-center gap-2 transition-all">
+          <i class="fa-solid fa-camera"></i>
+          <span class="hidden sm:inline">Scan Cover</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 flex-1 w-full space-y-8">
+
+    <!-- TAB 1: NOW SPINNING VIEW -->
+    <div id="tabNowSpinning" class="hidden space-y-8">
+
+      <!-- "Now Spinning" Hero Widget -->
+      <section id="nowSpinningSection" class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden space-y-6">
+        <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+          <!-- Interactive Spinning Vinyl Record - Click to Launch Camera Scan -->
+          <div onclick="openScannerModal()" class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center cursor-pointer group" title="Click to snap photo of currently playing vinyl record!">
+            <img id="spinningCover" src="/static/extracted_covers/shopping_cover_2.jpg" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
+            <div class="absolute inset-0 rounded-full bg-stone-900 border-8 border-stone-800 shadow-inner flex items-center justify-center">
+              <div class="w-14 h-14 rounded-full bg-amber-500 border-4 border-stone-900 z-20"></div>
+            </div>
+            <!-- Click to Scan Overlay Badge -->
+            <div class="absolute bottom-1 bg-stone-900/90 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 z-30 shadow-lg opacity-90 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+              <i class="fa-solid fa-camera"></i> Snap Currently Playing
+            </div>
+          </div>
+
+          <!-- Track Info & Controls with Audio Pronunciation Buttons -->
+          <div class="flex-1 text-center md:text-left space-y-3">
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                Currently Spinning
+              </div>
+              <div id="discogsAssetBadge" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group"></i> Official Multi-Asset Gallery Active
+              </div>
+            </div>
+
+            <!-- Title + Pronounce Button -->
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
+              <h2 id="spinningTitle" class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Currents</h2>
+              <button onclick="pronounceText(currentSpinning?.title, this)" class="text-stone-400 hover:text-amber-400 p-1.5 rounded-full bg-stone-900/80 border border-stone-800 transition-colors shadow-sm" title="Listen to pronunciation of album title">
+                <i class="fa-solid fa-volume-high text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Artist + Pronounce Button -->
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-0.5">
+              <p id="spinningArtist" class="text-lg md:text-xl text-gray-300 font-medium">Tame Impala • <span id="spinningYear" class="text-gray-400">2015</span></p>
+              <button onclick="pronounceText(currentSpinning?.artist, this)" class="text-stone-400 hover:text-amber-400 p-1 rounded-full bg-stone-900/60 transition-colors shadow-sm" title="Listen to pronunciation of artist/composer">
+                <i class="fa-solid fa-volume-high text-xs"></i>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-center md:justify-start gap-4 text-sm text-gray-300 pt-1">
+              <span id="spinningGenre" class="bg-stone-800/90 px-3.5 py-1.5 rounded-lg border border-stone-700/60"><i class="fa-solid fa-music mr-1.5 text-amber-400"></i> Psychedelic Rock</span>
+              <span id="spinningSpins" class="bg-stone-800/90 px-3.5 py-1.5 rounded-lg border border-stone-700/60"><i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> 14 Spins</span>
+            </div>
+
+            <div class="pt-4 flex items-center justify-center md:justify-start gap-3">
+              <button onclick="logCurrentSpin()" class="px-5 py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-xl border border-stone-700 transition-all flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-rotate-right text-amber-400"></i> Log Another Spin
+              </button>
+              <button onclick="openChatModal()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                <i class="fa-solid fa-comments"></i> Open AI Companion Chat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dedicated Official Image Assets Gallery Section -->
+        <div id="officialAssetsSection" class="border-t border-stone-800/80 pt-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-images"></i> Official Release Image Assets (Click for Fullscreen View)
+            </h3>
+            <span id="assetsCountBadge" class="text-xs text-stone-400 font-medium px-2.5 py-1 bg-stone-800 rounded-md">Loading assets...</span>
+          </div>
+
+          <!-- Asset Cards Gallery Grid -->
+          <div id="officialAssetsGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- AI Listening Guide Section -->
+        <div id="listeningGuideCard" class="border-t border-stone-800/80 pt-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-headphones"></i> Audiophile Vinyl Listening Guide & Tracklist
+            </h3>
+            <span class="text-xs text-stone-400 font-medium">Gemini 3.6 Flash + Search Grounding</span>
+          </div>
+
+          <!-- Detailed Album Backstory -->
+          <div class="bg-stone-900/70 p-5 rounded-2xl border border-stone-800/80 space-y-3">
+            <div class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-book-open"></i> Album Origin, Production & Pressing Trivia
+            </div>
+            <div id="guideBackground" class="text-stone-300 leading-relaxed text-sm space-y-3">
+              Loading album listening guide...
+            </div>
+          </div>
+
+          <!-- Full Tracklist & Foldable Audiophile Highlights with Audio Pronunciation Buttons -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="text-xs font-bold text-stone-300 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-list-ol text-amber-400"></i> Tracklist & Audiophile Listening Highlights
+              </div>
+              <span class="text-xs text-stone-500">Tap 🔊 to listen to track name pronunciation</span>
+            </div>
+
+            <div id="tracklistContainer" class="space-y-2.5">
+              <!-- Dynamically populated tracklist -->
+            </div>
+          </div>
+
+          <!-- Bottom Pro-Tips Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="bg-stone-900/70 p-4 rounded-xl border border-stone-800/80 flex items-start gap-3.5">
+              <div class="text-amber-400 text-xl pt-0.5"><i class="fa-solid fa-record-vinyl"></i></div>
+              <div>
+                <div class="text-xs font-bold text-stone-300 uppercase tracking-wide">Vinyl Pro-Tip</div>
+                <div id="guideVinylTip" class="text-sm text-stone-300 mt-1 leading-snug">Loading...</div>
+              </div>
+            </div>
+
+            <div class="bg-stone-900/70 p-4 rounded-xl border border-stone-800/80 flex items-start gap-3.5">
+              <div class="text-indigo-400 text-xl pt-0.5"><i class="fa-solid fa-couch"></i></div>
+              <div>
+                <div class="text-xs font-bold text-stone-300 uppercase tracking-wide">Recommended Atmosphere</div>
+                <div id="guideMood" class="text-sm text-stone-300 mt-1 leading-snug">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- TAB 2: MY CRATE VIEW -->
+    <div id="tabCrate" class="space-y-6">
+      <!-- Crate Header & Search Bar -->
+      <div class="glass-panel p-6 rounded-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-stone-800/80 pb-4">
+          <div>
+            <h2 class="text-2xl font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-box-archive text-amber-500"></i> My Digital Vinyl Crate
+            </h2>
+            <p class="text-xs text-stone-400 mt-1">Browse, search, manage, or play records in your physical vinyl collection.</p>
+          </div>
+          <button onclick="openScannerModal()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl text-sm shadow-md flex items-center gap-2 transition-all">
+            <i class="fa-solid fa-camera"></i>
+            <span>Add Record / Scan Cover</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-stone-500 text-sm"></i>
+            <input type="text" id="searchInput" onkeyup="filterCrate()" placeholder="Search title, artist, or genre in crate..." class="w-full bg-stone-900 border border-stone-800 text-base md:text-sm rounded-xl pl-10 pr-4 py-2.5 text-gray-200 focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Albums Grid -->
+      <div id="recordsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer with Collection Statistics -->
+  <footer class="mt-12 border-t border-stone-800/80 bg-stone-950/80 py-6 text-xs text-stone-400">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-300">
+        <span><i class="fa-solid fa-layer-group text-amber-500 mr-1.5"></i> <span id="statTotalRecords" class="text-white font-bold">0</span> Records</span>
+        <span>•</span>
+        <span><i class="fa-solid fa-circle-play text-emerald-500 mr-1.5"></i> <span id="statTotalSpins" class="text-white font-bold">0</span> Total Spins</span>
+        <span>•</span>
+        <span class="text-indigo-400"><i class="fa-solid fa-shield-halved mr-1"></i> Duplicate Shield Active</span>
+      </div>
+      <div class="text-stone-500">Vinyl Vault &copy; 2026 • Powered by Gemini 3.6 Flash</div>
+    </div>
+  </footer>
+
+  <!-- Distraction-Free Full-Screen AI Chat Modal Overlay -->
+  <div id="chatModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl hidden flex flex-col p-4 md:p-6">
+    <div class="max-w-4xl w-full mx-auto my-auto h-full flex flex-col glass-panel rounded-2xl p-4 md:p-6 border border-stone-800 shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-stone-800/80 pb-4 mb-4 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              AI Audiophile Companion
+            </h3>
+            <p id="chatModalSubtitle" class="text-xs text-stone-400">Discussing currently spinning record</p>
+          </div>
+        </div>
+        <button onclick="closeChatModal()" class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Quick Prompt Suggestion Chips -->
+      <div class="flex flex-nowrap overflow-x-auto gap-2 pb-2 mb-3 scrollbar-none flex-shrink-0">
+        <button onclick="sendQuickChip('Tell me about the recording gear & mastering for this vinyl pressing!')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
+          🎛️ Recording & Mastering
+        </button>
+        <button onclick="sendQuickChip('What is the backstory behind Track 1 on this record?')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
+          🎶 Track 1 Backstory
+        </button>
+        <button onclick="sendQuickChip('Which other classic vinyl releases sound similar to this?')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
+          📻 Similar Recommendations
+        </button>
+      </div>
+
+      <!-- Chat Log Area -->
+      <div id="chatLog" class="bg-stone-950/90 rounded-xl p-4 overflow-y-auto space-y-4 border border-stone-800/80 text-sm flex-1">
+        <div class="flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60">
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm flex-shrink-0">AI</div>
+          <div class="text-stone-300 leading-relaxed text-sm">
+            Ask me anything about the currently spinning album! I can share liner notes, band backstory, vinyl mastering details, or track breakdowns.
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Form -->
+      <div class="flex items-center gap-3 pt-4 flex-shrink-0">
+        <input type="text" id="chatInput" onkeydown="if(event.key==='Enter') sendAlbumChatMessage()" placeholder="Ask AI companion about this album..." class="flex-1 bg-stone-900 border border-stone-800 rounded-xl px-4 py-3.5 text-base text-gray-200 focus:outline-none focus:border-amber-500">
+        <button onclick="sendAlbumChatMessage()" class="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl text-sm shadow-lg flex items-center gap-2 transition-all flex-shrink-0">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span class="hidden sm:inline">Send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button (FAB) for Mobile Chat Overlay -->
+  <button id="chatToggleFab" onclick="openChatModal()" class="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold px-4 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 border border-amber-400/40 hover:scale-105 transition-all">
+    <i class="fa-solid fa-comments text-lg"></i>
+    <span class="text-xs font-bold">AI Chat</span>
+  </button>
+
+  <!-- Fullscreen Lightbox Image Viewer Modal -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeLightbox()">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center cursor-default" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white text-2xl hover:text-amber-400 transition-colors">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImage" src="" class="max-w-full max-h-[80vh] object-contain rounded-xl border border-stone-800 shadow-2xl" />
+      <div id="lightboxCaption" class="mt-3 text-sm font-semibold text-amber-400 text-center"></div>
+    </div>
+  </div>
+
+  <!-- Anti-Duplicate Shield Scanner Modal -->
+  <div id="scannerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full rounded-2xl p-6 relative space-y-6">
+      <button onclick="closeScannerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+          <i class="fa-solid fa-camera"></i> Snap Currently Playing / Check Duplicate
+        </div>
+        <h3 class="text-xl font-bold text-white">Take Photo of Currently Playing Vinyl</h3>
+        <p class="text-xs text-gray-400">Point your camera at the spinning album cover or spine to identify and log it!</p>
+      </div>
+
+      <!-- Upload / Photo Scanner Input -->
+      <div class="border-2 border-dashed border-stone-700 hover:border-amber-500 rounded-xl p-6 text-center transition-all bg-stone-900/50 cursor-pointer" onclick="document.getElementById('photoInput').click()">
+        <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+        <div class="w-12 h-12 rounded-full bg-stone-800 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+        <div class="text-sm font-medium text-gray-200">Click to Snap or Upload Cover Photo</div>
+        <div class="text-xs text-gray-500 mt-1">Gemini Vision AI will parse title, artist & pressing info</div>
+      </div>
+
+      <!-- Manual Query Form -->
+      <div class="space-y-3 pt-2">
+        <div class="text-xs font-semibold text-gray-400 uppercase">Or Search Manually</div>
+        <div class="grid grid-cols-2 gap-3">
+          <input type="text" id="manualArtist" placeholder="Artist (e.g. Tame Impala)" class="bg-stone-900 border border-stone-800 text-base md:text-sm rounded-lg p-2 text-gray-200 focus:outline-none focus:border-amber-500">
+          <input type="text" id="manualTitle" placeholder="Album Title (e.g. Currents)" class="bg-stone-900 border border-stone-800 text-base md:text-sm rounded-lg p-2 text-gray-200 focus:outline-none focus:border-amber-500">
+        </div>
+        <button onclick="checkDuplicateManual()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-lg border border-stone-700 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-magnifying-glass text-amber-400"></i> Verify Ownership Status
+        </button>
+      </div>
+
+      <!-- Scan / Duplicate Check Result Card -->
+      <div id="scanResultContainer" class="hidden glass-panel rounded-xl p-4 space-y-3 border border-stone-800">
+        <div id="scanStatusBadge" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"></div>
+        <p id="scanStatusMessage" class="text-xs text-gray-300"></p>
+        <div id="scanActionContainer"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let allRecords = [];
+    let currentSpinning = null;
+    let lastScannedMetadata = null;
+    let activeTab = 'crate';
+    const releaseAssetsCache = {};
+
+    const SVG_PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231f2937'/><circle cx='50' cy='50' r='35' fill='%23111827' stroke='%23374151' stroke-width='4'/><circle cx='50' cy='50' r='10' fill='%23f59e0b'/></svg>";
+
+    function handleImageError(img) {
+      if (!img.dataset.failed) {
+        img.dataset.failed = "true";
+        img.src = SVG_PLACEHOLDER;
+      }
+    }
+
+    // Audio Pronunciation Helper (Web Speech API + Backend Fallback)
+    function pronounceText(text, btnElement) {
+      if (!text) return;
+      const clean = text.replace(/\([\u4e00-\u9fff\w\s\.]+\)/g, '').trim();
+
+      let icon = null;
+      if (btnElement) {
+        icon = btnElement.querySelector('i') || btnElement;
+        icon.classList.add('text-amber-400', 'animate-bounce');
+      }
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(clean);
+        
+        const lower = clean.toLowerCase();
+        if (lower.includes('dvořák') || lower.includes('dvorak')) {
+          utterance.lang = 'cs-CZ';
+        } else if (lower.includes('tortelier') || lower.includes('french')) {
+          utterance.lang = 'fr-FR';
+        } else if (lower.includes('allegro') || lower.includes('adagio') || lower.includes('verdi') || lower.includes('domingo')) {
+          utterance.lang = 'it-IT';
+        } else if (lower.includes('kobayashi')) {
+          utterance.lang = 'ja-JP';
+        } else if (lower.includes('klemperer') || lower.includes('beethoven') || lower.includes('bach') || lower.includes('bruch')) {
+          utterance.lang = 'de-DE';
+        } else {
+          utterance.lang = 'en-US';
+        }
+
+        utterance.rate = 0.9;
+
+        utterance.onend = () => {
+          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
+        };
+        utterance.onerror = () => {
+          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        fetch('/api/pronounce', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: clean })
+        }).then(r => r.json()).then(d => {
+          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
+        }).catch(() => {
+          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
+        });
+      }
+    }
+
+    function switchTab(tabName) {
+      activeTab = tabName;
+      const tabNow = document.getElementById('tabNowSpinning');
+      const tabCrate = document.getElementById('tabCrate');
+      const btnNow = document.getElementById('tabBtnNowSpinning');
+      const btnCrate = document.getElementById('tabBtnCrate');
+
+      if (tabName === 'nowSpinning') {
+        tabNow.classList.remove('hidden');
+        tabCrate.classList.add('hidden');
+        btnNow.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
+        btnCrate.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
+      } else {
+        tabNow.classList.add('hidden');
+        tabCrate.classList.remove('hidden');
+        btnCrate.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
+        btnNow.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
+      }
+    }
+
+    function openChatModal() {
+      if (currentSpinning) {
+        document.getElementById('chatModalSubtitle').innerText = `Currently Spinning: ${currentSpinning.title} by ${currentSpinning.artist}`;
+      }
+      document.getElementById('chatModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      const chatLog = document.getElementById('chatLog');
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function closeChatModal() {
+      document.getElementById('chatModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function openLightbox(imgUrl, captionText) {
+      document.getElementById('lightboxImage').src = imgUrl;
+      document.getElementById('lightboxCaption').innerText = captionText || 'Vinyl Release Asset';
+      document.getElementById('lightboxModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    async function fetchCollection() {
+      try {
+        const res = await fetch('/api/records');
+        const data = await res.json();
+        allRecords = data.records || [];
+        document.getElementById('recordCountBadge').innerText = allRecords.length;
+        document.getElementById('statTotalRecords').innerText = allRecords.length;
+
+        if (allRecords.length > 0 && !currentSpinning) {
+          currentSpinning = allRecords[0];
+          updateNowSpinningUI(currentSpinning);
+        }
+        renderRecordsGrid(allRecords);
+      } catch (err) {
+        console.error('Error fetching collection:', err);
+      }
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('statTotalSpins').innerText = data.totalSpins || 0;
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    }
+
+    function updateNowSpinningUI(rec) {
+      currentSpinning = rec;
+      document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
+      document.getElementById('spinningTitle').innerText = rec.title;
+      document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
+      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
+      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
+
+      // Fetch official multi-asset image gallery with client caching
+      fetchReleaseAssets(rec);
+
+      fetchListeningGuide(rec.artist, rec.title);
+    }
+
+    async function fetchReleaseAssets(rec) {
+      const grid = document.getElementById('officialAssetsGrid');
+      const badge = document.getElementById('assetsCountBadge');
+      const cacheKey = `${rec.artist}::${rec.title}`;
+
+      // 1. In-memory Client Cache Check
+      if (releaseAssetsCache[cacheKey]) {
+        const cachedAssets = releaseAssetsCache[cacheKey];
+        badge.innerText = `${cachedAssets.length} Assets (Cached)`;
+        renderReleaseAssetsGrid(cachedAssets);
+        return;
+      }
+
+      // 2. SessionStorage Cache Check
+      const sessionData = sessionStorage.getItem(`asset_cache_${cacheKey}`);
+      if (sessionData) {
+        try {
+          const cachedAssets = JSON.parse(sessionData);
+          releaseAssetsCache[cacheKey] = cachedAssets;
+          badge.innerText = `${cachedAssets.length} Assets (Cached)`;
+          renderReleaseAssetsGrid(cachedAssets);
+          return;
+        } catch(e) {}
+      }
+
+      badge.innerText = 'Fetching release assets...';
+      grid.innerHTML = '<div class="text-xs text-stone-500 col-span-4 italic"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Loading Discogs assets...</div>';
+
+      try {
+        const res = await fetch('/api/fetch-release-assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artist: rec.artist, title: rec.title, coverUrl: rec.coverUrl })
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.assets && data.assets.length > 0) {
+          // Store in client caches
+          releaseAssetsCache[cacheKey] = data.assets;
+          sessionStorage.setItem(`asset_cache_${cacheKey}`, JSON.stringify(data.assets));
+
+          badge.innerText = `${data.assets.length} Image Assets`;
+          renderReleaseAssetsGrid(data.assets);
+        }
+      } catch (err) {
+        console.warn('Assets lookup error:', err);
+        badge.innerText = 'Default Asset';
+      }
+    }
+
+    function renderReleaseAssetsGrid(assets) {
+      const grid = document.getElementById('officialAssetsGrid');
+      grid.innerHTML = '';
+
+      assets.forEach((asset, idx) => {
+        const card = document.createElement('div');
+        card.className = 'glass-panel p-2.5 rounded-xl text-center border border-stone-800 hover:border-amber-500/60 transition-all cursor-pointer group shadow-sm hover:shadow-md';
+        card.innerHTML = `
+          <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-900 mb-1.5">
+            <img src="${asset.url}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+              <i class="fa-solid fa-expand text-base mr-1"></i> View
+            </div>
+          </div>
+          <div class="text-xs font-semibold text-amber-400 truncate">${asset.type}</div>
+        `;
+        card.onclick = () => {
+          // Open fullscreen lightbox viewer
+          openLightbox(asset.url, asset.type);
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    async function fetchListeningGuide(artist, title) {
+      const cacheKey = `guide_cache_${artist}::${title}`;
+
+      // Check SessionStorage Cache First
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          renderListeningGuide(parsed);
+          return;
+        } catch(e) {}
+      }
+
+      document.getElementById('guideBackground').innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Generating AI listening guide & tracklist...';
+      document.getElementById('tracklistContainer').innerHTML = '<div class="text-xs text-stone-500 italic"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Fetching vinyl tracklist...</div>';
+
+      try {
+        const res = await fetch('/api/listening-guide', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artist, albumTitle: title })
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.guide) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data.guide));
+          renderListeningGuide(data.guide);
+        }
+      } catch (err) {
+        console.error('Error fetching guide:', err);
+        document.getElementById('guideBackground').innerText = 'Unable to load listening guide at this time.';
+      }
+    }
+
+    function renderListeningGuide(guide) {
+      // 1. Render Backstory
+      const bgEl = document.getElementById('guideBackground');
+      if (typeof marked !== 'undefined' && guide.albumBackground) {
+        bgEl.innerHTML = marked.parse(guide.albumBackground);
+      } else {
+        bgEl.innerText = guide.albumBackground || 'No background available.';
+      }
+
+      // 2. Render Pro-Tips
+      document.getElementById('guideVinylTip').innerText = guide.vinylTip || 'Enjoy the music!';
+      document.getElementById('guideMood').innerText = guide.recommendedMood || 'Warm audio atmosphere.';
+
+      // 3. Render Full Tracklist with Speaker Buttons & Audiophile Highlights
+      const tracklistContainer = document.getElementById('tracklistContainer');
+      tracklistContainer.innerHTML = '';
+
+      const tracklist = guide.tracklist || guide.keyTracks || [];
+
+      if (tracklist.length > 0) {
+        tracklist.forEach(t => {
+          const pos = t.position || t.trackTitle || '';
+          const title = t.title || t.trackTitle || '';
+          const dur = t.duration ? `(${t.duration})` : '';
+          const hasHighlight = t.highlight || (t.whatToListenFor && t.whatToListenFor.length > 0);
+          const notes = t.whatToListenFor || '';
+          const safeTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+          const item = document.createElement('div');
+          item.className = 'bg-stone-900/80 rounded-xl border border-stone-800/80 overflow-hidden';
+
+          if (hasHighlight && notes) {
+            item.innerHTML = `
+              <details class="group">
+                <summary class="p-3.5 cursor-pointer font-medium text-sm text-stone-200 hover:bg-stone-800/50 flex items-center justify-between transition-colors">
+                  <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 font-bold text-xs flex items-center justify-center border border-amber-500/20 flex-shrink-0">${pos}</span>
+                    <span class="font-semibold text-white">${title}</span>
+                    <button onclick="event.stopPropagation(); pronounceText('${safeTitle}', this)" class="text-stone-400 hover:text-amber-400 p-1 transition-colors" title="Listen to track pronunciation">
+                      <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
+                    <span class="text-xs text-stone-400">${dur}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs text-amber-400 font-semibold bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>Audiophile Note</span>
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
+                  </div>
+                </summary>
+                <div class="px-4 pb-4 pt-2 text-sm text-stone-200 border-t border-stone-800/60 bg-stone-950/80 leading-relaxed">
+                  <span class="font-bold text-amber-400">What to listen for: </span> ${notes}
+                </div>
+              </details>
+            `;
+          } else {
+            item.innerHTML = `
+              <div class="p-3.5 font-medium text-sm text-stone-200 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-lg bg-stone-800 text-stone-400 font-bold text-xs flex items-center justify-center border border-stone-700/60 flex-shrink-0">${pos}</span>
+                  <span class="font-semibold text-stone-300">${title}</span>
+                  <button onclick="event.stopPropagation(); pronounceText('${safeTitle}', this)" class="text-stone-400 hover:text-amber-400 p-1 transition-colors" title="Listen to track pronunciation">
+                    <i class="fa-solid fa-volume-high text-xs"></i>
+                  </button>
+                  <span class="text-xs text-stone-500">${dur}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          tracklistContainer.appendChild(item);
+        });
+      } else {
+        tracklistContainer.innerHTML = '<div class="text-xs text-stone-400">No tracklist found.</div>';
+      }
+    }
+
+    function sendQuickChip(text) {
+      document.getElementById('chatInput').value = text;
+      sendAlbumChatMessage();
+    }
+
+    async function sendAlbumChatMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg || !currentSpinning) return;
+
+      const chatLog = document.getElementById('chatLog');
+      
+      // Append user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'flex items-start justify-end gap-3';
+      userBubble.innerHTML = `
+        <div class="bg-amber-500/20 border border-amber-500/30 text-amber-100 p-3.5 rounded-2xl max-w-xl text-sm leading-relaxed">
+          ${msg}
+        </div>
+        <div class="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold text-xs flex-shrink-0">You</div>
+      `;
+      chatLog.appendChild(userBubble);
+      input.value = '';
+
+      // Append AI loading bubble
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60';
+      aiBubble.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>
+        <div class="text-stone-400 leading-relaxed italic text-sm"><i class="fa-solid fa-spinner animate-spin mr-1.5"></i> Thinking...</div>
+      `;
+      chatLog.appendChild(aiBubble);
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat-album', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            artist: currentSpinning.artist,
+            albumTitle: currentSpinning.title,
+            message: msg
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          const textEl = aiBubble.querySelector('.text-stone-400');
+          textEl.className = 'text-stone-200 leading-relaxed space-y-3 text-sm';
+          textEl.innerHTML = (typeof marked !== 'undefined') ? marked.parse(data.reply) : data.reply;
+        } else {
+          aiBubble.querySelector('.text-stone-400').innerText = 'Sorry, I encountered an issue retrieving information for this album.';
+        }
+      } catch (err) {
+        aiBubble.querySelector('.text-stone-400').innerText = 'Unable to connect to AI companion at this time.';
+      }
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function renderRecordsGrid(records) {
+      const grid = document.getElementById('recordsGrid');
+      grid.innerHTML = '';
+
+      records.forEach(rec => {
+        const card = document.createElement('div');
+        card.className = 'glass-panel rounded-xl p-3 space-y-2 group hover:border-amber-500/50 transition-all cursor-pointer relative shadow-sm hover:shadow-md';
+        card.innerHTML = `
+          <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-900">
+            <img src="${rec.coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            
+            <!-- Quick Play Button -->
+            <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
+              <i class="fa-solid fa-play text-xs"></i>
+            </button>
+
+            <!-- Delete Record Button -->
+            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Delete Record from Crate">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-white truncate">${rec.title}</div>
+            <div class="text-xs text-gray-400 truncate">${rec.artist}</div>
+          </div>
+        `;
+        // Clicking on a record loads it into Now Spinning & switches tab to Now Spinning!
+        card.onclick = () => {
+          updateNowSpinningUI(rec);
+          switchTab('nowSpinning');
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    async function confirmDeleteRecord(id, title) {
+      if (confirm(`Are you sure you want to delete "${title}" from your crate?`)) {
+        try {
+          const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.status === 'success') {
+            await fetchCollection();
+            await fetchStats();
+          }
+        } catch (err) {
+          console.error('Error deleting record:', err);
+        }
+      }
+    }
+
+    function filterCrate() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allRecords.filter(r => r.title.toLowerCase().includes(q) || r.artist.toLowerCase().includes(q) || (r.genre && r.genre.toLowerCase().includes(q)));
+      renderRecordsGrid(filtered);
+    }
+
+    async function spinRecord(id) {
+      try {
+        const res = await fetch('/api/spin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recordId: id, notes: 'Interactive spin' })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          fetchCollection();
+          fetchStats();
+        }
+      } catch (err) {
+        console.error('Error logging spin:', err);
+      }
+    }
+
+    async function logCurrentSpin() {
+      if (currentSpinning) {
+        await spinRecord(currentSpinning.id);
+      }
+    }
+
+    function openScannerModal() {
+      document.getElementById('scannerModal').classList.remove('hidden');
+    }
+
+    function closeScannerModal() {
+      document.getElementById('scannerModal').classList.add('hidden');
+      document.getElementById('scanResultContainer').classList.add('hidden');
+      document.getElementById('photoInput').value = '';
+    }
+
+    function showScanLoading(messageText = 'Analyzing album cover with Gemini AI...') {
+      const container = document.getElementById('scanResultContainer');
+      const badge = document.getElementById('scanStatusBadge');
+      const message = document.getElementById('scanStatusMessage');
+      const actionBox = document.getElementById('scanActionContainer');
+
+      container.classList.remove('hidden');
+      badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      badge.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ANALYZING...`;
+      message.innerText = messageText;
+      actionBox.innerHTML = '';
+    }
+
+    async function checkDuplicateManual() {
+      const artist = document.getElementById('manualArtist').value.trim();
+      const title = document.getElementById('manualTitle').value.trim();
+      if (!artist && !title) return;
+
+      showScanLoading('Verifying record ownership status...');
+
+      try {
+        const res = await fetch('/api/check-duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artist, albumTitle: title })
+        });
+        const data = await res.json();
+        lastScannedMetadata = { artist, albumTitle: title };
+        renderDuplicateResult(data, lastScannedMetadata);
+      } catch (err) {
+        renderScanError(err.message);
+      }
+    }
+
+    async function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showScanLoading(`Uploading "${file.name}" & parsing metadata via Gemini AI...`);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('/api/scan', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+        const data = await res.json();
+        lastScannedMetadata = data.metadata;
+
+        // If scanning identified a record, update spinning UI to that record!
+        if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
+          updateNowSpinningUI(data.duplicateCheck.matchingRecord);
+          switchTab('nowSpinning');
+        }
+
+        renderDuplicateResult(data.duplicateCheck, data.metadata);
+      } catch (err) {
+        console.error('Photo scan error:', err);
+        renderScanError(`Failed to process image: ${err.message}`);
+      }
+    }
+
+    function renderScanError(errorMsg) {
+      const container = document.getElementById('scanResultContainer');
+      const badge = document.getElementById('scanStatusBadge');
+      const message = document.getElementById('scanStatusMessage');
+      const actionBox = document.getElementById('scanActionContainer');
+
+      container.classList.remove('hidden');
+      badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> SCAN ERROR`;
+      message.innerText = errorMsg;
+      actionBox.innerHTML = `
+        <button onclick="closeScannerModal()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg border border-stone-700">
+          Dismiss
+        </button>
+      `;
+    }
+
+    function renderDuplicateResult(result, metadata) {
+      const container = document.getElementById('scanResultContainer');
+      const badge = document.getElementById('scanStatusBadge');
+      const message = document.getElementById('scanStatusMessage');
+      const actionBox = document.getElementById('scanActionContainer');
+
+      container.classList.remove('hidden');
+      message.innerText = result.message;
+
+      if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
+        badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ALREADY IN YOUR COLLECTION`;
+        actionBox.innerHTML = `
+          <button onclick="closeScannerModal()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg border border-stone-700">
+            View Copy in Crate
+          </button>
+        `;
+      } else if (result.status === 'WISHLIST_MATCH') {
+        badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        badge.innerHTML = `<i class="fa-solid fa-star"></i> ON YOUR WISHLIST!`;
+        actionBox.innerHTML = `
+          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+            Purchased! Add to Collection
+          </button>
+        `;
+      } else if (result.status === 'SIMILAR_ALBUM') {
+        badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30';
+        badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> NOT OWNED (Own other records by ${metadata.artist || 'Artist'})`;
+        actionBox.innerHTML = `
+          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+            Add New Record to Crate
+          </button>
+        `;
+      } else {
+        badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-blue-500/20 text-blue-400 border border-blue-500/30';
+        badge.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> NOT IN COLLECTION - SAFE TO BUY`;
+        actionBox.innerHTML = `
+          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+            Add New Record to Crate
+          </button>
+        `;
+      }
+    }
+
+    async function addLastScannedRecord() {
+      if (!lastScannedMetadata) return;
+      const artist = lastScannedMetadata.artist || 'Unknown Artist';
+      const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
+
+      try {
+        const res = await fetch('/api/records', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            artist,
+            title,
+            genre: lastScannedMetadata.genre || 'Vinyl',
+            releaseYear: lastScannedMetadata.releaseYear || 2024,
+            coverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
+            catalogNumber: lastScannedMetadata.catalogNumber || null,
+            formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP'
+          })
+        });
+        const data = await res.json();
+        closeScannerModal();
+        await fetchCollection();
+        await fetchStats();
+        if (data.status === 'success' && data.record) {
+          updateNowSpinningUI(data.record);
+          switchTab('nowSpinning');
+        }
+      } catch (err) {
+        console.error('Error saving scanned record:', err);
+      }
+    }
+
+    // Initial load
+    fetchCollection();
+    fetchStats();
+  </script>
+</body>
+</html>
