@@ -241,11 +241,11 @@
   </footer>
 
   <!-- Distraction-Free Full-Screen AI Chat Modal Overlay -->
-  <div id="chatModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl hidden flex flex-col p-4 md:p-6">
-    <div class="max-w-4xl w-full mx-auto my-auto h-full flex flex-col glass-panel rounded-2xl p-4 md:p-6 border border-stone-800 shadow-2xl relative">
+  <div id="chatModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden flex flex-col p-0 md:p-6">
+    <div class="w-full h-full md:max-w-4xl mx-auto flex flex-col bg-stone-950 md:glass-panel rounded-none md:rounded-2xl p-3 sm:p-4 md:p-6 border-0 md:border md:border-stone-800 shadow-none md:shadow-2xl relative">
       
       <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-stone-800/80 pb-4 mb-4 flex-shrink-0">
+      <div class="flex items-center justify-between border-b border-stone-800/80 pb-3 mb-3 md:pb-4 md:mb-4 flex-shrink-0">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
             <i class="fa-solid fa-comments"></i>
@@ -276,7 +276,7 @@
       </div>
 
       <!-- Chat Log Area -->
-      <div id="chatLog" class="bg-stone-950/90 rounded-xl p-4 overflow-y-auto space-y-4 border border-stone-800/80 text-sm flex-1">
+      <div id="chatLog" class="bg-stone-950/90 rounded-none md:rounded-xl p-3 md:p-4 overflow-y-auto space-y-4 border-y border-x-0 md:border md:border-stone-800/80 text-sm flex-1">
         <div class="flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60">
           <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm flex-shrink-0">AI</div>
           <div class="text-stone-300 leading-relaxed text-sm">
