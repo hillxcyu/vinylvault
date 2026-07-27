@@ -1214,9 +1214,19 @@ class VinylDatabase:
             loaded = list(INITIAL_RECORDS)
 
         filtered = [r for r in loaded if r.get("id") != "rec-001" and r.get("title") != "In Rainbows"]
-        if len(filtered) != len(loaded):
-            self._save_json(RECORDS_FILE, filtered)
-        return filtered
+        
+        # Deduplicate records by normalized (title, artist)
+        seen_keys = set()
+        deduped = []
+        for r in filtered:
+            key = ((r.get("title") or "").strip().lower(), (r.get("artist") or "").strip().lower())
+            if key not in seen_keys:
+                seen_keys.add(key)
+                deduped.append(r)
+
+        if len(deduped) != len(loaded):
+            self._save_json(RECORDS_FILE, deduped)
+        return deduped
 
     def _load_spins(self) -> List[Dict[str, Any]]:
         if os.path.exists(SPINS_FILE):
@@ -1280,6 +1290,17 @@ class VinylDatabase:
         return None
 
     def add_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
+        # Check for existing duplicate record by normalized title and artist
+        norm_title = (record_data.get("title") or "").strip().lower()
+        norm_artist = (record_data.get("artist") or "").strip().lower()
+
+        for existing in self.records:
+            e_title = (existing.get("title") or "").strip().lower()
+            e_artist = (existing.get("artist") or "").strip().lower()
+            if norm_title == e_title and norm_artist == e_artist:
+                print(f"Prevented adding duplicate record for '{record_data.get('title')}'")
+                return existing
+
         new_id = f"rec-user-{len(self.records) + 100}"
         record_data["id"] = new_id
         record_data["createdAt"] = datetime.utcnow().isoformat() + "Z"

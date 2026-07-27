@@ -545,7 +545,7 @@
           recordsHtml = era.records.map(rec => `
             <div onclick="updateNowSpinningUI_byID('${rec.id}')" class="bg-stone-900/90 rounded-xl p-3 space-y-2 group hover:border-amber-500/50 border border-stone-800/60 transition-all cursor-pointer relative shadow-sm hover:shadow-md">
               <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-950">
-                <img src="${rec.coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
                   <i class="fa-solid fa-play text-xs"></i>
                 </button>
@@ -910,7 +910,7 @@
         card.className = 'glass-panel rounded-xl p-3 space-y-2 group hover:border-amber-500/50 transition-all cursor-pointer relative shadow-sm hover:shadow-md';
         card.innerHTML = `
           <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-900">
-            <img src="${rec.coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
             
             <!-- Quick Play Button -->
             <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
@@ -1099,7 +1099,7 @@
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
         badge.innerHTML = `<i class="fa-solid fa-star"></i> ON YOUR WISHLIST!`;
         actionBox.innerHTML = `
-          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
             Purchased! Add to Collection
           </button>
         `;
@@ -1107,7 +1107,7 @@
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30';
         badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> NOT OWNED (Own other records by ${metadata.artist || 'Artist'})`;
         actionBox.innerHTML = `
-          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
             Add New Record to Crate
           </button>
         `;
@@ -1115,17 +1115,24 @@
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-blue-500/20 text-blue-400 border border-blue-500/30';
         badge.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> NOT IN COLLECTION - SAFE TO BUY`;
         actionBox.innerHTML = `
-          <button onclick="addLastScannedRecord()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg">
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
             Add New Record to Crate
           </button>
         `;
       }
     }
 
-    async function addLastScannedRecord() {
+    async function addLastScannedRecord(btnElement) {
       if (!lastScannedMetadata) return;
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
       const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
+
+      const btn = btnElement || document.getElementById('addRecordModalBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm mr-2"></i> Adding to Crate...`;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+      }
 
       try {
         const res = await fetch('/api/records', {
@@ -1144,6 +1151,11 @@
         if (!res.ok) {
           const errData = await res.json().catch(() => ({ detail: 'HTTP status ' + res.status }));
           alert('Failed to save record: ' + (errData.detail || JSON.stringify(errData)));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `Add New Record to Crate`;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+          }
           return;
         }
         const data = await res.json();
@@ -1157,6 +1169,11 @@
       } catch (err) {
         console.error('Error saving scanned record:', err);
         alert('Error saving record: ' + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `Add New Record to Crate`;
+          btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
       }
     }
 

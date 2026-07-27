@@ -3,7 +3,7 @@ import uuid
 import json
 import re
 import logging
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
@@ -151,7 +151,7 @@ async def log_spin(req: LogSpinRequest):
     return {"status": "success", "spin": spin_entry, "record": rec}
 
 @app.post("/api/records")
-async def add_record(req: AddRecordRequest):
+async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
     rec_dict = req.dict()
     
     # Sanitize releaseYear to 4-digit integer if possible
@@ -176,22 +176,16 @@ async def add_record(req: AddRecordRequest):
 
     new_rec = db.add_record(rec_dict)
     
-    # Refresh AI Chronicle via Gemini 3.6 Flash and persist to DB/disk
-    try:
-        classical_service.get_chronicle_data(db.get_all_records(), force_ai_refresh=True)
-    except Exception as err:
-        logger.warning(f"AI Chronicle refresh warning: {err}")
+    # Trigger AI Chronicle refresh asynchronously in the background so API responds instantly (< 50ms)
+    background_tasks.add_task(classical_service.get_chronicle_data, db.get_all_records(), force_ai_refresh=True)
 
     return {"status": "success", "record": new_rec}
 
 @app.delete("/api/records/{record_id}")
-async def delete_record_endpoint(record_id: str):
+async def delete_record_endpoint(record_id: str, background_tasks: BackgroundTasks):
     success = db.delete_record(record_id)
     if success:
-        try:
-            classical_service.get_chronicle_data(db.get_all_records(), force_ai_refresh=True)
-        except Exception as err:
-            logger.warning(f"AI Chronicle refresh warning: {err}")
+        background_tasks.add_task(classical_service.get_chronicle_data, db.get_all_records(), force_ai_refresh=True)
         return {"status": "success", "message": f"Record {record_id} deleted."}
     raise HTTPException(status_code=404, detail="Record not found.")
 
