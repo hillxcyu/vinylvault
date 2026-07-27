@@ -1,0 +1,156 @@
+import re
+from typing import List, Dict, Any, Tuple, Optional
+
+CLASSICAL_ERAS = [
+    {
+        "id": "baroque",
+        "name": "Baroque Era",
+        "years": "1600 – 1750",
+        "icon": "🎻",
+        "description": "Counterpoint, fugues, harpsichord suites, and ornate polyphonic structures.",
+        "keywords": [
+            "bach", "vivladi", "vivaldi", "handel", "telemann", "scarlatti", "corelli", "purcell",
+            "rameau", "couperin", "van eyck", "brüggen", "baroque", "harpsichord"
+        ]
+    },
+    {
+        "id": "classical",
+        "name": "Classical Era",
+        "years": "1750 – 1820",
+        "icon": "🎼",
+        "description": "Sonata-allegro forms, balance, clarity, and the birth of the symphonic orchestra.",
+        "keywords": [
+            "mozart", "haydn", "salieri", "boccherini", "clementi", "gluck", "c.p.e. bach", "hummel"
+        ]
+    },
+    {
+        "id": "romantic",
+        "name": "Romantic Era",
+        "years": "1820 – 1910",
+        "icon": "📜",
+        "description": "Expressive emotion, virtuosity, nationalism, expanded chromaticism, and grand opera.",
+        "keywords": [
+            "beethoven", "brahms", "tchaikovsky", "dvořák", "dvorak", "chopin", "liszt", "wagner",
+            "mahler", "rachmaninoff", "mendelssohn", "verdi", "schumann", "sibelius", "bruch",
+            "grieg", "saint-saëns", "saint-saens", "paganini", "strauss", "puccini", "bizet",
+            "berlioz", "rimsky-korsakov", "mussorgsky", "elgar", "franck", "lalo", "stern", "klemperer"
+        ]
+    },
+    {
+        "id": "modern_20th",
+        "name": "Modern & 20th Century",
+        "years": "1910 – 1980",
+        "icon": "🎹",
+        "description": "Impressionism, serialism, neoclassicism, avant-garde rhythms, and modern composition.",
+        "keywords": [
+            "debussy", "ravel", "stravinsky", "shostakovich", "prokofiev", "bartók", "bartok",
+            "barber", "copland", "gershwin", "messiaen", "holst", "vaughan williams", "britten",
+            "hindemith", "bernstein", "boulez", "penderecki", "ligeti", "schoenberg", "berg"
+        ]
+    },
+    {
+        "id": "contemporary",
+        "name": "Contemporary Classical",
+        "years": "1980 – Present",
+        "icon": "🌌",
+        "description": "Minimalism, post-minimalism, ambient classical fusion, and modern cinematic orchestrations.",
+        "keywords": [
+            "glass", "pärt", "part", "richter", "einaudi", "reich", "williams", "zimmer", "nyman",
+            "adams", "yiruma", "arnalds", "guðnadóttir", "gudnadottir"
+        ]
+    }
+]
+
+CLASSICAL_GENRE_KEYWORDS = [
+    "classical", "baroque", "romantic", "concerto", "symphony", "sonata", "suite", "suites",
+    "opera", "orchestra", "violin", "cello", "piano", "chamber", "quartet", "quintet", "fugue",
+    "requiem", "aria", "overture", "philharmonia", "philharmonic", "concerto", "instrumental"
+]
+
+class ClassicalService:
+    def is_classical_record(self, record: Dict[str, Any]) -> bool:
+        """
+        Determines if a record belongs to the Classical genre.
+        """
+        title = (record.get("title") or "").lower()
+        artist = (record.get("artist") or "").lower()
+        genre = (record.get("genre") or "").lower()
+
+        text_block = f"{title} {artist} {genre}"
+
+        # 1. Check genre keywords
+        for kw in CLASSICAL_GENRE_KEYWORDS:
+            if kw in text_block:
+                return True
+
+        # 2. Check composer keywords
+        for era in CLASSICAL_ERAS:
+            for kw in era["keywords"]:
+                if kw in text_block:
+                    return True
+
+        return False
+
+    def classify_record_era(self, record: Dict[str, Any]) -> Tuple[Dict[str, Any], str]:
+        """
+        Classifies a classical record into its era.
+        Returns (era_dict, composer_name_detected).
+        """
+        title = (record.get("title") or "").lower()
+        artist = (record.get("artist") or "").lower()
+        text_block = f"{title} {artist}"
+
+        # 1. Check composer keywords in order
+        for era in CLASSICAL_ERAS:
+            for kw in era["keywords"]:
+                if kw in text_block:
+                    return era, kw.title()
+
+        # 2. Fallback using releaseYear if available
+        year = record.get("releaseYear")
+        if year and isinstance(year, int):
+            if year < 1750:
+                return CLASSICAL_ERAS[0], "Baroque Master"
+            elif 1750 <= year < 1820:
+                return CLASSICAL_ERAS[1], "Classical Master"
+            elif 1820 <= year < 1910:
+                return CLASSICAL_ERAS[2], "Romantic Master"
+            elif 1910 <= year < 1980:
+                return CLASSICAL_ERAS[3], "20th Century Master"
+            else:
+                return CLASSICAL_ERAS[4], "Contemporary Composer"
+
+        # Default to Romantic Era
+        return CLASSICAL_ERAS[2], "Classical Composer"
+
+    def get_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Groups classical records chronologically by composer era.
+        Excludes non-classical records.
+        """
+        era_map = {era["id"]: {**era, "count": 0, "records": []} for era in CLASSICAL_ERAS}
+        classical_count = 0
+
+        for rec in records:
+            if not self.is_classical_record(rec):
+                continue
+
+            classical_count += 1
+            era, composer = self.classify_record_era(rec)
+            
+            rec_entry = dict(rec)
+            rec_entry["detectedComposer"] = composer
+            rec_entry["eraName"] = era["name"]
+
+            era_map[era["id"]]["records"].append(rec_entry)
+            era_map[era["id"]]["count"] += 1
+
+        eras_list = [era_data for era_data in era_map.values() if era_data["count"] > 0 or era_data["id"] in ["baroque", "classical", "romantic", "modern_20th"]]
+
+        return {
+            "totalClassicalRecords": classical_count,
+            "totalRecordsInCrate": len(records),
+            "eras": eras_list
+        }
+
+classical_service = ClassicalService()

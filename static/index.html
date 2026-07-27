@@ -41,12 +41,15 @@
       <!-- Navigation Tabs -->
       <div class="flex items-center gap-2">
         <div class="flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800 shadow-inner">
-          <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
+          <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
             <i class="fa-solid fa-circle-play"></i> Now Spinning
           </button>
-          <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2">
+          <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2">
             <i class="fa-solid fa-box-archive"></i> My Crate
             <span id="recordCountBadge" class="text-xs font-semibold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">0</span>
+          </button>
+          <button id="tabBtnChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
+            <i class="fa-solid fa-hourglass-half text-amber-500"></i> Chronicle
           </button>
         </div>
 
@@ -221,6 +224,33 @@
       <!-- Albums Grid -->
       <div id="recordsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- TAB 3: CLASSICAL CHRONICLE TIMELINE VIEW -->
+    <div id="tabChronicle" class="hidden space-y-8">
+      <div class="glass-panel rounded-2xl p-6 md:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-stone-800/80 pb-4">
+          <div>
+            <h2 class="text-2xl font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-hourglass-half text-amber-500"></i> Classical Composer Chronicle
+            </h2>
+            <p class="text-xs text-stone-400 mt-1">Explore your classical vinyl collection categorized chronologically by musical era & composer.</p>
+          </div>
+          <div class="inline-flex items-center gap-2 text-xs font-semibold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
+            <i class="fa-solid fa-music"></i> <span id="chronicleClassicalCount">0</span> Classical Records
+          </div>
+        </div>
+
+        <!-- Chronicle Era Filter Rail -->
+        <div id="chronicleEraFilterRail" class="flex flex-nowrap overflow-x-auto gap-2 pb-2 scrollbar-none">
+          <!-- Dynamically populated filter buttons -->
+        </div>
+      </div>
+
+      <!-- Chronological Eras Timeline Container -->
+      <div id="chronicleTimelineContainer" class="space-y-8">
+        <!-- Dynamically populated era sections -->
       </div>
     </div>
 
@@ -429,23 +459,135 @@
       }
     }
 
+    let chronicleData = null;
+    let selectedEraFilter = 'all';
+
     function switchTab(tabName) {
       activeTab = tabName;
       const tabNow = document.getElementById('tabNowSpinning');
       const tabCrate = document.getElementById('tabCrate');
+      const tabChronicle = document.getElementById('tabChronicle');
       const btnNow = document.getElementById('tabBtnNowSpinning');
       const btnCrate = document.getElementById('tabBtnCrate');
+      const btnChronicle = document.getElementById('tabBtnChronicle');
+
+      const activeClass = 'px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
+      const inactiveClass = 'px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
+
+      tabNow.classList.add('hidden');
+      tabCrate.classList.add('hidden');
+      tabChronicle.classList.add('hidden');
+      btnNow.className = inactiveClass;
+      btnCrate.className = inactiveClass;
+      btnChronicle.className = inactiveClass;
 
       if (tabName === 'nowSpinning') {
         tabNow.classList.remove('hidden');
-        tabCrate.classList.add('hidden');
-        btnNow.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
-        btnCrate.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
+        btnNow.className = activeClass;
+      } else if (tabName === 'chronicle') {
+        tabChronicle.classList.remove('hidden');
+        btnChronicle.className = activeClass;
+        fetchChronicle();
       } else {
-        tabNow.classList.add('hidden');
         tabCrate.classList.remove('hidden');
-        btnCrate.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
-        btnNow.className = 'px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
+        btnCrate.className = activeClass;
+      }
+    }
+
+    async function fetchChronicle() {
+      try {
+        const res = await fetch('/api/chronicle');
+        chronicleData = await res.json();
+        renderChronicle();
+      } catch (err) {
+        console.error('Error fetching chronicle:', err);
+      }
+    }
+
+    function renderChronicle() {
+      if (!chronicleData) return;
+      document.getElementById('chronicleClassicalCount').innerText = chronicleData.totalClassicalRecords || 0;
+
+      // 1. Render Era Filter Rail
+      const rail = document.getElementById('chronicleEraFilterRail');
+      rail.innerHTML = '';
+
+      const allBtn = document.createElement('button');
+      allBtn.className = `px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap flex-shrink-0 ${selectedEraFilter === 'all' ? 'bg-amber-500 text-black' : 'bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700/60'}`;
+      allBtn.innerHTML = `✨ All Eras (${chronicleData.totalClassicalRecords})`;
+      allBtn.onclick = () => { selectedEraFilter = 'all'; renderChronicle(); };
+      rail.appendChild(allBtn);
+
+      chronicleData.eras.forEach(era => {
+        const btn = document.createElement('button');
+        btn.className = `px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap flex-shrink-0 ${selectedEraFilter === era.id ? 'bg-amber-500 text-black' : 'bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700/60'}`;
+        btn.innerHTML = `${era.icon} ${era.name} (${era.count})`;
+        btn.onclick = () => { selectedEraFilter = era.id; renderChronicle(); };
+        rail.appendChild(btn);
+      });
+
+      // 2. Render Eras & Record Grids
+      const container = document.getElementById('chronicleTimelineContainer');
+      container.innerHTML = '';
+
+      const filteredEras = selectedEraFilter === 'all' 
+        ? chronicleData.eras 
+        : chronicleData.eras.filter(e => e.id === selectedEraFilter);
+
+      filteredEras.forEach(era => {
+        if (era.count === 0 && selectedEraFilter !== era.id) return;
+
+        const section = document.createElement('section');
+        section.className = 'glass-panel rounded-2xl p-6 space-y-4 border border-stone-800/80 relative overflow-hidden';
+        
+        let recordsHtml = '';
+        if (era.records && era.records.length > 0) {
+          recordsHtml = era.records.map(rec => `
+            <div onclick="updateNowSpinningUI_byID('${rec.id}')" class="bg-stone-900/90 rounded-xl p-3 space-y-2 group hover:border-amber-500/50 border border-stone-800/60 transition-all cursor-pointer relative shadow-sm hover:shadow-md">
+              <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-950">
+                <img src="${rec.coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
+                  <i class="fa-solid fa-play text-xs"></i>
+                </button>
+              </div>
+              <div>
+                <div class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1 truncate max-w-full">
+                  ${rec.detectedComposer}
+                </div>
+                <div class="font-bold text-xs text-white truncate">${rec.title}</div>
+                <div class="text-[11px] text-stone-400 truncate">${rec.artist}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          recordsHtml = `<div class="col-span-full py-4 text-center text-xs text-stone-500 italic">No classical records in your crate for this era yet.</div>`;
+        }
+
+        section.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-800/60 pb-3">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>${era.icon}</span> ${era.name} <span class="text-xs font-normal text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">${era.years}</span>
+              </h3>
+              <p class="text-xs text-stone-400 mt-1">${era.description}</p>
+            </div>
+            <div class="text-xs font-bold text-stone-300 bg-stone-900 px-3 py-1 rounded-lg border border-stone-800 flex-shrink-0">
+              ${era.count} Record${era.count === 1 ? '' : 's'}
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 pt-2">
+            ${recordsHtml}
+          </div>
+        `;
+        container.appendChild(section);
+      });
+    }
+
+    function updateNowSpinningUI_byID(id) {
+      const rec = allRecords.find(r => r.id === id);
+      if (rec) {
+        updateNowSpinningUI(rec);
+        switchTab('nowSpinning');
       }
     }
 

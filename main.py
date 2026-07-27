@@ -14,6 +14,7 @@ from duplicate_engine import DuplicateEngine
 from gemini_service import gemini_service
 from discogs_service import discogs_service
 from deskew_service import deskew_service
+from classical_service import classical_service
 from batch_import_webarchive import run_batch_import
 
 logger = logging.getLogger("vinyl_vault")
@@ -68,6 +69,10 @@ async def get_records():
 @app.get("/api/wishlist")
 async def get_wishlist():
     return {"wishlist": db.get_wishlist()}
+
+@app.get("/api/chronicle")
+async def get_chronicle():
+    return classical_service.get_chronicle_data(db.get_all_records())
 
 @app.get("/api/stats")
 async def get_stats():
