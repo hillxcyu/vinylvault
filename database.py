@@ -1132,6 +1132,7 @@ INITIAL_WISHLIST = [
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data_store")
 RECORDS_FILE = os.path.join(DATA_DIR, "records.json")
 SPINS_FILE = os.path.join(DATA_DIR, "spins.json")
+CHRONICLE_FILE = os.path.join(DATA_DIR, "chronicle.json")
 
 class VinylDatabase:
     def __init__(self):
@@ -1139,6 +1140,7 @@ class VinylDatabase:
         self.wishlist = list(INITIAL_WISHLIST)
         self.records = self._load_records()
         self.spins_log = self._load_spins()
+        self.chronicle = self._load_chronicle()
 
     def _load_records(self) -> List[Dict[str, Any]]:
         loaded = []
@@ -1181,6 +1183,26 @@ class VinylDatabase:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"Error writing to {filepath}: {e}")
+
+    def _load_chronicle(self) -> Optional[Dict[str, Any]]:
+        if os.path.exists(CHRONICLE_FILE):
+            try:
+                with open(CHRONICLE_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data:
+                        return data
+            except Exception as e:
+                print(f"Error reading chronicle.json: {e}")
+        return None
+
+    def save_chronicle(self, chronicle_data: Dict[str, Any]):
+        self.chronicle = chronicle_data
+        self._save_json(CHRONICLE_FILE, chronicle_data)
+
+    def get_chronicle(self) -> Optional[Dict[str, Any]]:
+        if not hasattr(self, "chronicle") or self.chronicle is None:
+            self.chronicle = self._load_chronicle()
+        return self.chronicle
 
     def save_records(self):
         self._save_json(RECORDS_FILE, self.records)

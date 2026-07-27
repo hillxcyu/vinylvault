@@ -1,5 +1,8 @@
 import re
+import logging
 from typing import List, Dict, Any, Tuple, Optional
+
+logger = logging.getLogger("classical_service")
 
 CLASSICAL_ERAS = [
     {
@@ -84,23 +87,19 @@ class ClassicalService:
         genre = (record.get("genre") or "").lower()
         text_block = f"{title} {artist} {genre}"
 
-        # Explicit non-classical exclusion check
         for excl in NON_CLASSICAL_EXCLUSIONS:
             if excl in text_block and "classical" not in genre:
                 return False
 
-        # 1. Check genre & work keywords
         for kw in CLASSICAL_GENRE_KEYWORDS:
             if kw in text_block:
                 return True
 
-        # 2. Check composer keywords
         for era in CLASSICAL_ERAS:
             for kw in era["keywords"]:
                 if kw in text_block:
                     return True
 
-        # 3. Check classical structural patterns (e.g. "No. 1 in G major")
         if re.search(r'\b(no\.\s*\d+|op\.\s*\d+|bwv\s*\d+|major|minor|concerto|symphony|sonata)\b', text_block, re.I):
             return True
 
@@ -115,13 +114,11 @@ class ClassicalService:
         artist = (record.get("artist") or "").lower()
         text_block = f"{title} {artist}"
 
-        # 1. Check composer keywords in order
         for era in CLASSICAL_ERAS:
             for kw in era["keywords"]:
                 if kw in text_block:
                     return era, kw.title()
 
-        # 2. Fallback using releaseYear if available
         year = record.get("releaseYear")
         if year and isinstance(year, int):
             if year < 1750:
@@ -135,13 +132,11 @@ class ClassicalService:
             else:
                 return CLASSICAL_ERAS[4], "Contemporary Composer"
 
-        # Default to Romantic Era
         return CLASSICAL_ERAS[2], "Classical Composer"
 
-    def get_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _rule_based_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        Groups classical records chronologically by composer era.
-        Excludes non-classical records.
+        Rule-based chronicle generator fallback.
         """
         era_map = {era["id"]: {**era, "count": 0, "records": []} for era in CLASSICAL_ERAS}
         classical_count = 0
@@ -156,6 +151,7 @@ class ClassicalService:
             rec_entry = dict(rec)
             rec_entry["detectedComposer"] = composer
             rec_entry["eraName"] = era["name"]
+            rec_entry["aiInsight"] = f"Masterpiece of the {era['name']} featuring {composer}."
 
             era_map[era["id"]]["records"].append(rec_entry)
             era_map[era["id"]]["count"] += 1
@@ -165,7 +161,43 @@ class ClassicalService:
         return {
             "totalClassicalRecords": classical_count,
             "totalRecordsInCrate": len(records),
-            "eras": eras_list
+            "eras": eras_list,
+            "source": "rule_based_fallback"
         }
+
+    def get_chronicle_data(self, records: List[Dict[str, Any]], force_ai_refresh: bool = False) -> Dict[str, Any]:
+        """
+        Returns Classical Music Chronicle categorized by composer era.
+        Uses database-persisted AI Chronicle if available.
+        Calls Gemini 3.6 Flash when force_ai_refresh=True or when no DB cache exists.
+        Falls back to rule-based classification if offline/unreachable.
+        """
+        from database import db
+        from gemini_service import gemini_service
+
+        # 1. Return persisted DB chronicle if available and no forced refresh requested
+        if not force_ai_refresh:
+            cached = db.get_chronicle()
+            if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0:
+                logger.info("Serving persisted AI Chronicle from Database/Disk.")
+                return cached
+
+        # 2. Call Gemini 3.6 Flash model to generate AI Chronicle
+        ai_chronicle = gemini_service.generate_chronicle_ai(records)
+        if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
+            ai_chronicle["source"] = "gemini_3.6_flash"
+            db.save_chronicle(ai_chronicle)
+            logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk.")
+            return ai_chronicle
+
+        # 3. If DB cache exists, use it even if force_ai_refresh failed
+        cached = db.get_chronicle()
+        if cached and isinstance(cached, dict) and "eras" in cached:
+            return cached
+
+        # 4. Emergency rule-based fallback
+        fallback = self._rule_based_chronicle_data(records)
+        db.save_chronicle(fallback)
+        return fallback
 
 classical_service = ClassicalService()

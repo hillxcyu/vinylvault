@@ -552,10 +552,11 @@
               </div>
               <div>
                 <div class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1 truncate max-w-full">
-                  ${rec.detectedComposer}
+                  ${rec.detectedComposer || 'Classical Master'}
                 </div>
                 <div class="font-bold text-xs text-white truncate">${rec.title}</div>
                 <div class="text-[11px] text-stone-400 truncate">${rec.artist}</div>
+                ${rec.aiInsight ? `<div class="mt-1.5 text-[10px] text-amber-300/90 bg-stone-950 p-1.5 rounded border border-amber-500/20 leading-tight italic"><i class="fa-solid fa-sparkles text-[9px] text-amber-400 mr-1"></i>${rec.aiInsight}</div>` : ''}
               </div>
             </div>
           `).join('');

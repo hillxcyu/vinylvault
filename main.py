@@ -175,12 +175,23 @@ async def add_record(req: AddRecordRequest):
             rec_dict["coverUrl"] = official_cover
 
     new_rec = db.add_record(rec_dict)
+    
+    # Refresh AI Chronicle via Gemini 3.6 Flash and persist to DB/disk
+    try:
+        classical_service.get_chronicle_data(db.get_all_records(), force_ai_refresh=True)
+    except Exception as err:
+        logger.warning(f"AI Chronicle refresh warning: {err}")
+
     return {"status": "success", "record": new_rec}
 
 @app.delete("/api/records/{record_id}")
 async def delete_record_endpoint(record_id: str):
     success = db.delete_record(record_id)
     if success:
+        try:
+            classical_service.get_chronicle_data(db.get_all_records(), force_ai_refresh=True)
+        except Exception as err:
+            logger.warning(f"AI Chronicle refresh warning: {err}")
         return {"status": "success", "message": f"Record {record_id} deleted."}
     raise HTTPException(status_code=404, detail="Record not found.")
 

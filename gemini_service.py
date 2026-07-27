@@ -328,4 +328,81 @@ class GeminiVisionService:
 
         return f"Regarding '{title}' by {artist}: This record is renowned for its distinct vinyl pressing dynamics and musical production. '{message}' touches on great details for audiophiles enjoying this album!"
 
+    def generate_chronicle_ai(self, records: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """
+        Calls Gemini 3.6 Flash to analyze collection records and generate a structured JSON 
+        Classical Music Chronicle categorized by composer era with musicological insights.
+        """
+        if not self.client:
+            logger.warning("Gemini client unavailable for AI Chronicle generation.")
+            return None
+
+        try:
+            from google.genai import types
+
+            simplified_records = []
+            for r in records:
+                simplified_records.append({
+                    "id": r.get("id"),
+                    "title": r.get("title"),
+                    "artist": r.get("artist"),
+                    "releaseYear": r.get("releaseYear"),
+                    "genre": r.get("genre"),
+                    "coverUrl": r.get("coverUrl")
+                })
+
+            prompt = (
+                "You are an expert musicologist and classical music archivist.\n"
+                "Analyze the following vinyl collection records and organize ALL Classical Music records chronologically into historical composer eras "
+                "(e.g., Baroque Era [1600-1750], Classical Era [1750-1820], Romantic Era [1820-1910], Modern & 20th Century [1910-1980], Contemporary Classical [1980-Present]).\n\n"
+                f"User Collection Records:\n{json.dumps(simplified_records, indent=2, ensure_ascii=False)}\n\n"
+                "INSTRUCTIONS:\n"
+                "1. Include ONLY classical music records (exclude non-classical genres like Rock, Pop, Jazz, Disco, Bolero unless cross-over).\n"
+                "2. Group records into chronological eras. For each era that contains classical records from the collection, produce:\n"
+                "   - \"id\": string (one of \"baroque\", \"classical\", \"romantic\", \"modern_20th\", \"contemporary\")\n"
+                "   - \"name\": string (e.g. \"Romantic Era\")\n"
+                "   - \"years\": string date range (e.g. \"1820 – 1910\")\n"
+                "   - \"icon\": emoji string (e.g. \"🎻\", \"🎼\", \"📜\", \"🎹\", \"🌌\")\n"
+                "   - \"description\": concise 1-2 sentence musicological overview of the era\n"
+                "   - \"count\": integer count of records in this era\n"
+                "   - \"records\": list of record objects containing:\n"
+                "       - \"id\": record ID matching input record ID\n"
+                "       - \"title\": album title\n"
+                "       - \"artist\": performer/artist\n"
+                "       - \"releaseYear\": number or string\n"
+                "       - \"genre\": string\n"
+                "       - \"coverUrl\": cover URL matching input\n"
+                "       - \"detectedComposer\": composer name (e.g., \"Johann Sebastian Bach\", \"Ludwig van Beethoven\", \"Antonín Dvořák\", \"Pyotr Ilyich Tchaikovsky\")\n"
+                "       - \"eraName\": era name\n"
+                "       - \"aiInsight\": a 1-sentence audiophile/musicological insight on why this piece or recording is notable.\n\n"
+                "Return ONLY a valid JSON object matching this structure:\n"
+                "{\n"
+                '  "totalClassicalRecords": 38,\n'
+                '  "totalRecordsInCrate": 50,\n'
+                '  "eras": [ ... ]\n'
+                "}"
+            )
+
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
+
+            response = self.client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=prompt,
+                config=config
+            )
+
+            text_output = response.text.strip()
+            if text_output.startswith("```"):
+                text_output = re.sub(r"^```(?:json)?\n|\n```$", "", text_output, flags=re.MULTILINE).strip()
+
+            parsed_data = json.loads(text_output)
+            logger.info("Successfully generated AI Chronicle via Gemini 3.6 Flash.")
+            return parsed_data
+
+        except Exception as e:
+            logger.error(f"Error generating AI Chronicle via Gemini 3.6 Flash: {e}")
+            return None
+
 gemini_service = GeminiVisionService()
