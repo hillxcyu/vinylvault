@@ -994,6 +994,11 @@
             formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP'
           })
         });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ detail: 'HTTP status ' + res.status }));
+          alert('Failed to save record: ' + (errData.detail || JSON.stringify(errData)));
+          return;
+        }
         const data = await res.json();
         closeScannerModal();
         await fetchCollection();
@@ -1004,6 +1009,7 @@
         }
       } catch (err) {
         console.error('Error saving scanned record:', err);
+        alert('Error saving record: ' + err.message);
       }
     }
 

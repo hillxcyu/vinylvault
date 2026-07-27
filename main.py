@@ -38,7 +38,7 @@ class LogSpinRequest(BaseModel):
 class AddRecordRequest(BaseModel):
     artist: str
     title: str
-    releaseYear: Optional[int] = None
+    releaseYear: Optional[Any] = None
     genre: Optional[str] = None
     coverUrl: Optional[str] = None
     catalogNumber: Optional[str] = None
@@ -141,6 +141,21 @@ async def log_spin(req: LogSpinRequest):
 @app.post("/api/records")
 async def add_record(req: AddRecordRequest):
     rec_dict = req.dict()
+    
+    # Sanitize releaseYear to 4-digit integer if possible
+    ry = rec_dict.get("releaseYear")
+    if ry is not None:
+        if isinstance(ry, str):
+            match = re.search(r'\b(19\d\d|20\d\d)\b', ry)
+            if match:
+                rec_dict["releaseYear"] = int(match.group(1))
+            else:
+                rec_dict["releaseYear"] = None
+        elif isinstance(ry, (int, float)):
+            rec_dict["releaseYear"] = int(ry)
+        else:
+            rec_dict["releaseYear"] = None
+
     # Try fetching official release cover art asset if current URL is fallback
     if not rec_dict.get("coverUrl") or "wikimedia" in rec_dict.get("coverUrl", ""):
         official_cover = discogs_service.fetch_official_cover(req.artist, req.title)
