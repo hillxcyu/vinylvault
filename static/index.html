@@ -388,6 +388,14 @@
       </div>
 
     </div>
+  <!-- Floating Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="glass-panel px-4 py-3 rounded-xl border border-amber-500/30 shadow-2xl flex items-center gap-3 bg-stone-900/95 text-white text-xs font-bold">
+      <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+        <i id="toastIcon" class="fa-solid fa-sparkles text-xs"></i>
+      </div>
+      <span id="toastMessage">Action completed successfully</span>
+    </div>
   </div>
 
   <script>
@@ -396,6 +404,24 @@
     let lastScannedMetadata = null;
     let activeTab = 'crate';
     const releaseAssetsCache = {};
+
+    function showToast(message, icon = 'fa-sparkles') {
+      const toast = document.getElementById('toastNotification');
+      const msgEl = document.getElementById('toastMessage');
+      const iconEl = document.getElementById('toastIcon');
+      if (!toast) return;
+
+      msgEl.innerText = message;
+      iconEl.className = `fa-solid ${icon} text-xs`;
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
 
     const SVG_PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231f2937'/><circle cx='50' cy='50' r='35' fill='%23111827' stroke='%23374151' stroke-width='4'/><circle cx='50' cy='50' r='10' fill='%23f59e0b'/></svg>";
 
@@ -958,17 +984,21 @@
     }
 
     async function spinRecord(id) {
+      const rec = allRecords.find(r => r.id === id);
+      if (rec) {
+        rec.spinsCount = (rec.spinsCount || 0) + 1;
+        updateNowSpinningUI(rec);
+        switchTab('nowSpinning');
+        showToast(`Now spinning: "${rec.title}"`, 'fa-compact-disc');
+      }
+
       try {
-        const res = await fetch('/api/spin', {
+        await fetch('/api/spin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, notes: 'Interactive spin' })
         });
-        const data = await res.json();
-        if (data.status === 'success') {
-          fetchCollection();
-          fetchStats();
-        }
+        fetchStats();
       } catch (err) {
         console.error('Error logging spin:', err);
       }
@@ -1127,13 +1157,36 @@
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
       const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
 
-      const btn = btnElement || document.getElementById('addRecordModalBtn');
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm mr-2"></i> Adding to Crate...`;
-        btn.classList.add('opacity-75', 'cursor-not-allowed');
-      }
+      // 1. Instantly close scanner modal (0ms UI latency!)
+      closeScannerModal();
 
+      // 2. Create optimistic temporary record
+      const tempId = 'temp-' + Date.now();
+      const tempRecord = {
+        id: tempId,
+        artist,
+        title,
+        genre: lastScannedMetadata.genre || 'Vinyl',
+        releaseYear: lastScannedMetadata.releaseYear || 2024,
+        coverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
+        catalogNumber: lastScannedMetadata.catalogNumber || null,
+        formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP',
+        spinsCount: 0,
+        createdAt: new Date().toISOString()
+      };
+
+      // 3. Immediately update UI state & render
+      allRecords.unshift(tempRecord);
+      document.getElementById('recordCountBadge').innerText = allRecords.length;
+      document.getElementById('statTotalRecords').innerText = allRecords.length;
+      renderRecordsGrid(allRecords);
+      updateNowSpinningUI(tempRecord);
+      switchTab('nowSpinning');
+
+      // 4. Show instant toast notification
+      showToast(`Added "${title}" to your crate!`, 'fa-circle-check');
+
+      // 5. Sync with backend quietly in background (Non-Blocking!)
       try {
         const res = await fetch('/api/records', {
           method: 'POST',
@@ -1141,39 +1194,22 @@
           body: JSON.stringify({
             artist,
             title,
-            genre: lastScannedMetadata.genre || 'Vinyl',
-            releaseYear: lastScannedMetadata.releaseYear || 2024,
-            coverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
-            catalogNumber: lastScannedMetadata.catalogNumber || null,
-            formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP'
+            genre: tempRecord.genre,
+            releaseYear: tempRecord.releaseYear,
+            coverUrl: tempRecord.coverUrl,
+            catalogNumber: tempRecord.catalogNumber,
+            formatDetails: tempRecord.formatDetails
           })
         });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({ detail: 'HTTP status ' + res.status }));
-          alert('Failed to save record: ' + (errData.detail || JSON.stringify(errData)));
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = `Add New Record to Crate`;
-            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success' && data.record) {
+            tempRecord.id = data.record.id;
+            if (data.record.coverUrl) tempRecord.coverUrl = data.record.coverUrl;
           }
-          return;
-        }
-        const data = await res.json();
-        closeScannerModal();
-        await fetchCollection();
-        await fetchStats();
-        if (data.status === 'success' && data.record) {
-          updateNowSpinningUI(data.record);
-          switchTab('nowSpinning');
         }
       } catch (err) {
-        console.error('Error saving scanned record:', err);
-        alert('Error saving record: ' + err.message);
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `Add New Record to Crate`;
-          btn.classList.remove('opacity-75', 'cursor-not-allowed');
-        }
+        console.error('Background save error:', err);
       }
     }
 
