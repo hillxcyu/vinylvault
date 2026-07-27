@@ -938,7 +938,11 @@
       const actionBox = document.getElementById('scanActionContainer');
 
       container.classList.remove('hidden');
-      message.innerText = result.message;
+      if (metadata && metadata.deskewed) {
+        message.innerHTML = `${result.message} <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 ml-2 shadow-sm">✨ Auto-Deskewed & Corrected</span>`;
+      } else {
+        message.innerText = result.message;
+      }
 
       if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';

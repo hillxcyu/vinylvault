@@ -13,6 +13,7 @@ from database import db
 from duplicate_engine import DuplicateEngine
 from gemini_service import gemini_service
 from discogs_service import discogs_service
+from deskew_service import deskew_service
 from batch_import_webarchive import run_batch_import
 
 logger = logging.getLogger("vinyl_vault")
@@ -98,19 +99,24 @@ async def check_duplicate(query: DuplicateCheckQuery):
 async def scan_cover(file: UploadFile = File(...)):
     contents = await file.read()
     
-    # 1. Save uploaded cover image to static/uploads/
+    # 0. Auto-deskew & perspective correct image
+    deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
+    final_bytes = deskewed_bytes if is_deskewed else contents
+
+    # 1. Save uploaded/deskewed cover image to static/uploads/
     os.makedirs("static/uploads", exist_ok=True)
-    ext = os.path.splitext(file.filename)[1] or ".jpg"
+    ext = ".jpg" if is_deskewed else (os.path.splitext(file.filename)[1] or ".jpg")
     filename = f"scan_{uuid.uuid4().hex[:8]}{ext}"
     saved_path = os.path.join("static/uploads", filename)
     with open(saved_path, "wb") as f:
-        f.write(contents)
+        f.write(final_bytes)
 
     uploaded_cover_url = f"/static/uploads/{filename}"
 
-    # 2. Extract metadata via Gemini Vision API
-    extracted_metadata = gemini_service.analyze_album_cover(contents, filename=file.filename)
+    # 2. Extract metadata via Gemini Vision API using deskewed image
+    extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
     extracted_metadata["coverUrl"] = uploaded_cover_url
+    extracted_metadata["deskewed"] = is_deskewed
 
     # 3. Try fetching genuine Discogs release cover image
     artist = extracted_metadata.get("artist", "")
@@ -129,7 +135,8 @@ async def scan_cover(file: UploadFile = File(...)):
 
     return {
         "metadata": extracted_metadata,
-        "duplicateCheck": duplicate_result
+        "duplicateCheck": duplicate_result,
+        "deskewed": is_deskewed
     }
 
 @app.post("/api/spin")
