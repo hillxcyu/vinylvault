@@ -184,8 +184,8 @@ class ClassicalService:
 
         if not force_ai_refresh:
             cached = db.get_chronicle()
-            if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0:
-                logger.info("Serving persisted AI Chronicle from Database/Disk.")
+            if cached and isinstance(cached, dict) and cached.get("source") == "gemini_3.6_flash" and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0:
+                logger.info("Serving persisted Gemini 3.6 Flash AI Chronicle from Database/Disk.")
                 return cached
 
         ai_chronicle = gemini_service.generate_chronicle_ai(records)
