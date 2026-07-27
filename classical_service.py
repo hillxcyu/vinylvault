@@ -10,7 +10,7 @@ CLASSICAL_ERAS = [
         "description": "Counterpoint, fugues, harpsichord suites, and ornate polyphonic structures.",
         "keywords": [
             "bach", "vivladi", "vivaldi", "handel", "telemann", "scarlatti", "corelli", "purcell",
-            "rameau", "couperin", "van eyck", "brüggen", "baroque", "harpsichord"
+            "rameau", "couperin", "van eyck", "brüggen", "bruggen", "baroque", "harpsichord", "bwv"
         ]
     },
     {
@@ -33,7 +33,8 @@ CLASSICAL_ERAS = [
             "beethoven", "brahms", "tchaikovsky", "dvořák", "dvorak", "chopin", "liszt", "wagner",
             "mahler", "rachmaninoff", "mendelssohn", "verdi", "schumann", "sibelius", "bruch",
             "grieg", "saint-saëns", "saint-saens", "paganini", "strauss", "puccini", "bizet",
-            "berlioz", "rimsky-korsakov", "mussorgsky", "elgar", "franck", "lalo", "stern", "klemperer"
+            "berlioz", "rimsky-korsakov", "mussorgsky", "elgar", "franck", "lalo", "stern", "klemperer",
+            "rubinstein", "cziffra", "lipatti", "boskovsky", "levine", "haebler", "maazel"
         ]
     },
     {
@@ -45,7 +46,8 @@ CLASSICAL_ERAS = [
         "keywords": [
             "debussy", "ravel", "stravinsky", "shostakovich", "prokofiev", "bartók", "bartok",
             "barber", "copland", "gershwin", "messiaen", "holst", "vaughan williams", "britten",
-            "hindemith", "bernstein", "boulez", "penderecki", "ligeti", "schoenberg", "berg"
+            "hindemith", "bernstein", "boulez", "penderecki", "ligeti", "schoenberg", "berg",
+            "scriabin", "alban berg"
         ]
     },
     {
@@ -64,7 +66,12 @@ CLASSICAL_ERAS = [
 CLASSICAL_GENRE_KEYWORDS = [
     "classical", "baroque", "romantic", "concerto", "symphony", "sonata", "suite", "suites",
     "opera", "orchestra", "violin", "cello", "piano", "chamber", "quartet", "quintet", "fugue",
-    "requiem", "aria", "overture", "philharmonia", "philharmonic", "concerto", "instrumental"
+    "requiem", "aria", "overture", "philharmonia", "philharmonic", "instrumental", "bwv", "op."
+]
+
+NON_CLASSICAL_EXCLUSIONS = [
+    "rock", "disco", "pop", "jazz", "latin", "bolero", "blues", "folk", "heavy metal", "hip hop",
+    "ventures", "doobie brothers", "billy joel", "three degrees"
 ]
 
 class ClassicalService:
@@ -75,10 +82,14 @@ class ClassicalService:
         title = (record.get("title") or "").lower()
         artist = (record.get("artist") or "").lower()
         genre = (record.get("genre") or "").lower()
-
         text_block = f"{title} {artist} {genre}"
 
-        # 1. Check genre keywords
+        # Explicit non-classical exclusion check
+        for excl in NON_CLASSICAL_EXCLUSIONS:
+            if excl in text_block and "classical" not in genre:
+                return False
+
+        # 1. Check genre & work keywords
         for kw in CLASSICAL_GENRE_KEYWORDS:
             if kw in text_block:
                 return True
@@ -88,6 +99,10 @@ class ClassicalService:
             for kw in era["keywords"]:
                 if kw in text_block:
                     return True
+
+        # 3. Check classical structural patterns (e.g. "No. 1 in G major")
+        if re.search(r'\b(no\.\s*\d+|op\.\s*\d+|bwv\s*\d+|major|minor|concerto|symphony|sonata)\b', text_block, re.I):
+            return True
 
         return False
 
