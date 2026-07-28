@@ -1,9 +1,15 @@
-import cv2
 import numpy as np
 import logging
 from typing import Tuple
 
 logger = logging.getLogger("vinyl_vault")
+
+try:
+    import cv2
+    OPENCV_AVAILABLE = True
+except ImportError:
+    logger.warning("OpenCV cv2 module unavailable; deskew service running in passthrough fallback mode.")
+    OPENCV_AVAILABLE = False
 
 class DeskewService:
     @staticmethod
@@ -30,6 +36,9 @@ class DeskewService:
         Detects album cover quadrilateral in image_bytes, applies 4-point perspective warp,
         and returns (processed_image_bytes, is_deskewed_flag).
         """
+        if not OPENCV_AVAILABLE:
+            return image_bytes, False
+
         try:
             # 1. Decode image bytes to OpenCV BGR Mat
             nparr = np.frombuffer(image_bytes, np.uint8)
