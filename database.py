@@ -1134,55 +1134,6 @@ RECORDS_FILE = os.path.join(DATA_DIR, "records.json")
 SPINS_FILE = os.path.join(DATA_DIR, "spins.json")
 CHRONICLE_FILE = os.path.join(DATA_DIR, "chronicle.json")
 
-class GCSSyncManager:
-    def __init__(self):
-        self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
-        self.bucket_name = os.environ.get("GCS_BUCKET_NAME", f"{self.project_id}-vinyl-vault-data")
-        self.client = None
-        self.bucket = None
-        self._init_gcs()
-
-    def _init_gcs(self):
-        try:
-            from google.cloud import storage
-            self.client = storage.Client(project=self.project_id)
-            try:
-                self.bucket = self.client.bucket(self.bucket_name)
-                if not self.bucket.exists():
-                    self.bucket = self.client.create_bucket(self.bucket_name, location="us-central1")
-                    print(f"Created GCS Bucket: {self.bucket_name}")
-            except Exception as e:
-                print(f"GCS bucket check warning: {e}")
-                self.bucket = self.client.bucket(self.bucket_name)
-        except Exception as e:
-            print(f"GCS Storage client init warning: {e}")
-            self.client = None
-            self.bucket = None
-
-    def download_file(self, blob_name: str, destination_filepath: str) -> bool:
-        if not self.bucket:
-            return False
-        try:
-            blob = self.bucket.blob(blob_name)
-            if blob.exists():
-                blob.download_to_filename(destination_filepath)
-                print(f"Downloaded {blob_name} from GCS bucket {self.bucket_name}")
-                return True
-        except Exception as e:
-            print(f"Error downloading {blob_name} from GCS: {e}")
-        return False
-
-    def upload_file(self, source_filepath: str, blob_name: str) -> bool:
-        if not self.bucket:
-            return False
-        try:
-            blob = self.bucket.blob(blob_name)
-            blob.upload_from_filename(source_filepath)
-            print(f"Uploaded {blob_name} to GCS bucket {self.bucket_name}")
-            return True
-        except Exception as e:
-            print(f"Error uploading {blob_name} to GCS: {e}")
-        return False
 
 class FirestoreManager:
     def __init__(self):
@@ -1425,11 +1376,8 @@ class VinylDatabase:
         try:
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            filename = os.path.basename(filepath)
-            if hasattr(self, "gcs_sync") and self.gcs_sync:
-                self.gcs_sync.upload_file(filepath, filename)
         except Exception as e:
-            print(f"Error writing/uploading {filepath}: {e}")
+            print(f"Error writing {filepath}: {e}")
 
     def _load_chronicle(self) -> Optional[Dict[str, Any]]:
         if os.path.exists(CHRONICLE_FILE):
