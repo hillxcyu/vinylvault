@@ -159,7 +159,8 @@ class DeskewService:
                 pts[:, 0] = pts[:, 0] * w
                 pts[:, 1] = pts[:, 1] * h
 
-            rect = self._order_points(pts)
+            # Use user's explicit TL, TR, BR, BL selection directly (no point reordering)
+            rect = pts
 
             dst = np.array([
                 [0, 0],

@@ -186,14 +186,16 @@ async def manual_deskew_endpoint(
 
     extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
     extracted_metadata["coverUrl"] = uploaded_cover_url
+    extracted_metadata["deskewedCoverUrl"] = uploaded_cover_url
     extracted_metadata["deskewed"] = True
 
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     if artist and title:
-        official_img = discogs_service.fetch_official_cover(artist, title, cover_url=uploaded_cover_url)
-        if official_img and "shopping_cover" not in official_img:
-            extracted_metadata["coverUrl"] = official_img
+        asset_key = f"{sanitize_cache_key(artist)}_{sanitize_cache_key(title)}"
+        assets = discogs_service.fetch_all_release_assets(artist, title, cover_url=uploaded_cover_url)
+        if assets:
+            db.firestore.save_release_assets(asset_key, assets)
 
     duplicate_result = DuplicateEngine.check_duplicate(
         extracted_metadata,
