@@ -1361,9 +1361,15 @@
         return;
       }
 
-      // 1. Immediately reset zoom, hide handles & show loading status
+      // 1. Reset zoom & hide corner handles (keep raw original photo visible during analysis)
       resetZoomPan();
       toggleCornerHandles(false);
+
+      const previewImg = document.getElementById('scannerPreviewImg');
+      if (previewImg && currentRawFile) {
+        previewImg.src = URL.createObjectURL(currentRawFile);
+      }
+
       showScanLoading('Applying perspective warp & parsing metadata via Gemini AI...');
 
       try {
@@ -1382,9 +1388,9 @@
         });
         const data = await res.json();
 
+        // 2. Only after backend analysis response is received, display final deskewed/cropped image!
         if (data.status === 'success' && data.metadata) {
           lastScannedMetadata = data.metadata;
-          const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg && data.metadata.coverUrl) {
             previewImg.src = data.metadata.coverUrl;
           }
