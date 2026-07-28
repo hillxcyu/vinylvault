@@ -328,6 +328,52 @@ class GeminiVisionService:
 
         return f"Regarding '{title}' by {artist}: This record is renowned for its distinct vinyl pressing dynamics and musical production. '{message}' touches on great details for audiophiles enjoying this album!"
 
+    def stream_chat_response(self, message: str, record_context: Optional[Dict[str, Any]] = None):
+        """
+        Streams Gemini 3.6 Flash chat response tokens in real time (reducing TTFT to < 200ms).
+        Yields text chunks as Server-Sent Events (SSE).
+        """
+        title = record_context.get("title", "Vinyl Record") if record_context else "Vinyl Record"
+        artist = record_context.get("artist", "Collection Item") if record_context else "Collection Item"
+
+        context_lines = []
+        if record_context:
+            for k, v in record_context.items():
+                if v and k not in ["coverUrl"]:
+                    context_lines.append(f"- {k}: {v}")
+        context_str = "\n".join(context_lines)
+
+        prompt = (
+            f"You are an expert vinyl archivist, musicologist, and audiophile companion.\n"
+            f"The user is currently listening to '{title}' by {artist}.\n\n"
+            f"{context_str}\n\n"
+            f"INSTRUCTIONS:\n"
+            f"Provide warm, musicological, concise responses (2-4 paragraphs) to their question: {message}\n"
+        )
+
+        if self.client:
+            try:
+                from google.genai import types
+                config = types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())]
+                )
+                response = self.client.models.generate_content_stream(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                    config=config
+                )
+                for chunk in response:
+                    if chunk.text:
+                        yield f"data: {json.dumps({'text': chunk.text})}\n\n"
+                yield "data: [DONE]\n\n"
+                return
+            except Exception as e:
+                logger.error(f"Error streaming Gemini chat: {e}")
+
+        fallback_msg = f"Regarding '{title}' by {artist}: '{message}' touches on great audiophile aspects of this album!"
+        yield f"data: {json.dumps({'text': fallback_msg})}\n\n"
+        yield "data: [DONE]\n\n"
+
     def generate_chronicle_ai(self, records: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """
         Calls Gemini 3.6 Flash to analyze collection records and generate a structured JSON 

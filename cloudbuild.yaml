@@ -2,7 +2,7 @@ steps:
   # Step 1: Run Python syntax validation & sanity checks
   - name: 'python:3.11-slim'
     entrypoint: 'python'
-    args: ['-m', 'py_compile', 'main.py', 'gemini_service.py', 'database.py']
+    args: ['-m', 'py_compile', 'main.py', 'gemini_service.py', 'database.py', 'classical_service.py', 'deskew_service.py', 'cache_service.py']
 
   # Step 2: Build Docker container image tagged with $COMMIT_SHA and latest
   - name: 'gcr.io/cloud-builders/docker'

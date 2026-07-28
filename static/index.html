@@ -893,18 +893,19 @@
       chatLog.appendChild(userBubble);
       input.value = '';
 
-      // Append AI loading bubble
+      // Append AI streaming bubble
       const aiBubble = document.createElement('div');
       aiBubble.className = 'flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60';
       aiBubble.innerHTML = `
         <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>
-        <div class="text-stone-400 leading-relaxed italic text-sm"><i class="fa-solid fa-spinner animate-spin mr-1.5"></i> Thinking...</div>
+        <div class="chat-text text-stone-200 leading-relaxed text-sm whitespace-pre-wrap"><i class="fa-solid fa-spinner animate-spin text-amber-400 mr-2"></i>Thinking...</div>
       `;
       chatLog.appendChild(aiBubble);
       chatLog.scrollTop = chatLog.scrollHeight;
+      const textEl = aiBubble.querySelector('.chat-text');
 
       try {
-        const res = await fetch('/api/chat-album', {
+        const res = await fetch('/api/chat/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -913,16 +914,40 @@
             message: msg
           })
         });
-        const data = await res.json();
-        if (data.status === 'success') {
-          const textEl = aiBubble.querySelector('.text-stone-400');
-          textEl.className = 'text-stone-200 leading-relaxed space-y-3 text-sm';
-          textEl.innerHTML = (typeof marked !== 'undefined') ? marked.parse(data.reply) : data.reply;
-        } else {
-          aiBubble.querySelector('.text-stone-400').innerText = 'Sorry, I encountered an issue retrieving information for this album.';
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let fullText = '';
+        let isFirstChunk = true;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const payload = line.slice(6).trim();
+              if (payload === '[DONE]') break;
+              try {
+                const data = JSON.parse(payload);
+                if (data.text) {
+                  if (isFirstChunk) {
+                    textEl.innerHTML = '';
+                    isFirstChunk = false;
+                  }
+                  fullText += data.text;
+                  textEl.innerHTML = (typeof marked !== 'undefined') ? marked.parse(fullText) : fullText;
+                  chatLog.scrollTop = chatLog.scrollHeight;
+                }
+              } catch(e) {}
+            }
+          }
         }
       } catch (err) {
-        aiBubble.querySelector('.text-stone-400').innerText = 'Unable to connect to AI companion at this time.';
+        textEl.innerText = 'Unable to connect to AI companion at this time.';
       }
       chatLog.scrollTop = chatLog.scrollHeight;
     }

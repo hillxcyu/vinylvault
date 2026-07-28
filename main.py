@@ -5,7 +5,7 @@ import re
 import logging
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
@@ -17,9 +17,19 @@ from deskew_service import deskew_service
 from classical_service import classical_service
 from batch_import_webarchive import run_batch_import
 
+from fastapi.middleware.gzip import GZipMiddleware
+
 logger = logging.getLogger("vinyl_vault")
 
 app = FastAPI(title="Vinyl Vault - Collection & Anti-Duplicate Assistant")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+@app.middleware("http")
+async def add_cache_control_header(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
 
 # Mount static directory and subdirectories safely
 static_dir = os.path.join(os.path.dirname(__file__), "static")
@@ -299,6 +309,15 @@ async def chat_album_endpoint(req: ChatAlbumRequest):
         grounding_context=grounding_ctx
     )
     return {"status": "success", "reply": reply}
+
+@app.post("/api/chat/stream")
+async def chat_stream_endpoint(req: ChatAlbumRequest):
+    grounding_ctx = get_local_grounding_context(req.artist, req.albumTitle)
+    record_ctx = grounding_ctx.get("recordDetails") if isinstance(grounding_ctx, dict) else None
+    return StreamingResponse(
+        gemini_service.stream_chat_response(req.message, record_ctx),
+        media_type="text/event-stream"
+    )
 
 class PronounceRequest(BaseModel):
     text: str

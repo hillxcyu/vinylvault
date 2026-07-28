@@ -1184,10 +1184,123 @@ class GCSSyncManager:
             print(f"Error uploading {blob_name} to GCS: {e}")
         return False
 
+class FirestoreManager:
+    def __init__(self):
+        self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+        self.db = None
+        self._init_firestore()
+
+    def _init_firestore(self):
+        try:
+            from google.cloud import firestore
+            self.db = firestore.Client(project=self.project_id)
+            print(f"GCP Firestore client initialized for project: {self.project_id}")
+        except Exception as e:
+            print(f"GCP Firestore client init warning (using local/GCS fallback): {e}")
+            self.db = None
+
+    def get_records(self) -> Optional[List[Dict[str, Any]]]:
+        if not self.db:
+            return None
+        try:
+            docs = self.db.collection("records").stream()
+            records = [d.to_dict() for d in docs]
+            if records:
+                print(f"Loaded {len(records)} records from GCP Firestore.")
+                return records
+        except Exception as e:
+            print(f"Firestore get_records error: {e}")
+        return None
+
+    def save_record(self, record_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            rec_id = record_data.get("id")
+            if rec_id:
+                self.db.collection("records").document(rec_id).set(record_data)
+                print(f"Saved record {rec_id} to Firestore.")
+                return True
+        except Exception as e:
+            print(f"Firestore save_record error: {e}")
+        return False
+
+    def delete_record(self, record_id: str) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("records").document(record_id).delete()
+            print(f"Deleted record {record_id} from Firestore.")
+            return True
+        except Exception as e:
+            print(f"Firestore delete_record error: {e}")
+        return False
+
+    def save_all_records_batch(self, records: List[Dict[str, Any]]) -> bool:
+        if not self.db:
+            return False
+        try:
+            batch = self.db.batch()
+            for r in records:
+                ref = self.db.collection("records").document(r["id"])
+                batch.set(ref, r)
+            batch.commit()
+            print(f"Batch saved {len(records)} records to Firestore.")
+            return True
+        except Exception as e:
+            print(f"Firestore batch save error: {e}")
+        return False
+
+    def get_spins(self) -> Optional[List[Dict[str, Any]]]:
+        if not self.db:
+            return None
+        try:
+            docs = self.db.collection("spins").stream()
+            spins = [d.to_dict() for d in docs]
+            if spins:
+                return spins
+        except Exception as e:
+            print(f"Firestore get_spins error: {e}")
+        return None
+
+    def save_spin(self, spin_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            spin_id = spin_data.get("id")
+            if spin_id:
+                self.db.collection("spins").document(spin_id).set(spin_data)
+                return True
+        except Exception as e:
+            print(f"Firestore save_spin error: {e}")
+        return False
+
+    def get_chronicle(self) -> Optional[Dict[str, Any]]:
+        if not self.db:
+            return None
+        try:
+            doc = self.db.collection("metadata").document("chronicle").get()
+            if doc.exists:
+                return doc.to_dict()
+        except Exception as e:
+            print(f"Firestore get_chronicle error: {e}")
+        return None
+
+    def save_chronicle(self, chronicle_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("metadata").document("chronicle").set(chronicle_data)
+            return True
+        except Exception as e:
+            print(f"Firestore save_chronicle error: {e}")
+        return False
+
 class VinylDatabase:
     def __init__(self):
         os.makedirs(DATA_DIR, exist_ok=True)
         self.gcs_sync = GCSSyncManager()
+        self.firestore = FirestoreManager()
         
         # Download persistent database files from GCS on startup if available
         self.gcs_sync.download_file("records.json", RECORDS_FILE)
@@ -1198,6 +1311,13 @@ class VinylDatabase:
         self.records = self._load_records()
         self.spins_log = self._load_spins()
         self.chronicle = self._load_chronicle()
+
+        # Seed Firestore automatically if connected and empty
+        fs_recs = self.firestore.get_records()
+        if fs_recs:
+            self.records = fs_recs
+        elif self.firestore.db and self.records:
+            self.firestore.save_all_records_batch(self.records)
 
     def _load_records(self) -> List[Dict[str, Any]]:
         loaded = []
