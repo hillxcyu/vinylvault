@@ -1355,22 +1355,79 @@
       }
     }
 
+    function performClientInstantCrop(imageEl, corners) {
+      try {
+        const canvas = document.createElement('canvas');
+        const targetSize = 600;
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        const ctx = canvas.getContext('2d');
+
+        const rawCanvas = document.createElement('canvas');
+        rawCanvas.width = imageEl.naturalWidth || 800;
+        rawCanvas.height = imageEl.naturalHeight || 800;
+        const rawCtx = rawCanvas.getContext('2d');
+        rawCtx.drawImage(imageEl, 0, 0);
+
+        const w_img = rawCanvas.width;
+        const h_img = rawCanvas.height;
+
+        const img_aspect = w_img / h_img;
+        let w_rendered, h_rendered, offset_x, offset_y;
+        if (img_aspect > 1.0) {
+          w_rendered = 1.0;
+          h_rendered = 1.0 / img_aspect;
+          offset_x = 0.0;
+          offset_y = (1.0 - h_rendered) / 2.0;
+        } else {
+          h_rendered = 1.0;
+          w_rendered = img_aspect;
+          offset_x = (1.0 - w_rendered) / 2.0;
+          offset_y = 0.0;
+        }
+
+        let minX = w_img, maxX = 0, minY = h_img, maxY = 0;
+        corners.forEach(pt => {
+          const pxX = Math.max(0, Math.min(w_img - 1, ((pt.x - offset_x) / w_rendered) * w_img));
+          const pxY = Math.max(0, Math.min(h_img - 1, ((pt.y - offset_y) / h_rendered) * h_img));
+          if (pxX < minX) minX = pxX;
+          if (pxX > maxX) maxX = pxX;
+          if (pxY < minY) minY = pxY;
+          if (pxY > maxY) maxY = pxY;
+        });
+
+        const cropW = Math.max(10, maxX - minX);
+        const cropH = Math.max(10, maxY - minY);
+
+        ctx.drawImage(rawCanvas, minX, minY, cropW, cropH, 0, 0, targetSize, targetSize);
+        return canvas.toDataURL('image/jpeg', 0.92);
+      } catch (err) {
+        console.warn('Instant client crop fallback:', err);
+        return null;
+      }
+    }
+
     async function applyManualDeskew() {
       if (!currentRawFile) {
         showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
         return;
       }
 
-      // 1. Reset zoom & hide corner handles (keep raw original photo visible during analysis)
+      const previewImg = document.getElementById('scannerPreviewImg');
+
+      // 1. Instantly perform client-side canvas crop (< 15ms TTFT) and update preview IMMEDIATELY!
+      if (previewImg) {
+        const instantUrl = performClientInstantCrop(previewImg, cornerPoints);
+        if (instantUrl) {
+          previewImg.src = instantUrl;
+        }
+      }
+
+      // 2. Immediately reset zoom & hide handles
       resetZoomPan();
       toggleCornerHandles(false);
 
-      const previewImg = document.getElementById('scannerPreviewImg');
-      if (previewImg && currentRawFile) {
-        previewImg.src = URL.createObjectURL(currentRawFile);
-      }
-
-      showScanLoading('Applying perspective warp & parsing metadata via Gemini AI...');
+      showScanLoading('Analyzing album cover with Gemini AI...');
 
       try {
         const formData = new FormData();
@@ -1388,7 +1445,6 @@
         });
         const data = await res.json();
 
-        // 2. Only after backend analysis response is received, display final deskewed/cropped image!
         if (data.status === 'success' && data.metadata) {
           lastScannedMetadata = data.metadata;
           if (previewImg && data.metadata.coverUrl) {
