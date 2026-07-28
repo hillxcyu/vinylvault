@@ -1418,7 +1418,7 @@
       toggleCornerHandles(false);
 
       // Step 2: Show loading status for fast OpenCV crop & deskew
-      showScanLoading('Cropping & deskewing album cover with OpenCV...');
+      showScanLoading('Step 1/2: Cropping & deskewing album cover with OpenCV...');
 
       try {
         const formData = new FormData();
@@ -1441,16 +1441,32 @@
           throw new Error(cropData.detail || 'Deskew failed');
         }
 
-        // STEP 2 INSTANT PREVIEW UPDATE: Render the deskewed image in preview window RIGHT NOW!
+        // STEP 2 PREVIEW UPDATE: Force browser to load and paint deskewed image BEFORE Gemini starts!
         const previewImg = document.getElementById('scannerPreviewImg');
         if (previewImg) {
-          previewImg.src = cropData.coverUrl;
+          const freshDeskewedUrl = cropData.coverUrl + '?t=' + Date.now();
+          await new Promise((resolve) => {
+            let resolved = false;
+            const finish = () => {
+              if (!resolved) {
+                resolved = true;
+                resolve();
+              }
+            };
+            previewImg.onload = finish;
+            previewImg.onerror = finish;
+            previewImg.src = freshDeskewedUrl;
+            setTimeout(finish, 300);
+          });
         }
 
         showToast('✨ Deskewed Cover Rendered!', 'fa-wand-magic-sparkles');
 
-        // STEP 3 GEMINI ANALYSIS: Send deskewed image to Gemini AI for vision analysis
-        showScanLoading('Parsing title, artist & pressing details via Gemini AI...');
+        // Give browser 2 animation frames to repaint the DOM
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+        // STEP 3 GEMINI ANALYSIS: Now send deskewed image to Gemini AI for vision analysis
+        showScanLoading('Step 2/2: Parsing title, artist & pressing details via Gemini AI...');
 
         const analyzeRes = await fetch(`/api/analyze-deskewed?coverUrl=${encodeURIComponent(cropData.coverUrl)}`, {
           method: 'POST'
@@ -1460,7 +1476,7 @@
         if (analyzeData.status === 'success' && analyzeData.metadata) {
           lastScannedMetadata = analyzeData.metadata;
           if (previewImg && analyzeData.metadata.coverUrl) {
-            previewImg.src = analyzeData.metadata.coverUrl;
+            previewImg.src = analyzeData.metadata.coverUrl + '?t=' + Date.now();
           }
           showToast('✨ Album Metadata Analyzed!', 'fa-wand-magic-sparkles');
           renderDuplicateResult(analyzeData.duplicateCheck, analyzeData.metadata);
