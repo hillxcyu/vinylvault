@@ -159,8 +159,17 @@ class DeskewService:
                 pts[:, 0] = pts[:, 0] * w
                 pts[:, 1] = pts[:, 1] * h
 
-            # Use user's explicit TL, TR, BR, BL selection directly (no point reordering)
-            rect = pts
+            # Expand user's selected 4 corners outward by 3% margin to prevent corner clipping when rounded
+            cx = np.mean(pts[:, 0])
+            cy = np.mean(pts[:, 1])
+
+            margin_factor = 1.03
+            expanded_pts = np.zeros_like(pts)
+            for i in range(4):
+                expanded_pts[i, 0] = np.clip(cx + margin_factor * (pts[i, 0] - cx), 0, w - 1)
+                expanded_pts[i, 1] = np.clip(cy + margin_factor * (pts[i, 1] - cy), 0, h - 1)
+
+            rect = expanded_pts
 
             dst = np.array([
                 [0, 0],
