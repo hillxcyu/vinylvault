@@ -1354,23 +1354,27 @@ class VinylDatabase:
         os.makedirs(DATA_DIR, exist_ok=True)
         self.gcs_sync = GCSSyncManager()
         self.firestore = FirestoreManager()
-        
-        # Download persistent database files from GCS on startup if available
-        self.gcs_sync.download_file("records.json", RECORDS_FILE)
-        self.gcs_sync.download_file("spins.json", SPINS_FILE)
-        self.gcs_sync.download_file("chronicle.json", CHRONICLE_FILE)
 
         self.wishlist = list(INITIAL_WISHLIST)
         self.records = self._load_records()
         self.spins_log = self._load_spins()
         self.chronicle = self._load_chronicle()
 
-        # Seed Firestore automatically if connected and empty
-        fs_recs = self.firestore.get_records()
-        if fs_recs:
-            self.records = fs_recs
-        elif self.firestore.db and self.records:
-            self.firestore.save_all_records_batch(self.records)
+    def sync_firestore_on_startup(self):
+        """Non-blocking background sync called after web server binds to PORT."""
+        try:
+            # Download persistent database files from GCS if available
+            self.gcs_sync.download_file("records.json", RECORDS_FILE)
+            self.gcs_sync.download_file("spins.json", SPINS_FILE)
+            self.gcs_sync.download_file("chronicle.json", CHRONICLE_FILE)
+
+            fs_recs = self.firestore.get_records()
+            if fs_recs:
+                self.records = fs_recs
+            elif self.firestore.db and self.records:
+                self.firestore.save_all_records_batch(self.records)
+        except Exception as e:
+            print(f"Background Firestore sync warning: {e}")
 
     def _load_records(self) -> List[Dict[str, Any]]:
         loaded = []
