@@ -399,25 +399,25 @@
             <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
           </div>
 
-          <!-- Canvas Zoom & Resnap Control Badges -->
-          <div class="absolute top-2 right-2 z-30 flex items-center gap-1.5 bg-stone-950/80 p-1 rounded-full border border-stone-800 backdrop-blur">
-            <button onclick="event.stopPropagation(); resetZoomPan()" class="w-6 h-6 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 text-[10px] font-bold flex items-center justify-center" title="Reset Zoom">
+          <!-- Canvas Zoom Reset Control Badge -->
+          <div class="absolute top-2 right-2 z-30 flex items-center gap-1.5">
+            <button onclick="event.stopPropagation(); resetZoomPan()" class="w-7 h-7 rounded-full bg-stone-950/80 hover:bg-stone-900 text-stone-300 text-[11px] font-bold flex items-center justify-center border border-stone-800 backdrop-blur shadow" title="Reset Zoom">
               <i class="fa-solid fa-compress"></i>
-            </button>
-            <button onclick="event.stopPropagation(); document.getElementById('photoInput').click()" class="px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-[10px] font-bold flex items-center gap-1 border border-amber-500/30">
-              <i class="fa-solid fa-camera"></i> Resnap
             </button>
           </div>
         </div>
       </div>
 
-      <!-- External Action Bar: Located Below Preview Area & Above Manual Search -->
-      <div id="scannerActionsBar" class="hidden grid grid-cols-2 gap-3 pt-1">
-        <button onclick="applyManualDeskew()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-white/20">
-          <i class="fa-solid fa-crop-simple text-sm"></i> Apply 4-Corner Crop
+      <!-- External 3-Button Action Bar: Located Below Preview Area & Above Manual Search -->
+      <div id="scannerActionsBar" class="hidden grid grid-cols-3 gap-2 pt-1">
+        <button onclick="applyManualDeskew()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-white/20">
+          <i class="fa-solid fa-crop-simple text-sm"></i> Apply
         </button>
-        <button onclick="triggerAutoScan()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-stone-700">
-          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i> Auto Deskew
+        <button onclick="triggerAutoScan()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-stone-700">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i> Auto
+        </button>
+        <button onclick="document.getElementById('photoInput').click()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-stone-700">
+          <i class="fa-solid fa-camera text-amber-400 text-sm"></i> Resnap
         </button>
       </div>
 
@@ -1287,8 +1287,15 @@
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-      let xPct = (clientX - rect.left) / rect.width;
-      let yPct = (clientY - rect.top) / rect.height;
+      // Correct mouse/touch coordinates for zoomScale and panX, panY stage offset
+      const stageX = (clientX - rect.left - panX) / zoomScale;
+      const stageY = (clientY - rect.top - panY) / zoomScale;
+
+      const w = container.clientWidth || 280;
+      const h = container.clientHeight || 280;
+
+      let xPct = stageX / w;
+      let yPct = stageY / h;
 
       xPct = Math.max(0, Math.min(1, xPct));
       yPct = Math.max(0, Math.min(1, yPct));
