@@ -151,23 +151,39 @@ class DeskewService:
             if img is None:
                 return image_bytes, False
 
-            h, w = img.shape[:2]
+            h_img, w_img = img.shape[:2]
             pts = np.array(corners, dtype="float32")
 
-            # If points are normalized (0 to 1 range), scale to image width & height
-            if np.max(pts) <= 1.05:
-                pts[:, 0] = pts[:, 0] * w
-                pts[:, 1] = pts[:, 1] * h
+            # Correct 0..1 normalized coordinates for object-contain letterboxing in square container
+            img_aspect = w_img / h_img
+            if img_aspect > 1.0:
+                w_rendered = 1.0
+                h_rendered = 1.0 / img_aspect
+                offset_x = 0.0
+                offset_y = (1.0 - h_rendered) / 2.0
+            else:
+                h_rendered = 1.0
+                w_rendered = img_aspect
+                offset_x = (1.0 - w_rendered) / 2.0
+                offset_y = 0.0
 
-            # Expand user's selected 4 corners outward by 3% margin to prevent corner clipping when rounded
-            cx = np.mean(pts[:, 0])
-            cy = np.mean(pts[:, 1])
+            # Map normalized 0..1 container points to actual image pixels
+            real_pts = np.zeros_like(pts)
+            for i in range(4):
+                norm_x = (pts[i, 0] - offset_x) / w_rendered
+                norm_y = (pts[i, 1] - offset_y) / h_rendered
+                real_pts[i, 0] = np.clip(norm_x * w_img, 0, w_img - 1)
+                real_pts[i, 1] = np.clip(norm_y * h_img, 0, h_img - 1)
+
+            # Expand user's selected 4 corners outward by 3% margin
+            cx = np.mean(real_pts[:, 0])
+            cy = np.mean(real_pts[:, 1])
 
             margin_factor = 1.03
-            expanded_pts = np.zeros_like(pts)
+            expanded_pts = np.zeros_like(real_pts)
             for i in range(4):
-                expanded_pts[i, 0] = np.clip(cx + margin_factor * (pts[i, 0] - cx), 0, w - 1)
-                expanded_pts[i, 1] = np.clip(cy + margin_factor * (pts[i, 1] - cy), 0, h - 1)
+                expanded_pts[i, 0] = np.clip(cx + margin_factor * (real_pts[i, 0] - cx), 0, w_img - 1)
+                expanded_pts[i, 1] = np.clip(cy + margin_factor * (real_pts[i, 1] - cy), 0, h_img - 1)
 
             rect = expanded_pts
 

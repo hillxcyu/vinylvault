@@ -1250,6 +1250,9 @@
       setTimeout(updateCornerHandlesUI, 50);
     }
 
+    let dragOffsetPctX = 0;
+    let dragOffsetPctY = 0;
+
     function initCornerHandles() {
       const handles = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
       handles.forEach((id, idx) => {
@@ -1260,6 +1263,24 @@
           e.preventDefault();
           e.stopPropagation();
           activeHandleIdx = idx;
+
+          const container = document.getElementById('scannerPreviewContainer');
+          if (container) {
+            const rect = container.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const stageX = (clientX - rect.left - panX) / zoomScale;
+            const stageY = (clientY - rect.top - panY) / zoomScale;
+
+            const w = container.clientWidth || 280;
+            const h = container.clientHeight || 280;
+
+            const currentPt = cornerPoints[idx];
+            dragOffsetPctX = (stageX / w) - currentPt.x;
+            dragOffsetPctY = (stageY / h) - currentPt.y;
+          }
+
           document.addEventListener('mousemove', onDragMove);
           document.addEventListener('mouseup', onDragEnd);
           document.addEventListener('touchmove', onDragMove, { passive: false });
@@ -1281,15 +1302,14 @@
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-      // Correct mouse/touch coordinates for zoomScale and panX, panY stage offset
       const stageX = (clientX - rect.left - panX) / zoomScale;
       const stageY = (clientY - rect.top - panY) / zoomScale;
 
       const w = container.clientWidth || 280;
       const h = container.clientHeight || 280;
 
-      let xPct = stageX / w;
-      let yPct = stageY / h;
+      let xPct = (stageX / w) - dragOffsetPctX;
+      let yPct = (stageY / h) - dragOffsetPctY;
 
       xPct = Math.max(0, Math.min(1, xPct));
       yPct = Math.max(0, Math.min(1, yPct));
@@ -1300,6 +1320,8 @@
 
     function onDragEnd() {
       activeHandleIdx = null;
+      dragOffsetPctX = 0;
+      dragOffsetPctY = 0;
       document.removeEventListener('mousemove', onDragMove);
       document.removeEventListener('mouseup', onDragEnd);
       document.removeEventListener('touchmove', onDragMove);
@@ -1339,7 +1361,10 @@
         return;
       }
 
-      showScanLoading('Applying custom perspective warp & deskewing...');
+      // 1. Immediately reset zoom, hide handles & show loading status
+      resetZoomPan();
+      toggleCornerHandles(false);
+      showScanLoading('Applying perspective warp & parsing metadata via Gemini AI...');
 
       try {
         const formData = new FormData();
@@ -1362,8 +1387,6 @@
           const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg && data.metadata.coverUrl) {
             previewImg.src = data.metadata.coverUrl;
-            resetZoomPan();
-            toggleCornerHandles(false);
           }
           showToast('✨ Custom Deskew & Crop Applied!', 'fa-wand-magic-sparkles');
           renderDuplicateResult(data.duplicateCheck, data.metadata);
