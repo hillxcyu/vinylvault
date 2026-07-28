@@ -1413,21 +1413,12 @@
         return;
       }
 
-      const previewImg = document.getElementById('scannerPreviewImg');
-
-      // 1. Instantly perform client-side canvas crop (< 15ms TTFT) and update preview IMMEDIATELY!
-      if (previewImg) {
-        const instantUrl = performClientInstantCrop(previewImg, cornerPoints);
-        if (instantUrl) {
-          previewImg.src = instantUrl;
-        }
-      }
-
-      // 2. Immediately reset zoom & hide handles
+      // Step 1: Hide handles & reset zoom stage
       resetZoomPan();
       toggleCornerHandles(false);
 
-      showScanLoading('Analyzing album cover with Gemini AI...');
+      // Step 2: Show loading status for fast OpenCV crop & deskew
+      showScanLoading('Cropping & deskewing album cover with OpenCV...');
 
       try {
         const formData = new FormData();
@@ -1439,19 +1430,40 @@
           [cornerPoints[3].x, cornerPoints[3].y]
         ]));
 
-        const res = await fetch('/api/manual-deskew', {
+        // STEP 1 FAST: Run OpenCV Crop & Deskew ONLY (< 150ms)
+        const cropRes = await fetch('/api/crop-deskew', {
           method: 'POST',
           body: formData
         });
-        const data = await res.json();
+        const cropData = await cropRes.json();
 
-        if (data.status === 'success' && data.metadata) {
-          lastScannedMetadata = data.metadata;
-          if (previewImg && data.metadata.coverUrl) {
-            previewImg.src = data.metadata.coverUrl;
+        if (cropData.status !== 'success' || !cropData.coverUrl) {
+          throw new Error(cropData.detail || 'Deskew failed');
+        }
+
+        // STEP 2 INSTANT PREVIEW UPDATE: Render the deskewed image in preview window RIGHT NOW!
+        const previewImg = document.getElementById('scannerPreviewImg');
+        if (previewImg) {
+          previewImg.src = cropData.coverUrl;
+        }
+
+        showToast('✨ Deskewed Cover Rendered!', 'fa-wand-magic-sparkles');
+
+        // STEP 3 GEMINI ANALYSIS: Send deskewed image to Gemini AI for vision analysis
+        showScanLoading('Parsing title, artist & pressing details via Gemini AI...');
+
+        const analyzeRes = await fetch(`/api/analyze-deskewed?coverUrl=${encodeURIComponent(cropData.coverUrl)}`, {
+          method: 'POST'
+        });
+        const analyzeData = await analyzeRes.json();
+
+        if (analyzeData.status === 'success' && analyzeData.metadata) {
+          lastScannedMetadata = analyzeData.metadata;
+          if (previewImg && analyzeData.metadata.coverUrl) {
+            previewImg.src = analyzeData.metadata.coverUrl;
           }
-          showToast('✨ Custom Deskew & Crop Applied!', 'fa-wand-magic-sparkles');
-          renderDuplicateResult(data.duplicateCheck, data.metadata);
+          showToast('✨ Album Metadata Analyzed!', 'fa-wand-magic-sparkles');
+          renderDuplicateResult(analyzeData.duplicateCheck, analyzeData.metadata);
         }
       } catch (err) {
         console.error('Manual deskew error:', err);

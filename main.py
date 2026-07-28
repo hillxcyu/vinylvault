@@ -162,6 +162,69 @@ async def scan_cover(file: UploadFile = File(...)):
         "deskewed": is_deskewed
     }
 
+@app.post("/api/crop-deskew")
+async def crop_deskew_endpoint(
+    file: UploadFile = File(...),
+    corners: str = Form(...)
+):
+    contents = await file.read()
+    try:
+        parsed_corners = json.loads(corners)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid corners format. Must be JSON array of 4 coordinate pairs.")
+
+    deskewed_bytes, is_deskewed = deskew_service.manual_deskew_image(contents, parsed_corners)
+    final_bytes = deskewed_bytes if is_deskewed else contents
+
+    os.makedirs("static/uploads", exist_ok=True)
+    filename = f"manual_scan_{uuid.uuid4().hex[:8]}.jpg"
+    saved_path = os.path.join("static/uploads", filename)
+    with open(saved_path, "wb") as f:
+        f.write(final_bytes)
+
+    uploaded_cover_url = f"/static/uploads/{filename}"
+    return {
+        "status": "success",
+        "coverUrl": uploaded_cover_url,
+        "filename": filename
+    }
+
+@app.post("/api/analyze-deskewed")
+async def analyze_deskewed_endpoint(coverUrl: str):
+    rel_path = coverUrl.lstrip("/")
+    if not os.path.exists(rel_path):
+        raise HTTPException(status_code=404, detail="Deskewed image file not found.")
+
+    with open(rel_path, "rb") as f:
+        final_bytes = f.read()
+
+    filename = os.path.basename(rel_path)
+    extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
+    extracted_metadata["coverUrl"] = coverUrl
+    extracted_metadata["deskewedCoverUrl"] = coverUrl
+    extracted_metadata["deskewed"] = True
+
+    artist = extracted_metadata.get("artist", "")
+    title = extracted_metadata.get("albumTitle", "")
+    if artist and title:
+        asset_key = f"{sanitize_cache_key(artist)}_{sanitize_cache_key(title)}"
+        assets = discogs_service.fetch_all_release_assets(artist, title, cover_url=coverUrl)
+        if assets:
+            db.firestore.save_release_assets(asset_key, assets)
+
+    duplicate_result = DuplicateEngine.check_duplicate(
+        extracted_metadata,
+        db.get_all_records(),
+        db.get_wishlist()
+    )
+
+    return {
+        "status": "success",
+        "metadata": extracted_metadata,
+        "duplicateCheck": duplicate_result,
+        "deskewed": True
+    }
+
 @app.post("/api/manual-deskew")
 async def manual_deskew_endpoint(
     file: UploadFile = File(...),
