@@ -1242,9 +1242,9 @@ class FirestoreManager:
             print(f"Firestore delete_record error: {e}")
         return False
 
-    def save_all_records_batch(self, records: List[Dict[str, Any]]) -> bool:
+    def save_all_records_batch(self, records: List[Dict[str, Any]]) -> Tuple[bool, str]:
         if not self.db:
-            return False
+            return False, "Firestore client is not initialized (self.db is None)"
         try:
             batch = self.db.batch()
             for r in records:
@@ -1252,10 +1252,11 @@ class FirestoreManager:
                 batch.set(ref, r)
             batch.commit()
             print(f"Batch saved {len(records)} records to Firestore.")
-            return True
+            return True, "OK"
         except Exception as e:
-            print(f"Firestore batch save error: {e}")
-        return False
+            err_str = str(e)
+            print(f"Firestore batch save error: {err_str}")
+            return False, err_str
 
     def get_spins(self) -> Optional[List[Dict[str, Any]]]:
         if not self.db:

@@ -345,8 +345,14 @@ async def chat_stream_endpoint(req: ChatAlbumRequest):
 @app.post("/api/admin/seed-firestore")
 async def seed_firestore_endpoint():
     all_recs = db.get_all_records()
-    success = db.firestore.save_all_records_batch(all_recs)
-    return {"status": "success" if success else "failed", "recordsSeeded": len(all_recs)}
+    success, err_msg = db.firestore.save_all_records_batch(all_recs)
+    return {
+        "status": "success" if success else "failed",
+        "recordsCount": len(all_recs),
+        "errorDetails": err_msg,
+        "databaseId": db.firestore.database_id,
+        "projectId": db.firestore.project_id
+    }
 
 class PronounceRequest(BaseModel):
     text: str
