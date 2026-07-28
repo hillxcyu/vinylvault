@@ -62,25 +62,37 @@ class DeskewService:
             screen_cnt = None
             for c in contours:
                 area = cv2.contourArea(c)
-                # Album cover quad should cover at least 15% of the total frame
-                if area < 0.15 * image_area:
+                if area < 0.08 * image_area:
                     continue
 
                 peri = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+                approx = cv2.approxPolyDP(c, 0.03 * peri, True)
 
-                # If polygon has 4 vertices, we found our quad!
-                if len(approx) == 4:
-                    screen_cnt = approx
+                if 4 <= len(approx) <= 8:
+                    rect_box = cv2.minAreaRect(c)
+                    box = cv2.boxPoints(rect_box)
+                    screen_cnt = np.int32(box)
                     break
 
-            if screen_cnt is None:
-                # No distinct quad found; return original bytes gracefully
-                return image_bytes, False
-
-            # 4. Order quad points & compute perspective transform matrix
-            pts = screen_cnt.reshape(4, 2)
-            rect = self._order_points(pts)
+            if screen_cnt is not None:
+                pts = screen_cnt.reshape(4, 2)
+                rect = self._order_points(pts)
+            elif contours and cv2.contourArea(contours[0]) >= 0.08 * image_area:
+                c = contours[0]
+                x, y, w_c, h_c = cv2.boundingRect(c)
+                pts = np.array([[x, y], [x + w_c, y], [x + w_c, y + h_c], [x, y + h_c]], dtype="float32")
+                rect = self._order_points(pts)
+            else:
+                # Default tight 5% margin crop of full image frame
+                margin_x = int(w * 0.05)
+                margin_y = int(h * 0.05)
+                pts = np.array([
+                    [margin_x, margin_y],
+                    [w - margin_x, margin_y],
+                    [w - margin_x, h - margin_y],
+                    [margin_x, h - margin_y]
+                ], dtype="float32")
+                rect = self._order_points(pts)
 
             # Define destination points as a square of target_size x target_size
             dst = np.array([
