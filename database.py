@@ -1209,7 +1209,7 @@ class FirestoreManager:
         if not self.db:
             return None
         try:
-            docs = self.db.collection("records").stream()
+            docs = self.db.collection("records").limit(200).stream(timeout=5)
             records = [d.to_dict() for d in docs]
             if records:
                 print(f"Loaded {len(records)} records from GCP Firestore.")
