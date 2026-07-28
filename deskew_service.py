@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from typing import Tuple
+from typing import Tuple, List
 
 logger = logging.getLogger("vinyl_vault")
 

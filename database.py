@@ -1303,7 +1303,6 @@ class FirestoreManager:
 class VinylDatabase:
     def __init__(self):
         os.makedirs(DATA_DIR, exist_ok=True)
-        self.gcs_sync = GCSSyncManager()
         self.firestore = FirestoreManager()
 
         self.wishlist = list(INITIAL_WISHLIST)
@@ -1314,15 +1313,12 @@ class VinylDatabase:
     def sync_firestore_on_startup(self):
         """Non-blocking background sync called after web server binds to PORT."""
         try:
-            # Download persistent database files from GCS if available
-            self.gcs_sync.download_file("records.json", RECORDS_FILE)
-            self.gcs_sync.download_file("spins.json", SPINS_FILE)
-            self.gcs_sync.download_file("chronicle.json", CHRONICLE_FILE)
-
             fs_recs = self.firestore.get_records()
-            if fs_recs:
+            if fs_recs and len(fs_recs) > 0:
+                print(f"Firestore already populated with {len(fs_recs)} records. Loaded directly from Firestore.")
                 self.records = fs_recs
-            elif self.firestore.db and self.records:
+            elif self.firestore.db and (not fs_recs or len(fs_recs) == 0):
+                print("Firestore collection is empty. Initializing one-time seed from local records...")
                 self.firestore.save_all_records_batch(self.records)
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
