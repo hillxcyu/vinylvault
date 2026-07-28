@@ -1187,17 +1187,23 @@ class GCSSyncManager:
 class FirestoreManager:
     def __init__(self):
         self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+        self.database_id = os.environ.get("FIRESTORE_DATABASE", "vinylvault")
         self.db = None
         self._init_firestore()
 
     def _init_firestore(self):
         try:
             from google.cloud import firestore
-            self.db = firestore.Client(project=self.project_id)
-            print(f"GCP Firestore client initialized for project: {self.project_id}")
+            self.db = firestore.Client(project=self.project_id, database=self.database_id)
+            print(f"GCP Firestore client initialized for project: {self.project_id}, database: {self.database_id}")
         except Exception as e:
-            print(f"GCP Firestore client init warning (using local/GCS fallback): {e}")
-            self.db = None
+            try:
+                from google.cloud import firestore
+                self.db = firestore.Client(project=self.project_id)
+                print(f"GCP Firestore client fallback for default database.")
+            except Exception as err:
+                print(f"GCP Firestore client init warning (using local/GCS fallback): {err}")
+                self.db = None
 
     def get_records(self) -> Optional[List[Dict[str, Any]]]:
         if not self.db:
