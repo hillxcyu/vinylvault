@@ -1160,14 +1160,13 @@ class FirestoreManager:
         if not self.db:
             return None
         try:
-            docs = self.db.collection("records").limit(200).stream(timeout=5)
+            docs = self.db.collection("records").limit(500).stream(timeout=10)
             records = [d.to_dict() for d in docs]
-            if records:
-                print(f"Loaded {len(records)} records from GCP Firestore.")
-                return records
+            print(f"Loaded {len(records)} records from GCP Firestore.")
+            return records
         except Exception as e:
             print(f"Firestore get_records error: {e}")
-        return None
+            return None
 
     def save_record(self, record_data: Dict[str, Any]) -> bool:
         if not self.db:
@@ -1336,13 +1335,34 @@ class VinylDatabase:
 
     def sync_firestore_on_startup(self):
         """Non-blocking background sync called after web server binds to PORT."""
+        if not self.firestore.db:
+            print("Firestore client unavailable; skipping startup sync.")
+            return
+
         try:
             fs_recs = self.firestore.get_records()
-            if fs_recs and len(fs_recs) > 0:
-                print(f"Firestore already populated with {len(fs_recs)} records. Loaded directly from Firestore.")
-                self.records = fs_recs
-            elif self.firestore.db and (not fs_recs or len(fs_recs) == 0):
-                print("Firestore collection is empty. Initializing one-time seed from local records...")
+            if fs_recs is None:
+                print("Firestore get_records returned None (connection timeout or error); preserving existing records.")
+                return
+
+            if len(fs_recs) > 0:
+                print(f"Firestore active with {len(fs_recs)} records. Merging with local data...")
+                merged_map = {}
+                for r in self.records:
+                    rec_id = r.get("id")
+                    if rec_id:
+                        merged_map[rec_id] = r
+                for r in fs_recs:
+                    rec_id = r.get("id")
+                    if rec_id:
+                        merged_map[rec_id] = r
+
+                merged_list = list(merged_map.values())
+                self.records = merged_list
+                self.save_records()
+                print(f"Startup sync complete: {len(self.records)} records active.")
+            else:
+                print("Firestore collection is verified empty. Initializing seed from local records...")
                 self.firestore.save_all_records_batch(self.records)
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
