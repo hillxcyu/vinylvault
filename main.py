@@ -59,11 +59,13 @@ class AddRecordRequest(BaseModel):
 class ListeningGuideRequest(BaseModel):
     artist: str
     albumTitle: str
+    forceRefresh: Optional[bool] = False
 
 class FetchCoverRequest(BaseModel):
     artist: str
     title: str
     coverUrl: Optional[str] = None
+    forceRefresh: Optional[bool] = False
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
@@ -206,6 +208,14 @@ async def fetch_official_cover_endpoint(req: FetchCoverRequest):
 
 @app.post("/api/fetch-release-assets")
 async def fetch_release_assets_endpoint(req: FetchCoverRequest):
+    asset_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.title)}"
+    
+    # Check Firestore cache if forceRefresh is False
+    if not req.forceRefresh:
+        cached_assets = db.firestore.get_release_assets(asset_key)
+        if cached_assets:
+            return {"status": "success", "assets": cached_assets, "cached": True}
+
     target_cover = req.coverUrl
     if not target_cover:
         for r in db.get_all_records():
@@ -214,7 +224,10 @@ async def fetch_release_assets_endpoint(req: FetchCoverRequest):
                 break
 
     assets = discogs_service.fetch_all_release_assets(req.artist, req.title, cover_url=target_cover)
-    return {"status": "success", "assets": assets}
+    if assets:
+        db.firestore.save_release_assets(asset_key, assets)
+
+    return {"status": "success", "assets": assets, "cached": False}
 
 GUIDE_CACHE_DIR = os.path.join(os.path.dirname(__file__), "data_store", "listening_guides")
 os.makedirs(GUIDE_CACHE_DIR, exist_ok=True)
@@ -225,24 +238,34 @@ def sanitize_cache_key(name: str) -> str:
 
 @app.post("/api/listening-guide")
 async def get_listening_guide(req: ListeningGuideRequest):
-    safe_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.albumTitle)}.json"
-    cache_path = os.path.join(GUIDE_CACHE_DIR, safe_key)
+    guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.albumTitle)}"
+    
+    # 1. Check Firestore cache if forceRefresh is False
+    if not req.forceRefresh:
+        cached_guide = db.firestore.get_listening_guide(guide_key)
+        if cached_guide:
+            return {"status": "success", "guide": cached_guide, "cached": True}
 
-    if os.path.exists(cache_path):
+    # 2. Check local disk cache fallback
+    cache_path = os.path.join(GUIDE_CACHE_DIR, f"{guide_key}.json")
+    if not req.forceRefresh and os.path.exists(cache_path):
         try:
             with open(cache_path, "r", encoding="utf-8") as f:
                 guide_data = json.load(f)
+                db.firestore.save_listening_guide(guide_key, guide_data)
                 return {"status": "success", "guide": guide_data, "cached": True}
-        except Exception as e:
-            logger.warning(f"Failed to load cached listening guide: {e}")
+        except Exception:
+            pass
 
+    # 3. Call Gemini 3.6 Flash to generate fresh guide
     guide = gemini_service.generate_listening_guide(req.artist, req.albumTitle)
-
-    try:
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(guide, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        logger.warning(f"Failed to write listening guide cache: {e}")
+    if guide:
+        db.firestore.save_listening_guide(guide_key, guide)
+        try:
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump(guide, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 
     return {"status": "success", "guide": guide, "cached": False}
 

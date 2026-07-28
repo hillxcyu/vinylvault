@@ -1302,6 +1302,52 @@ class FirestoreManager:
             print(f"Firestore save_chronicle error: {e}")
         return False
 
+    def get_listening_guide(self, key: str) -> Optional[Dict[str, Any]]:
+        if not self.db:
+            return None
+        try:
+            doc = self.db.collection("listening_guides").document(key).get()
+            if doc.exists:
+                print(f"Loaded listening guide '{key}' from Firestore.")
+                return doc.to_dict().get("guide")
+        except Exception as e:
+            print(f"Firestore get_listening_guide error: {e}")
+        return None
+
+    def save_listening_guide(self, key: str, guide_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("listening_guides").document(key).set({"guide": guide_data})
+            print(f"Saved listening guide '{key}' to Firestore.")
+            return True
+        except Exception as e:
+            print(f"Firestore save_listening_guide error: {e}")
+        return False
+
+    def get_release_assets(self, key: str) -> Optional[List[Dict[str, Any]]]:
+        if not self.db:
+            return None
+        try:
+            doc = self.db.collection("release_assets").document(key).get()
+            if doc.exists:
+                print(f"Loaded release assets '{key}' from Firestore.")
+                return doc.to_dict().get("assets")
+        except Exception as e:
+            print(f"Firestore get_release_assets error: {e}")
+        return None
+
+    def save_release_assets(self, key: str, assets: List[Dict[str, Any]]) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("release_assets").document(key).set({"assets": assets})
+            print(f"Saved release assets '{key}' to Firestore.")
+            return True
+        except Exception as e:
+            print(f"Firestore save_release_assets error: {e}")
+        return False
+
 class VinylDatabase:
     def __init__(self):
         os.makedirs(DATA_DIR, exist_ok=True)
