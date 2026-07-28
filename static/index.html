@@ -394,10 +394,13 @@
           <div id="handle-br" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BR</div>
           <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
 
-          <!-- Apply Manual Deskew Floating Action Bar -->
+          <!-- Dual Action Bar: Custom 4-Corner Crop & Auto Deskew -->
           <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
             <button onclick="event.stopPropagation(); applyManualDeskew()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-full shadow-xl transition-all flex items-center gap-1.5 border border-white/20">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Apply Custom Deskew & Crop
+              <i class="fa-solid fa-crop-simple"></i> Apply 4-Corner Crop
+            </button>
+            <button onclick="event.stopPropagation(); triggerAutoScan()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-full shadow-xl transition-all flex items-center gap-1.5 border border-stone-700">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Auto Deskew
             </button>
           </div>
         </div>
@@ -1149,11 +1152,30 @@
       if (!file) return;
       currentRawFile = file;
 
-      showScanLoading(`Uploading "${file.name}" & parsing metadata via Gemini AI...`);
+      // Render raw uploaded photo immediately so user can drag 4 corner handles over raw image!
+      const rawUrl = URL.createObjectURL(file);
+      const placeholder = document.getElementById('scannerPlaceholderContent');
+      const previewContainer = document.getElementById('scannerPreviewContainer');
+      const previewImg = document.getElementById('scannerPreviewImg');
+
+      if (placeholder && previewContainer && previewImg) {
+        placeholder.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        previewImg.src = rawUrl;
+        resetCornerPoints();
+      }
+
+      showScanLoading('Photo ready! Drag the 4 corner handles to outline the vinyl cover, then click "Apply 4-Corner Crop" or "Auto Deskew".');
+    }
+
+    async function triggerAutoScan() {
+      if (!currentRawFile) return;
+
+      showScanLoading(`Uploading "${currentRawFile.name}" & auto-deskewing via Gemini AI...`);
 
       try {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', currentRawFile);
 
         const res = await fetch('/api/scan', {
           method: 'POST',
@@ -1165,21 +1187,12 @@
         const data = await res.json();
         lastScannedMetadata = data.metadata;
 
-        // Render auto-deskewed & cropped image inside the camera placeholder dotted box!
         if (data.metadata && data.metadata.coverUrl) {
-          const placeholder = document.getElementById('scannerPlaceholderContent');
-          const previewContainer = document.getElementById('scannerPreviewContainer');
           const previewImg = document.getElementById('scannerPreviewImg');
-
-          if (placeholder && previewContainer && previewImg) {
-            placeholder.classList.add('hidden');
-            previewContainer.classList.remove('hidden');
-            previewImg.src = data.metadata.coverUrl;
-            resetCornerPoints();
-          }
+          if (previewImg) previewImg.src = data.metadata.coverUrl;
+          toggleCornerHandles(false);
         }
 
-        // If scanning identified a record, update spinning UI to that record!
         if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
           updateNowSpinningUI(data.duplicateCheck.matchingRecord);
           switchTab('nowSpinning');
@@ -1187,7 +1200,7 @@
 
         renderDuplicateResult(data.duplicateCheck, data.metadata);
       } catch (err) {
-        console.error('Photo scan error:', err);
+        console.error('Auto scan error:', err);
         renderScanError(`Failed to process image: ${err.message}`);
       }
     }
@@ -1201,7 +1214,18 @@
     ];
     let activeHandleIdx = null;
 
+    function toggleCornerHandles(show) {
+      const handles = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
+      const svg = document.getElementById('deskewPolySvg');
+      handles.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? 'flex' : 'none';
+      });
+      if (svg) svg.style.display = show ? 'block' : 'none';
+    }
+
     function resetCornerPoints() {
+      toggleCornerHandles(true);
       cornerPoints = [
         { x: 0.08, y: 0.08 },
         { x: 0.92, y: 0.08 },
@@ -1316,6 +1340,7 @@
           const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg && data.metadata.coverUrl) {
             previewImg.src = data.metadata.coverUrl;
+            toggleCornerHandles(false);
           }
           showToast('✨ Custom Deskew & Crop Applied!', 'fa-wand-magic-sparkles');
           renderDuplicateResult(data.duplicateCheck, data.metadata);
