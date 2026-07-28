@@ -399,12 +399,6 @@
             <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
           </div>
 
-          <!-- Canvas Zoom Reset Control Badge -->
-          <div class="absolute top-2 right-2 z-30 flex items-center gap-1.5">
-            <button onclick="event.stopPropagation(); resetZoomPan()" class="w-7 h-7 rounded-full bg-stone-950/80 hover:bg-stone-900 text-stone-300 text-[11px] font-bold flex items-center justify-center border border-stone-800 backdrop-blur shadow" title="Reset Zoom">
-              <i class="fa-solid fa-compress"></i>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -1368,6 +1362,7 @@
           const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg && data.metadata.coverUrl) {
             previewImg.src = data.metadata.coverUrl;
+            resetZoomPan();
             toggleCornerHandles(false);
           }
           showToast('✨ Custom Deskew & Crop Applied!', 'fa-wand-magic-sparkles');
