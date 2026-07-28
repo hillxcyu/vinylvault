@@ -369,8 +369,9 @@
       </div>
 
       <!-- Upload / Photo Scanner Input -->
-      <div id="scannerBox" class="border-2 border-dashed border-stone-700 hover:border-amber-500 rounded-xl p-6 text-center transition-all bg-stone-900/50 cursor-pointer relative overflow-hidden" onclick="document.getElementById('photoInput').click()">
+      <div id="scannerBox" class="border-2 border-dashed border-stone-700 hover:border-amber-500 rounded-xl p-4 text-center transition-all bg-stone-900/50 cursor-pointer relative overflow-hidden" onclick="if(event.target === this || event.target.id==='scannerPlaceholderContent' || event.target.closest('#scannerPlaceholderContent')) document.getElementById('photoInput').click()">
         <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+
         <div id="scannerPlaceholderContent">
           <div class="w-12 h-12 rounded-full bg-stone-800 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl">
             <i class="fa-solid fa-camera"></i>
@@ -379,31 +380,45 @@
           <div class="text-xs text-gray-500 mt-1">Gemini Vision AI will parse title, artist & pressing info</div>
         </div>
 
-        <!-- Live Deskewed Image Preview Box & 4-Corner Draggable Polygon Overlay -->
-        <div id="scannerPreviewContainer" class="hidden relative aspect-square max-h-72 mx-auto rounded-lg overflow-hidden border border-amber-500/50 shadow-md select-none touch-none bg-black">
-          <img id="scannerPreviewImg" src="" class="w-full h-full object-contain pointer-events-none" />
+        <!-- Live Deskewed Image Preview Box & 4-Corner Draggable Polygon Overlay with Pinch-Zoom Stage -->
+        <div id="scannerPreviewContainer" class="hidden relative aspect-square max-h-72 mx-auto rounded-lg overflow-hidden border border-amber-500/50 shadow-md select-none touch-none bg-stone-950">
 
-          <!-- SVG Overlay for Quadrilateral Polygon -->
-          <svg id="deskewPolySvg" class="absolute inset-0 w-full h-full pointer-events-none z-10">
-            <polygon id="deskewPolygon" points="" fill="rgba(245, 158, 11, 0.25)" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4" />
-          </svg>
+          <!-- Zoomable / Pannable Stage -->
+          <div id="scannerZoomStage" class="w-full h-full relative origin-center transition-transform duration-75">
+            <img id="scannerPreviewImg" src="" class="w-full h-full object-contain pointer-events-none" />
 
-          <!-- 4 Circular Draggable Corner Handles -->
-          <div id="handle-tl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TL</div>
-          <div id="handle-tr" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TR</div>
-          <div id="handle-br" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BR</div>
-          <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
+            <!-- SVG Overlay for Quadrilateral Polygon -->
+            <svg id="deskewPolySvg" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+              <polygon id="deskewPolygon" points="" fill="rgba(245, 158, 11, 0.25)" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4" />
+            </svg>
 
-          <!-- Dual Action Bar: Custom 4-Corner Crop & Auto Deskew -->
-          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
-            <button onclick="event.stopPropagation(); applyManualDeskew()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-full shadow-xl transition-all flex items-center gap-1.5 border border-white/20">
-              <i class="fa-solid fa-crop-simple"></i> Apply 4-Corner Crop
+            <!-- 4 Circular Draggable Corner Handles -->
+            <div id="handle-tl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TL</div>
+            <div id="handle-tr" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TR</div>
+            <div id="handle-br" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BR</div>
+            <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
+          </div>
+
+          <!-- Canvas Zoom & Resnap Control Badges -->
+          <div class="absolute top-2 right-2 z-30 flex items-center gap-1.5 bg-stone-950/80 p-1 rounded-full border border-stone-800 backdrop-blur">
+            <button onclick="event.stopPropagation(); resetZoomPan()" class="w-6 h-6 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 text-[10px] font-bold flex items-center justify-center" title="Reset Zoom">
+              <i class="fa-solid fa-compress"></i>
             </button>
-            <button onclick="event.stopPropagation(); triggerAutoScan()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-full shadow-xl transition-all flex items-center gap-1.5 border border-stone-700">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Auto Deskew
+            <button onclick="event.stopPropagation(); document.getElementById('photoInput').click()" class="px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-[10px] font-bold flex items-center gap-1 border border-amber-500/30">
+              <i class="fa-solid fa-camera"></i> Resnap
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- External Action Bar: Located Below Preview Area & Above Manual Search -->
+      <div id="scannerActionsBar" class="hidden grid grid-cols-2 gap-3 pt-1">
+        <button onclick="applyManualDeskew()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-white/20">
+          <i class="fa-solid fa-crop-simple text-sm"></i> Apply 4-Corner Crop
+        </button>
+        <button onclick="triggerAutoScan()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-stone-700">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i> Auto Deskew
+        </button>
       </div>
 
       <!-- Manual Query Form -->
@@ -1093,12 +1108,15 @@
     function resetScannerPlaceholder() {
       const placeholder = document.getElementById('scannerPlaceholderContent');
       const previewContainer = document.getElementById('scannerPreviewContainer');
+      const actionsBar = document.getElementById('scannerActionsBar');
       const previewImg = document.getElementById('scannerPreviewImg');
       if (placeholder && previewContainer) {
         placeholder.classList.remove('hidden');
         previewContainer.classList.add('hidden');
+        if (actionsBar) actionsBar.classList.add('hidden');
         if (previewImg) previewImg.src = '';
       }
+      resetZoomPan();
     }
 
     function openScannerModal() {
@@ -1156,12 +1174,15 @@
       const rawUrl = URL.createObjectURL(file);
       const placeholder = document.getElementById('scannerPlaceholderContent');
       const previewContainer = document.getElementById('scannerPreviewContainer');
+      const actionsBar = document.getElementById('scannerActionsBar');
       const previewImg = document.getElementById('scannerPreviewImg');
 
       if (placeholder && previewContainer && previewImg) {
         placeholder.classList.add('hidden');
         previewContainer.classList.remove('hidden');
+        if (actionsBar) actionsBar.classList.remove('hidden');
         previewImg.src = rawUrl;
+        resetZoomPan();
         resetCornerPoints();
       }
 
@@ -1351,8 +1372,104 @@
       }
     }
 
+    let zoomScale = 1.0;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let initialPinchDist = null;
+
+    function applyZoomPanTransform() {
+      const stage = document.getElementById('scannerZoomStage');
+      if (stage) {
+        stage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+      }
+    }
+
+    function resetZoomPan() {
+      zoomScale = 1.0;
+      panX = 0;
+      panY = 0;
+      applyZoomPanTransform();
+    }
+
+    function initZoomPanController() {
+      const container = document.getElementById('scannerPreviewContainer');
+      if (!container) return;
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.15 : -0.15;
+        zoomScale = Math.max(1.0, Math.min(4.0, zoomScale + delta));
+        if (zoomScale === 1.0) {
+          panX = 0;
+          panY = 0;
+        }
+        applyZoomPanTransform();
+      }, { passive: false });
+
+      const startPan = (e) => {
+        if (e.target.classList.contains('deskew-handle') || e.target.closest('button')) return;
+        if (e.touches && e.touches.length === 2) {
+          initialPinchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          return;
+        }
+
+        isPanning = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        panStartX = clientX - panX;
+        panStartY = clientY - panY;
+
+        document.addEventListener('mousemove', movePan);
+        document.addEventListener('mouseup', endPan);
+        document.addEventListener('touchmove', movePan, { passive: false });
+        document.addEventListener('touchend', endPan);
+      };
+
+      const movePan = (e) => {
+        if (e.touches && e.touches.length === 2 && initialPinchDist) {
+          e.preventDefault();
+          const currentDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const factor = currentDist / initialPinchDist;
+          zoomScale = Math.max(1.0, Math.min(4.0, zoomScale * (factor > 1 ? 1.03 : 0.97)));
+          initialPinchDist = currentDist;
+          applyZoomPanTransform();
+          return;
+        }
+
+        if (!isPanning || zoomScale <= 1.0) return;
+        e.preventDefault();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        panX = clientX - panStartX;
+        panY = clientY - panStartY;
+        applyZoomPanTransform();
+      };
+
+      const endPan = () => {
+        isPanning = false;
+        initialPinchDist = null;
+        document.removeEventListener('mousemove', movePan);
+        document.removeEventListener('mouseup', endPan);
+        document.removeEventListener('touchmove', movePan);
+        document.removeEventListener('touchend', endPan);
+      };
+
+      container.onmousedown = startPan;
+      container.ontouchstart = startPan;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       initCornerHandles();
+      initZoomPanController();
     });
 
     function renderScanError(errorMsg) {
