@@ -379,14 +379,26 @@
           <div class="text-xs text-gray-500 mt-1">Gemini Vision AI will parse title, artist & pressing info</div>
         </div>
 
-        <!-- Live Deskewed Image Preview Box -->
-        <div id="scannerPreviewContainer" class="hidden relative aspect-square max-h-56 mx-auto rounded-lg overflow-hidden border border-amber-500/50 shadow-md group">
-          <img id="scannerPreviewImg" src="" class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
-            <i class="fa-solid fa-rotate text-sm"></i> Click to Resnap Photo
-          </div>
-          <div class="absolute bottom-2 right-2 bg-stone-950/90 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/40 shadow">
-            ✨ Auto-Deskewed & Cropped
+        <!-- Live Deskewed Image Preview Box & 4-Corner Draggable Polygon Overlay -->
+        <div id="scannerPreviewContainer" class="hidden relative aspect-square max-h-72 mx-auto rounded-lg overflow-hidden border border-amber-500/50 shadow-md select-none touch-none bg-black">
+          <img id="scannerPreviewImg" src="" class="w-full h-full object-contain pointer-events-none" />
+
+          <!-- SVG Overlay for Quadrilateral Polygon -->
+          <svg id="deskewPolySvg" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+            <polygon id="deskewPolygon" points="" fill="rgba(245, 158, 11, 0.25)" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4" />
+          </svg>
+
+          <!-- 4 Circular Draggable Corner Handles -->
+          <div id="handle-tl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TL</div>
+          <div id="handle-tr" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TR</div>
+          <div id="handle-br" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BR</div>
+          <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
+
+          <!-- Apply Manual Deskew Floating Action Bar -->
+          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+            <button onclick="event.stopPropagation(); applyManualDeskew()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-full shadow-xl transition-all flex items-center gap-1.5 border border-white/20">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Apply Custom Deskew & Crop
+            </button>
           </div>
         </div>
       </div>
@@ -1135,6 +1147,7 @@
     async function handlePhotoUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
+      currentRawFile = file;
 
       showScanLoading(`Uploading "${file.name}" & parsing metadata via Gemini AI...`);
 
@@ -1162,6 +1175,7 @@
             placeholder.classList.add('hidden');
             previewContainer.classList.remove('hidden');
             previewImg.src = data.metadata.coverUrl;
+            resetCornerPoints();
           }
         }
 
@@ -1177,6 +1191,144 @@
         renderScanError(`Failed to process image: ${err.message}`);
       }
     }
+
+    let currentRawFile = null;
+    let cornerPoints = [
+      { x: 0.08, y: 0.08 },
+      { x: 0.92, y: 0.08 },
+      { x: 0.92, y: 0.92 },
+      { x: 0.08, y: 0.92 }
+    ];
+    let activeHandleIdx = null;
+
+    function resetCornerPoints() {
+      cornerPoints = [
+        { x: 0.08, y: 0.08 },
+        { x: 0.92, y: 0.08 },
+        { x: 0.92, y: 0.92 },
+        { x: 0.08, y: 0.92 }
+      ];
+      setTimeout(updateCornerHandlesUI, 50);
+    }
+
+    function initCornerHandles() {
+      const handles = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
+      handles.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const startDrag = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          activeHandleIdx = idx;
+          document.addEventListener('mousemove', onDragMove);
+          document.addEventListener('mouseup', onDragEnd);
+          document.addEventListener('touchmove', onDragMove, { passive: false });
+          document.addEventListener('touchend', onDragEnd);
+        };
+
+        el.onmousedown = startDrag;
+        el.ontouchstart = startDrag;
+      });
+    }
+
+    function onDragMove(e) {
+      if (activeHandleIdx === null) return;
+      e.preventDefault();
+      const container = document.getElementById('scannerPreviewContainer');
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      let xPct = (clientX - rect.left) / rect.width;
+      let yPct = (clientY - rect.top) / rect.height;
+
+      xPct = Math.max(0, Math.min(1, xPct));
+      yPct = Math.max(0, Math.min(1, yPct));
+
+      cornerPoints[activeHandleIdx] = { x: xPct, y: yPct };
+      updateCornerHandlesUI();
+    }
+
+    function onDragEnd() {
+      activeHandleIdx = null;
+      document.removeEventListener('mousemove', onDragMove);
+      document.removeEventListener('mouseup', onDragEnd);
+      document.removeEventListener('touchmove', onDragMove);
+      document.removeEventListener('touchend', onDragEnd);
+    }
+
+    function updateCornerHandlesUI() {
+      const container = document.getElementById('scannerPreviewContainer');
+      if (!container) return;
+
+      const w = container.clientWidth || 280;
+      const h = container.clientHeight || 280;
+
+      const handleIds = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
+      const svgPolygon = document.getElementById('deskewPolygon');
+      let polyPointsStr = '';
+
+      cornerPoints.forEach((pt, idx) => {
+        const el = document.getElementById(handleIds[idx]);
+        const pxX = pt.x * w;
+        const pxY = pt.y * h;
+        if (el) {
+          el.style.left = `${pxX}px`;
+          el.style.top = `${pxY}px`;
+        }
+        polyPointsStr += `${pxX},${pxY} `;
+      });
+
+      if (svgPolygon) {
+        svgPolygon.setAttribute('points', polyPointsStr.trim());
+      }
+    }
+
+    async function applyManualDeskew() {
+      if (!currentRawFile) {
+        showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
+        return;
+      }
+
+      showScanLoading('Applying custom perspective warp & deskewing...');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', currentRawFile);
+        formData.append('corners', JSON.stringify([
+          [cornerPoints[0].x, cornerPoints[0].y],
+          [cornerPoints[1].x, cornerPoints[1].y],
+          [cornerPoints[2].x, cornerPoints[2].y],
+          [cornerPoints[3].x, cornerPoints[3].y]
+        ]));
+
+        const res = await fetch('/api/manual-deskew', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data.status === 'success' && data.metadata) {
+          lastScannedMetadata = data.metadata;
+          const previewImg = document.getElementById('scannerPreviewImg');
+          if (previewImg && data.metadata.coverUrl) {
+            previewImg.src = data.metadata.coverUrl;
+          }
+          showToast('✨ Custom Deskew & Crop Applied!', 'fa-wand-magic-sparkles');
+          renderDuplicateResult(data.duplicateCheck, data.metadata);
+        }
+      } catch (err) {
+        console.error('Manual deskew error:', err);
+        renderScanError(`Manual deskew failed: ${err.message}`);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCornerHandles();
+    });
 
     function renderScanError(errorMsg) {
       const container = document.getElementById('scanResultContainer');

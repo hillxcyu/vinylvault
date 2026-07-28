@@ -136,4 +136,48 @@ class DeskewService:
 
         return image_bytes, False
 
+    def manual_deskew_image(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 800) -> Tuple[bytes, bool]:
+        """
+        Applies a 4-point perspective transform using user-specified corner points
+        [[x1,y1], [x2,y2], [x3,y3], [x4,y4]] (where coordinates can be 0-1 normalized or pixel space).
+        """
+        if not OPENCV_AVAILABLE or not corners or len(corners) != 4:
+            return image_bytes, False
+
+        try:
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if img is None:
+                return image_bytes, False
+
+            h, w = img.shape[:2]
+            pts = np.array(corners, dtype="float32")
+
+            # If points are normalized (0 to 1 range), scale to image width & height
+            if np.max(pts) <= 1.05:
+                pts[:, 0] = pts[:, 0] * w
+                pts[:, 1] = pts[:, 1] * h
+
+            rect = self._order_points(pts)
+
+            dst = np.array([
+                [0, 0],
+                [target_size - 1, 0],
+                [target_size - 1, target_size - 1],
+                [0, target_size - 1]
+            ], dtype="float32")
+
+            M = cv2.getPerspectiveTransform(rect, dst)
+            warped = cv2.warpPerspective(img, M, (target_size, target_size))
+
+            success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
+            if success:
+                return encoded_img.tobytes(), True
+
+        except Exception as e:
+            logger.error(f"Error during manual deskew: {e}")
+
+        return image_bytes, False
+
 deskew_service = DeskewService()

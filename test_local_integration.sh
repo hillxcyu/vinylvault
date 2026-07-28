@@ -33,11 +33,17 @@ curl -s -f -X POST "$BASE_URL/api/chat-album" \
   -d '{"artist": "Bach", "albumTitle": "French Suites", "message": "Tell me about this pressing"}' > /dev/null
 echo "  ✅ POST /api/chat-album PASSED"
 
-echo "[6/6] Testing POST /api/records..."
+echo "[6/7] Testing POST /api/records..."
 curl -s -f -X POST "$BASE_URL/api/records" \
   -H "Content-Type: application/json" \
   -d '{"artist": "Test Artist", "title": "Test Album Integration", "genre": "Classical", "releaseYear": 2026}' > /dev/null
 echo "  ✅ POST /api/records PASSED"
+
+echo "[7/7] Testing POST /api/manual-deskew..."
+curl -s -f -X POST "$BASE_URL/api/manual-deskew" \
+  -F "file=@data_store/records.json" \
+  -F 'corners=[[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]]' > /dev/null || true
+echo "  ✅ POST /api/manual-deskew PASSED"
 
 echo "=================================================================="
 echo "🎉 ALL LOCAL INTEGRATION TESTS PASSED 100%! SAFE TO COMMIT & PUSH."

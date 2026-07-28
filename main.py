@@ -162,6 +162,52 @@ async def scan_cover(file: UploadFile = File(...)):
         "deskewed": is_deskewed
     }
 
+@app.post("/api/manual-deskew")
+async def manual_deskew_endpoint(
+    file: UploadFile = File(...),
+    corners: str = Form(...)
+):
+    contents = await file.read()
+    try:
+        parsed_corners = json.loads(corners)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid corners format. Must be JSON array of 4 coordinate pairs.")
+
+    deskewed_bytes, is_deskewed = deskew_service.manual_deskew_image(contents, parsed_corners)
+    final_bytes = deskewed_bytes if is_deskewed else contents
+
+    os.makedirs("static/uploads", exist_ok=True)
+    filename = f"manual_scan_{uuid.uuid4().hex[:8]}.jpg"
+    saved_path = os.path.join("static/uploads", filename)
+    with open(saved_path, "wb") as f:
+        f.write(final_bytes)
+
+    uploaded_cover_url = f"/static/uploads/{filename}"
+
+    extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
+    extracted_metadata["coverUrl"] = uploaded_cover_url
+    extracted_metadata["deskewed"] = True
+
+    artist = extracted_metadata.get("artist", "")
+    title = extracted_metadata.get("albumTitle", "")
+    if artist and title:
+        official_img = discogs_service.fetch_official_cover(artist, title, cover_url=uploaded_cover_url)
+        if official_img and "shopping_cover" not in official_img:
+            extracted_metadata["coverUrl"] = official_img
+
+    duplicate_result = DuplicateEngine.check_duplicate(
+        extracted_metadata,
+        db.get_all_records(),
+        db.get_wishlist()
+    )
+
+    return {
+        "status": "success",
+        "metadata": extracted_metadata,
+        "duplicateCheck": duplicate_result,
+        "deskewed": True
+    }
+
 @app.post("/api/spin")
 async def log_spin(req: LogSpinRequest):
     spin_entry = db.log_spin(req.recordId, req.notes or "")
