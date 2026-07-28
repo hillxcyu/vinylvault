@@ -369,13 +369,26 @@
       </div>
 
       <!-- Upload / Photo Scanner Input -->
-      <div class="border-2 border-dashed border-stone-700 hover:border-amber-500 rounded-xl p-6 text-center transition-all bg-stone-900/50 cursor-pointer" onclick="document.getElementById('photoInput').click()">
+      <div id="scannerBox" class="border-2 border-dashed border-stone-700 hover:border-amber-500 rounded-xl p-6 text-center transition-all bg-stone-900/50 cursor-pointer relative overflow-hidden" onclick="document.getElementById('photoInput').click()">
         <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
-        <div class="w-12 h-12 rounded-full bg-stone-800 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl">
-          <i class="fa-solid fa-camera"></i>
+        <div id="scannerPlaceholderContent">
+          <div class="w-12 h-12 rounded-full bg-stone-800 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+          <div class="text-sm font-medium text-gray-200">Click to Snap or Upload Cover Photo</div>
+          <div class="text-xs text-gray-500 mt-1">Gemini Vision AI will parse title, artist & pressing info</div>
         </div>
-        <div class="text-sm font-medium text-gray-200">Click to Snap or Upload Cover Photo</div>
-        <div class="text-xs text-gray-500 mt-1">Gemini Vision AI will parse title, artist & pressing info</div>
+
+        <!-- Live Deskewed Image Preview Box -->
+        <div id="scannerPreviewContainer" class="hidden relative aspect-square max-h-56 mx-auto rounded-lg overflow-hidden border border-amber-500/50 shadow-md group">
+          <img id="scannerPreviewImg" src="" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+            <i class="fa-solid fa-rotate text-sm"></i> Click to Resnap Photo
+          </div>
+          <div class="absolute bottom-2 right-2 bg-stone-950/90 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/40 shadow">
+            ✨ Auto-Deskewed & Cropped
+          </div>
+        </div>
       </div>
 
       <!-- Manual Query Form -->
@@ -1062,11 +1075,24 @@
       }
     }
 
+    function resetScannerPlaceholder() {
+      const placeholder = document.getElementById('scannerPlaceholderContent');
+      const previewContainer = document.getElementById('scannerPreviewContainer');
+      const previewImg = document.getElementById('scannerPreviewImg');
+      if (placeholder && previewContainer) {
+        placeholder.classList.remove('hidden');
+        previewContainer.classList.add('hidden');
+        if (previewImg) previewImg.src = '';
+      }
+    }
+
     function openScannerModal() {
+      resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.remove('hidden');
     }
 
     function closeScannerModal() {
+      resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.add('hidden');
       document.getElementById('scanResultContainer').classList.add('hidden');
       document.getElementById('photoInput').value = '';
@@ -1090,7 +1116,7 @@
       const title = document.getElementById('manualTitle').value.trim();
       if (!artist && !title) return;
 
-      showScanLoading('Verifying record ownership status...');
+      showScanLoading(`Checking collection status for "${artist} - ${title}"...`);
 
       try {
         const res = await fetch('/api/check-duplicate', {
@@ -1099,7 +1125,7 @@
           body: JSON.stringify({ artist, albumTitle: title })
         });
         const data = await res.json();
-        lastScannedMetadata = { artist, albumTitle: title };
+        lastScannedMetadata = { artist, albumTitle: title, genre: 'Manual Entry' };
         renderDuplicateResult(data, lastScannedMetadata);
       } catch (err) {
         renderScanError(err.message);
@@ -1125,6 +1151,19 @@
         }
         const data = await res.json();
         lastScannedMetadata = data.metadata;
+
+        // Render auto-deskewed & cropped image inside the camera placeholder dotted box!
+        if (data.metadata && data.metadata.coverUrl) {
+          const placeholder = document.getElementById('scannerPlaceholderContent');
+          const previewContainer = document.getElementById('scannerPreviewContainer');
+          const previewImg = document.getElementById('scannerPreviewImg');
+
+          if (placeholder && previewContainer && previewImg) {
+            placeholder.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+            previewImg.src = data.metadata.coverUrl;
+          }
+        }
 
         // If scanning identified a record, update spinning UI to that record!
         if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
