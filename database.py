@@ -1209,6 +1209,30 @@ class FirestoreManager:
             print(f"Firestore batch save error: {err_str}")
             return False, err_str
 
+    def save_record(self, record_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            rec_id = record_data.get("id")
+            if rec_id:
+                self.db.collection("records").document(rec_id).set(record_data)
+                print(f"Saved record '{rec_id}' ({record_data.get('title')}) to Firestore.")
+                return True
+        except Exception as e:
+            print(f"Firestore save_record error: {e}")
+        return False
+
+    def delete_record(self, record_id: str) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("records").document(record_id).delete()
+            print(f"Deleted record '{record_id}' from Firestore.")
+            return True
+        except Exception as e:
+            print(f"Firestore delete_record error: {e}")
+        return False
+
     def get_spins(self) -> Optional[List[Dict[str, Any]]]:
         if not self.db:
             return None
@@ -1436,6 +1460,7 @@ class VinylDatabase:
             }]
         self.records.insert(0, record_data)
         self.save_records()
+        self.firestore.save_record(record_data)
         return record_data
 
     def log_spin(self, record_id: str, notes: str = "") -> Dict[str, Any]:
@@ -1445,6 +1470,7 @@ class VinylDatabase:
             rec["spinsCount"] += 1
             rec["lastSpunAt"] = now_str
             self.save_records()
+            self.firestore.save_record(rec)
         spin_entry = {
             "id": f"spin-{len(self.spins_log) + 1}",
             "recordId": record_id,
@@ -1453,6 +1479,7 @@ class VinylDatabase:
         }
         self.spins_log.insert(0, spin_entry)
         self.save_spins()
+        self.firestore.save_spin(spin_entry)
         return spin_entry
 
     def get_wishlist(self) -> List[Dict[str, Any]]:
@@ -1466,6 +1493,7 @@ class VinylDatabase:
         self.records = [r for r in self.records if r["id"] != record_id]
         if len(self.records) < initial_len:
             self.save_records()
+            self.firestore.delete_record(record_id)
             return True
         return False
 
