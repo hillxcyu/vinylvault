@@ -843,21 +843,22 @@
         let recordsHtml = '';
         if (era.records && era.records.length > 0) {
           recordsHtml = era.records.map(rec => `
-            <div onclick="updateNowSpinningUI_byID('${rec.id}')" class="bg-stone-900/90 rounded-xl p-3 space-y-2 group hover:border-amber-500/50 border border-stone-800/60 transition-all cursor-pointer relative shadow-sm hover:shadow-md">
-              <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-950">
-                <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
-                  <i class="fa-solid fa-play text-xs"></i>
-                </button>
-              </div>
-              <div>
-                <div class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1 truncate max-w-full">
-                  ${rec.detectedComposer || 'Classical Master'}
+            <div onclick="updateNowSpinningUI_byID('${rec.id}')" class="bg-stone-900/90 hover:bg-stone-900 rounded-xl p-3.5 group hover:border-amber-500/60 border border-stone-800/80 transition-all cursor-pointer relative shadow-sm hover:shadow-md flex items-center justify-between gap-3">
+              <div class="space-y-1 min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    ${rec.detectedComposer || 'Classical Master'}
+                  </span>
+                  ${rec.releaseYear ? `<span class="text-[10px] font-mono text-stone-500">${rec.releaseYear}</span>` : ''}
                 </div>
-                <div class="font-bold text-xs text-white truncate">${rec.title}</div>
-                <div class="text-[11px] text-stone-400 truncate">${rec.artist}</div>
-                ${rec.aiInsight ? `<div class="mt-1.5 text-[10px] text-amber-300/90 bg-stone-950 p-1.5 rounded border border-amber-500/20 leading-tight italic"><i class="fa-solid fa-sparkles text-[9px] text-amber-400 mr-1"></i>${rec.aiInsight}</div>` : ''}
+                <div class="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors truncate">${rec.title}</div>
+                <div class="text-xs font-medium text-stone-400 truncate">${rec.artist}</div>
+                ${rec.aiInsight ? `<div class="mt-1.5 text-[11px] text-amber-300/90 bg-stone-950 p-2 rounded-lg border border-amber-500/20 leading-relaxed italic"><i class="fa-solid fa-sparkles text-[9px] text-amber-400 mr-1.5"></i>${rec.aiInsight}</div>` : ''}
               </div>
+
+              <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex-shrink-0 flex items-center justify-center shadow-lg transition-transform active:scale-95" title="Spin Record">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </button>
             </div>
           `).join('');
         } else {
@@ -876,7 +877,7 @@
               ${era.count} Record${era.count === 1 ? '' : 's'}
             </div>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 pt-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
             ${recordsHtml}
           </div>
         `;
