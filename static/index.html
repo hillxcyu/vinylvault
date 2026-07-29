@@ -45,14 +45,14 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
+      <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
       <div class="flex items-center gap-2">
-        <div class="flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
+        <div class="hidden sm:flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
           <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
-            <i class="fa-solid fa-circle-play"></i> <span class="hidden md:inline">Now Spinning</span><span class="md:hidden">Spinning</span>
+            <i class="fa-solid fa-circle-play"></i> <span>Now Spinning</span>
           </button>
           <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2 active-bounce">
-            <i class="fa-solid fa-box-archive"></i> <span class="hidden md:inline">My Crate</span><span class="md:hidden">Crate</span>
+            <i class="fa-solid fa-box-archive"></i> <span>My Crate</span>
             <span id="recordCountBadge" class="text-xs font-extrabold px-2 py-0.5 bg-black/20 text-stone-900 rounded-full border border-black/10">0</span>
           </button>
           <button id="tabBtnChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
@@ -1779,8 +1779,8 @@
     fetchStats();
     fetchChronicle();
   </script>
-  <!-- Apple HIG Floating Navigation Pill Dock (Visible on All Screen Sizes) -->
-  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel rounded-full px-3.5 py-2 shadow-2xl flex items-center gap-1.5 border border-amber-500/30 bg-stone-950/95 backdrop-blur-2xl shadow-amber-500/10">
+  <!-- Apple HIG Floating Navigation Pill Dock -->
+  <div style="position: fixed !important; bottom: 24px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 999999 !important;" class="glass-panel rounded-full px-4 py-2 shadow-2xl flex items-center gap-2 border border-amber-500/40 bg-stone-950/95 backdrop-blur-2xl shadow-amber-500/20">
     <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-2">
       <i class="fa-solid fa-circle-play text-sm"></i>
       <span>Spinning</span>
