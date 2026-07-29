@@ -1,19 +1,30 @@
-# Todo List: Scanner UI Refinements (Pinch-Zoom, Pan & External Action Buttons)
+# 📋 DEFINE: Mobile UI Overhaul TODO List
 
-This file defines the tasks needed to complete the approved plan.
+### Timestamp: 2026-07-29T04:03:30Z
 
-## 📋 Task List
+## Tasks
 
-### 1️⃣ [frontend] External Action Bar Relocation (`static/index.html`)
-* [ ] **Task 1.1**: Remove floating action bar from inside `#scannerPreviewContainer`.
-* [ ] **Task 1.2**: Create `#scannerActionsBar` below `#scannerBox` and above `#manualQueryForm` containing `✂️ Apply 4-Corner Crop` and `🪄 Auto Deskew`.
+- [ ] `[frontend]` **1. Meta & Viewport Safe-Area Setup**:
+  - Add `viewport-fit=cover` to meta viewport in `static/index.html`.
+  - Add iOS dark system color theme `<meta name="theme-color" content="#09090b">`.
 
-### 2️⃣ [frontend] Pinch-Zoom & Pan Canvas Controller (`static/index.html`)
-* [ ] **Task 2.1**: Implement zoom (`zoomScale`) and pan (`panX`, `panY`) transform state for `#scannerZoomStage`.
-* [ ] **Task 2.2**: Add mouse wheel zoom listener (`wheel`) and touch pinch-zoom listener (`touchstart`, `touchmove`).
-* [ ] **Task 2.3**: Add pan drag listener when dragging preview background.
-* [ ] **Task 2.4**: Add reset zoom/pan button in header bar.
+- [ ] `[frontend]` **2. Apple HIG Frosted Glass & Typography Utilities**:
+  - Add `.apple-glass` backdrop-blur-2xl classes (`backdrop-filter: blur(24px); background: rgba(18, 18, 18, 0.75); border: 1px solid rgba(255, 255, 255, 0.12);`).
+  - Add `.active-bounce` scale transitions for haptic-like button presses (`active:scale-95 transition-transform duration-150`).
 
-### 3️⃣ [verification & cicd] Mandatory Local Testing & Deployment (`test_local_integration.sh`)
-* [ ] **Task 3.1**: Run `./test_local_integration.sh` locally in Docker to verify API compatibility.
-* [ ] **Task 3.2**: Commit and push to GitHub for automated Cloud Build deployment.
+- [ ] `[frontend]` **3. Floating Mobile Navigation Dock**:
+  - Refine top header for clean minimalism (logo + quick scan button).
+  - Add floating translucent bottom navigation bar on mobile (`sm:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40`) with 44px+ touch targets for Now Spinning, Crate, and Chronicle.
+
+- [ ] `[frontend]` **4. Modern Turntable Hero & Card Grid Styling**:
+  - Enhance "Now Spinning" turntable widget with glossy vinyl sheen and high-contrast typography.
+  - Upgrade album cards in My Crate and Chronicle grids to rounded-2xl cards with soft shadows, 1:1 image containers, and clear badge badges.
+
+- [ ] `[frontend]` **5. Mobile-Optimized Scanner Sheet & Corner Handles**:
+  - Convert scanner modal into a full-bleed bottom sheet on mobile viewports.
+  - Maintain 44px hit-testing touch targets on SVG corner handles for 4-corner crop dragging.
+  - Position Apply/Auto/Resnap action bar in an ergonomic bottom dock.
+
+- [ ] `[testing]` **6. Local Integration & Responsive Testing**:
+  - Run `./test_local_integration.sh` to ensure 100% test pass rate.
+  - Verify layout responsiveness and git commit/push.

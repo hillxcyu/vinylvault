@@ -2,16 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Vinyl Vault - Smart Vinyl Collection Assistant</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { background-color: #121212; color: #e5e7eb; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #09090b; color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     .vinyl-spin { animation: spin 12s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .glass-panel { background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-panel { background: rgba(24, 24, 27, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .apple-card { background: rgba(39, 39, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease; }
+    .apple-card:active { transform: scale(0.97); }
     
     /* Prevent mobile browser auto-zoom on input focus */
     @media screen and (max-width: 768px) {
@@ -21,7 +26,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen pb-12 flex flex-col">
+<body class="min-h-screen pb-24 sm:pb-12 flex flex-col bg-stone-950 text-stone-100 font-sans selection:bg-amber-500 selection:text-black">
 
   <!-- Navigation Bar with Tabs & Header Stats -->
   <nav class="sticky top-0 z-40 glass-panel border-b border-gray-800 px-4 py-3 mb-6">
@@ -587,6 +592,23 @@
         if (crateBadge) {
           crateBadge.className = 'text-xs font-extrabold px-2 py-0.5 bg-black/20 text-stone-900 rounded-full border border-black/10';
         }
+      }
+
+      // Sync Mobile Bottom Dock
+      const mobNow = document.getElementById('mobileNavNowSpinning');
+      const mobCrate = document.getElementById('mobileNavCrate');
+      const mobChronicle = document.getElementById('mobileNavChronicle');
+      const mobActive = 'px-3.5 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-lg active:scale-95 flex items-center gap-1.5';
+      const mobInactive = 'px-3.5 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-1.5';
+
+      if (mobNow && mobCrate && mobChronicle) {
+        mobNow.className = mobInactive;
+        mobCrate.className = mobInactive;
+        mobChronicle.className = mobInactive;
+
+        if (tabName === 'nowSpinning') mobNow.className = mobActive;
+        else if (tabName === 'chronicle') mobChronicle.className = mobActive;
+        else mobCrate.className = mobActive;
       }
     }
 
@@ -1755,5 +1777,20 @@
     fetchStats();
     fetchChronicle();
   </script>
+  <!-- Apple HIG Floating Mobile Navigation Dock -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 sm:hidden glass-panel rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-1 border border-white/10 bg-stone-950/85 backdrop-blur-2xl">
+    <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-circle-play text-sm"></i>
+      <span>Spinning</span>
+    </button>
+    <button id="mobileNavCrate" onclick="switchTab('crate')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-lg active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-box-archive text-sm"></i>
+      <span>Crate</span>
+    </button>
+    <button id="mobileNavChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-hourglass-half text-amber-400 text-sm"></i>
+      <span>Chronicle</span>
+    </button>
+  </div>
 </body>
 </html>
