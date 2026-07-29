@@ -39,11 +39,15 @@ curl -s -f -X POST "$BASE_URL/api/records" \
   -d '{"artist": "Test Artist", "title": "Test Album Integration", "genre": "Classical", "releaseYear": 2026}' > /dev/null
 echo "  ✅ POST /api/records PASSED"
 
-echo "[7/7] Testing POST /api/manual-deskew..."
+echo "[7/8] Testing POST /api/manual-deskew..."
 curl -s -f -X POST "$BASE_URL/api/manual-deskew" \
   -F "file=@data_store/records.json" \
   -F 'corners=[[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]]' > /dev/null || true
 echo "  ✅ POST /api/manual-deskew PASSED"
+
+echo "[8/8] Testing GET /api/backup..."
+curl -s -f "$BASE_URL/api/backup" > /dev/null
+echo "  ✅ GET /api/backup PASSED"
 
 echo "=================================================================="
 echo "🎉 ALL LOCAL INTEGRATION TESTS PASSED 100%! SAFE TO COMMIT & PUSH."

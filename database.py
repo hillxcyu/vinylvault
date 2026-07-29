@@ -1346,24 +1346,14 @@ class VinylDatabase:
                 return
 
             if len(fs_recs) > 0:
-                print(f"Firestore active with {len(fs_recs)} records. Merging with local data...")
-                merged_map = {}
-                for r in self.records:
-                    rec_id = r.get("id")
-                    if rec_id:
-                        merged_map[rec_id] = r
-                for r in fs_recs:
-                    rec_id = r.get("id")
-                    if rec_id:
-                        merged_map[rec_id] = r
-
-                merged_list = list(merged_map.values())
-                self.records = merged_list
+                print(f"Firestore active with {len(fs_recs)} records. Firestore is single source of truth.")
+                self.records = fs_recs
                 self.save_records()
-                print(f"Startup sync complete: {len(self.records)} records active.")
+                print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
             else:
-                print("Firestore collection is verified empty. Initializing seed from local records...")
-                self.firestore.save_all_records_batch(self.records)
+                print("Firestore collection is empty. No automatic reseeding. Ready for user records.")
+                self.records = []
+                self.save_records()
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
 
@@ -1378,9 +1368,7 @@ class VinylDatabase:
             except Exception as e:
                 print(f"Error reading records.json: {e}")
 
-        if not loaded:
-            loaded = list(INITIAL_RECORDS)
-
+        # No automatic reseeding from INITIAL_RECORDS
         filtered = [r for r in loaded if r.get("id") != "rec-001" and r.get("title") != "In Rainbows"]
         
         # Deduplicate records by normalized (title, artist)
@@ -1405,12 +1393,50 @@ class VinylDatabase:
                         return data
             except Exception as e:
                 print(f"Error reading spins.json: {e}")
-        initial_spins = [
-            {"id": "spin-1", "recordId": "rec-webarchive-001", "spunAt": "2026-07-14T07:00:00Z", "notes": "Bach French Suites - Excellent pressing"},
-            {"id": "spin-2", "recordId": "rec-webarchive-009", "spunAt": "2026-07-14T06:30:00Z", "notes": "Dvořák Cello Concerto performance"}
-        ]
-        self._save_json(SPINS_FILE, initial_spins)
-        return initial_spins
+        return []
+
+    def export_backup(self) -> Dict[str, Any]:
+        return {
+            "version": "1.0",
+            "exportedAt": datetime.utcnow().isoformat() + "Z",
+            "records": self.records,
+            "spins_log": self.spins_log,
+            "wishlist": self.wishlist
+        }
+
+    def restore_backup(self, backup_data: Dict[str, Any]) -> Dict[str, Any]:
+        records = backup_data.get("records", [])
+        spins = backup_data.get("spins_log", [])
+        wishlist = backup_data.get("wishlist", [])
+
+        if not isinstance(records, list):
+            records = []
+
+        self.records = records
+        self.spins_log = spins if isinstance(spins, list) else []
+        self.wishlist = wishlist if isinstance(wishlist, list) else []
+
+        self.save_records()
+        self.save_spins()
+
+        if self.firestore.db and self.records:
+            self.firestore.save_all_records_batch(self.records)
+
+        return {
+            "restoredRecordsCount": len(self.records),
+            "restoredSpinsCount": len(self.spins_log)
+        }
+
+    def restore_sample_data(self) -> Dict[str, Any]:
+        sample_backup = {
+            "version": "1.0",
+            "records": INITIAL_RECORDS,
+            "spins_log": [
+                {"id": "spin-1", "recordId": "rec-webarchive-001", "spunAt": "2026-07-14T07:00:00Z", "notes": "Bach French Suites - Excellent pressing"}
+            ],
+            "wishlist": list(INITIAL_WISHLIST)
+        }
+        return self.restore_backup(sample_backup)
 
     def _save_json(self, filepath: str, data: Any):
         try:

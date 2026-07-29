@@ -3,9 +3,10 @@ import uuid
 import json
 import re
 import logging
+from datetime import datetime
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
@@ -483,6 +484,32 @@ async def pronounce_endpoint(req: PronounceRequest):
         "originalText": text,
         "cleanText": clean_text or text
     }
+
+@app.get("/api/backup")
+async def export_backup_endpoint():
+    data = db.export_backup()
+    return JSONResponse(
+        content=data,
+        headers={
+            "Content-Disposition": f"attachment; filename=vinyl_vault_backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        }
+    )
+
+@app.post("/api/restore")
+async def restore_backup_endpoint(file: UploadFile = File(...)):
+    contents = await file.read()
+    try:
+        data = json.loads(contents)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON backup file.")
+
+    res = db.restore_backup(data)
+    return {"status": "success", "restored": res}
+
+@app.post("/api/restore-sample-data")
+async def restore_sample_data_endpoint():
+    res = db.restore_sample_data()
+    return {"status": "success", "restored": res}
 
 @app.post("/api/batch-import-webarchive")
 async def batch_import_route():
