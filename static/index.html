@@ -357,10 +357,31 @@
     </div>
   </div>
 
+  <!-- Apple HIG Floating Navigation Pill Dock (Primary Mobile Navigation) -->
+  <div id="floatingMobileNavDock" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-1 border border-amber-500/40 bg-stone-950/95 backdrop-blur-2xl shadow-amber-500/20">
+    <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-circle-play text-sm"></i>
+      <span class="hidden xs:inline sm:inline">Spinning</span>
+    </button>
+    <button id="mobileNavCrate" onclick="switchTab('crate')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-md active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-box-archive text-sm"></i>
+      <span class="hidden xs:inline sm:inline">Crate</span>
+    </button>
+    <button id="mobileNavChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-1.5">
+      <i class="fa-solid fa-hourglass-half text-amber-400 text-sm"></i>
+      <span class="hidden xs:inline sm:inline">Chronicle</span>
+    </button>
+    <div class="h-4 w-[1px] bg-stone-800 mx-0.5"></div>
+    <button onclick="openScannerModal()" class="px-3 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs shadow-md flex items-center gap-1 transition-all active:scale-95">
+      <i class="fa-solid fa-camera"></i>
+      <span>Scan</span>
+    </button>
+  </div>
+
   <!-- Floating Action Button (FAB) for Mobile Chat Overlay -->
-  <button id="chatToggleFab" onclick="openChatModal()" class="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold px-4 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 border border-amber-400/40 hover:scale-105 transition-all">
-    <i class="fa-solid fa-comments text-lg"></i>
-    <span class="text-xs font-bold">AI Chat</span>
+  <button id="chatToggleFab" onclick="openChatModal()" class="fixed bottom-6 right-4 sm:right-6 z-40 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold p-3.5 rounded-full shadow-2xl flex items-center gap-2 border border-amber-400/40 hover:scale-105 transition-all">
+    <i class="fa-solid fa-comments text-base"></i>
+    <span class="hidden md:inline text-xs font-bold">AI Chat</span>
   </button>
 
   <!-- Fullscreen Lightbox Image Viewer Modal -->
@@ -1779,25 +1800,5 @@
     fetchStats();
     fetchChronicle();
   </script>
-  <!-- Apple HIG Floating Navigation Pill Dock -->
-  <div style="position: fixed !important; bottom: 24px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 999999 !important;" class="glass-panel rounded-full px-4 py-2 shadow-2xl flex items-center gap-2 border border-amber-500/40 bg-stone-950/95 backdrop-blur-2xl shadow-amber-500/20">
-    <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-2">
-      <i class="fa-solid fa-circle-play text-sm"></i>
-      <span>Spinning</span>
-    </button>
-    <button id="mobileNavCrate" onclick="switchTab('crate')" class="px-4 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-md active:scale-95 flex items-center gap-2">
-      <i class="fa-solid fa-box-archive text-sm"></i>
-      <span>Crate</span>
-    </button>
-    <button id="mobileNavChronicle" onclick="switchTab('chronicle')" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-stone-400 active:scale-95 flex items-center gap-2">
-      <i class="fa-solid fa-hourglass-half text-amber-400 text-sm"></i>
-      <span>Chronicle</span>
-    </button>
-    <div class="h-4 w-[1px] bg-stone-800 mx-1"></div>
-    <button onclick="openScannerModal()" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs shadow-md flex items-center gap-1.5 transition-all active:scale-95">
-      <i class="fa-solid fa-camera"></i>
-      <span>Scan</span>
-    </button>
-  </div>
 </body>
 </html>
