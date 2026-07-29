@@ -1,35 +1,37 @@
-# 📋 Master Execution Plan: Classical Infographic & Composer Knowledge Dashboard
+# 📋 Master Execution Plan: Untruncated Titles & Expanded Composer Deep-Dive
 
-### Timestamp: 2026-07-29T05:24:00Z
+### Timestamp: 2026-07-29T05:39:00Z
 
 ## Goal
-Transform the **Chronicle** tab into a rich, educational **Classical Collection Infographic & Composer Knowledge Dashboard**. Provide users with visual analytics on their classical vinyl collection, including era distributions, composer lifespans, countries of origin, and key musical style characteristics.
+1. **Remove Title Truncation**: Allow full album titles to render naturally with clean line-wrapping (`leading-snug`) across Crate grid cards, Chronicle timeline items, and Now Spinning hero views.
+2. **Expand Composer Knowledge Base & Deep-Dive Modal**:
+   - Enrich `COMPOSER_DATABASE` in `classical_service.py` with in-depth biographies, musical innovations, historical context, and signature compositions.
+   - Create a dedicated **Composer Deep-Dive Modal** (`#composerModal`) in `static/index.html` displaying full biography, country flag, lifespan, key innovations, and a filtered list of all albums by that composer with 1-click spin buttons.
 
 ---
 
 ## 🎯 Step-by-Step Implementation Plan
 
-### Step 1: Composer Knowledge Base & Analytics Engine (`classical_service.py`)
-- Add a curated `COMPOSER_KNOWLEDGE_BASE` dictionary mapping major classical composers (Bach, Vivaldi, Mozart, Beethoven, Chopin, Tchaikovsky, Brahms, Debussy, Stravinsky, etc.) to:
-  - **Lifespan**: e.g., `1685 – 1750`
-  - **Country & Flag**: e.g., `🇩🇪 Germany`, `🇦🇹 Austria`, `🇫🇷 France`, `🇮🇹 Italy`, `🇷🇺 Russia`
-  - **Key Style / Innovations**: e.g., *Polyphonic Counterpoint, Orchestral Symphonism, Romantic Expressionism*.
-- Update `get_chronicle_data()` to compute:
-  - `eraPercentages`: Percentage breakdown of the collection by era.
-  - `topComposers`: List of detected composers in the user's collection enriched with metadata.
-  - `timelineSpan`: Min/Max years covered in the collection.
+### Step 1: Remove Album Title Truncation (`static/index.html`)
+- Remove `truncate` classes from album title elements in `renderRecordsGrid()`, `renderChronicle()`, and `updateNowSpinningUI()`.
+- Apply `leading-snug break-words` for clean multiline title presentation.
 
-### Step 2: Interactive Infographic & Analytics Banner (`static/index.html`)
-- Create `#chronicleInfographicSection` in the Chronicle tab:
-  - **Visual Era Distribution Progress Bar**: Multi-colored bar showing exact percentages of Baroque, Classical, Romantic, Modern, and Contemporary records.
-  - **Composer Knowledge Cards / Badges**: Interactive, horizontally scrollable or grid-based cards showing composer portraits/icons, lifespan, country flag, and owned album count.
-  - **Click-to-Filter**: Clicking any composer badge or era segment filters the timeline below.
+### Step 2: Expand Composer Database (`classical_service.py`)
+- Expand `COMPOSER_DATABASE` with:
+  - `bio`: In-depth 2-3 sentence historical profile.
+  - `innovations`: Major musical contributions (e.g., *Development of 4-movement symphonic form, Wagnerian Leitmotifs*).
+  - `keyWorks`: Signature masterpieces.
 
-### Step 3: Verification & Integration Tests
-- Run `./test_local_integration.sh` to verify API stability.
+### Step 3: Interactive Composer Modal (`static/index.html`)
+- Add `#composerModal` in `static/index.html` with glassmorphic styling (`ios-liquid-glass`).
+- When a user clicks any Composer Card, trigger `openComposerModal(composerName)`.
+- Display full biography, country flag, lifespan, musical innovations, and a list of their albums in the user's collection.
+
+### Step 4: Verification & Integration Tests
+- Run `./test_local_integration.sh`.
 - Restart local Docker container and commit to `main`.
 
 ---
 
 ## 💬 User Review Request
-Please review this plan. Upon your confirmation, we will proceed to `DEFINE.md` for task decomposition and execution!
+Please review this plan. Upon your confirmation, we will proceed with execution!

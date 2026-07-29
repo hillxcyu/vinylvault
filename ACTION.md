@@ -1,6 +1,6 @@
-# ⚡ ACTION: Mobile UI Overhaul & Classical Infographic Execution Log
+# ⚡ ACTION: Mobile UI & Composer Deep-Dive Execution Log
 
-### Timestamp: 2026-07-29T05:30:15Z
+### Timestamp: 2026-07-29T06:19:35Z
 
 ## Status
 - **Plan**: Completed
@@ -11,25 +11,17 @@
 
 ## Log of Executed Actions
 
-### Action 1: Viewport & Safe-Area Setup
-- Updated `<meta name="viewport">` with `viewport-fit=cover, user-scalable=no`.
-- Added `<meta name="theme-color" content="#09090b">`.
-- Added iOS Web App standalone metadata (`mobile-web-app-capable`).
+### Action 1: Full Untruncated Album Titles
+- Removed `truncate` class from album titles across Crate grid cards and Chronicle timeline list items.
+- Applied `leading-snug break-words` for clean multiline wrapping so long classical album titles are never cut off.
 
-### Action 2: iOS 18 Liquid Glass & Single Column Mobile Cards
-- Implemented `.ios-liquid-glass` backdrop blur class for Control Center aesthetics.
-- Updated Crate layout to single column (`grid-cols-1` on mobile) with 1:1 full-bleed album cover art.
-- Added `fadeInUp` card entrance transition animations with staggered delays.
+### Action 2: Expanded Composer Knowledge Base (`classical_service.py`)
+- Enriched `COMPOSER_DATABASE` with in-depth biographies, musical innovations, country flags, and signature masterpieces for all classical composers.
 
-### Action 3: Pinned Header with Era Dropdown Selection
-- Built sticky, pinned top header (`sticky top-0 z-40`) featuring a quick-selection **Era Dropdown Menu** (`select#eraSelectHeader`).
+### Action 3: Interactive Composer Deep-Dive Modal (`static/index.html`)
+- Built `#composerModal` overlay for deep-dive composer explorations.
+- Added `openComposerModal(comp)` displaying composer bio, flag, lifespan, key innovations, and a filtered list of all albums by that composer in the user's collection.
 
-### Action 4: Classical Infographic & Composer Knowledge Dashboard
-- Created `#chronicleInfographicSection` in Chronicle tab.
-- Added visual **Era Ratio Bar** displaying percentage breakdown across Baroque, Classical, Romantic, Modern, and Contemporary eras.
-- Added **Composer Knowledge Cards Grid** displaying composer lifespans, country flags, key style highlights, and owned album counts.
-- Linked 1-click filtering from composer cards directly into Crate search.
-
-### Action 5: Verification & Integration Testing
+### Action 4: Verification & Test Suite
 - Ran `./test_local_integration.sh` — **8/8 API integration tests passed 100%**.
-- Confirmed `GET /api/chronicle` returns enriched `composerStats` data.
+- Confirmed full title display and composer modal interaction on local server.

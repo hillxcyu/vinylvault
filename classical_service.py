@@ -73,27 +73,237 @@ CLASSICAL_GENRE_KEYWORDS = [
 ]
 
 COMPOSER_DATABASE = {
-    "bach": {"name": "Johann Sebastian Bach", "lifespan": "1685 – 1750", "country": "Germany", "flag": "🇩🇪", "era": "Baroque", "highlights": "Master of counterpoint, organ fugues & Brandenburg Concertos."},
-    "vivaldi": {"name": "Antonio Vivaldi", "lifespan": "1678 – 1741", "country": "Italy", "flag": "🇮🇹", "era": "Baroque", "highlights": "Virtuoso violinist & composer of 'The Four Seasons'."},
-    "handel": {"name": "George Frideric Handel", "lifespan": "1685 – 1759", "country": "Germany / UK", "flag": "🇬🇧", "era": "Baroque", "highlights": "Famous for Messiah, Water Music & majestic choral works."},
-    "mozart": {"name": "Wolfgang Amadeus Mozart", "lifespan": "1756 – 1791", "country": "Austria", "flag": "🇦🇹", "era": "Classical", "highlights": "Child prodigy, master of operas, symphonies & piano concertos."},
-    "beethoven": {"name": "Ludwig van Beethoven", "lifespan": "1770 – 1827", "country": "Germany", "flag": "🇩🇪", "era": "Classical / Romantic", "highlights": "Bridged Classical & Romantic eras, 9 monumental symphonies."},
-    "haydn": {"name": "Joseph Haydn", "lifespan": "1732 – 1809", "country": "Austria", "flag": "🇦🇹", "era": "Classical", "highlights": "'Father of the Symphony' & string quartet pioneer."},
-    "schubert": {"name": "Franz Schubert", "lifespan": "1797 – 1828", "country": "Austria", "flag": "🇦🇹", "era": "Romantic", "highlights": "Master of German Lieder, Unfinished Symphony & chamber music."},
-    "chopin": {"name": "Frédéric Chopin", "lifespan": "1810 – 1849", "country": "Poland / France", "flag": "🇵🇱", "era": "Romantic", "highlights": "The 'Poet of the Piano', nocturnes, mazurkas & ballades."},
-    "tchaikovsky": {"name": "Pyotr Ilyich Tchaikovsky", "lifespan": "1840 – 1893", "country": "Russia", "flag": "🇷🇺", "era": "Romantic", "highlights": "Swan Lake, The Nutcracker, Pathétique Symphony."},
-    "brahms": {"name": "Johannes Brahms", "lifespan": "1833 – 1897", "country": "Germany", "flag": "🇩🇪", "era": "Romantic", "highlights": "Master of classical forms with deep Romantic passion."},
-    "dvořák": {"name": "Antonín Dvořák", "lifespan": "1841 – 1904", "country": "Czechia", "flag": "🇨🇿", "era": "Romantic", "highlights": "New World Symphony, Slavonic Dances & cello masterpieces."},
-    "dvorak": {"name": "Antonín Dvořák", "lifespan": "1841 – 1904", "country": "Czechia", "flag": "🇨🇿", "era": "Romantic", "highlights": "New World Symphony, Slavonic Dances & cello masterpieces."},
-    "debussy": {"name": "Claude Debussy", "lifespan": "1862 – 1918", "country": "France", "flag": "🇫🇷", "era": "Impressionist", "highlights": "Pioneer of Impressionism: Clair de lune, La Mer."},
-    "ravel": {"name": "Maurice Ravel", "lifespan": "1875 – 1937", "country": "France", "flag": "🇫🇷", "era": "Impressionist", "highlights": "Master orchestrator: Boléro, Daphnis et Chloé."},
-    "stravinsky": {"name": "Igor Stravinsky", "lifespan": "1882 – 1971", "country": "Russia", "flag": "🇷🇺", "era": "Modern", "highlights": "Revolutionary rhythm & harmony: The Rite of Spring."},
-    "shostakovich": {"name": "Dmitri Shostakovich", "lifespan": "1906 – 1975", "country": "Russia", "flag": "🇷🇺", "era": "Modern", "highlights": "Dramatic 20th-century symphonist & string quartets."},
-    "prokofiev": {"name": "Sergei Prokofiev", "lifespan": "1891 – 1953", "country": "Russia", "flag": "🇷🇺", "era": "Modern", "highlights": "Peter and the Wolf, Romeo and Juliet ballet, piano concertos."},
-    "bartók": {"name": "Béla Bartók", "lifespan": "1881 – 1945", "country": "Hungary", "flag": "🇭🇺", "era": "Modern", "highlights": "Ethnomusicologist & pioneer of modern string & orchestral works."},
-    "bartok": {"name": "Béla Bartók", "lifespan": "1881 – 1945", "country": "Hungary", "flag": "🇭🇺", "era": "Modern", "highlights": "Ethnomusicologist & pioneer of modern string & orchestral works."},
-    "glass": {"name": "Philip Glass", "lifespan": "1937 – Present", "country": "USA", "flag": "🇺🇸", "era": "Contemporary", "highlights": "Minimalist pioneer: Einstein on the Beach, Glassworks."},
-    "einaudi": {"name": "Ludovico Einaudi", "lifespan": "1955 – Present", "country": "Italy", "flag": "🇮🇹", "era": "Contemporary", "highlights": "Modern ambient minimalist piano compositions."}
+    "bach": {
+        "name": "Johann Sebastian Bach",
+        "lifespan": "1685 – 1750",
+        "country": "Germany",
+        "flag": "🇩🇪",
+        "era": "Baroque",
+        "highlights": "Master of counterpoint, organ fugues & Brandenburg Concertos.",
+        "bio": "Johann Sebastian Bach is widely considered one of the greatest composers in Western history. Born in Eisenach, Germany, he enriched established German styles through his mastery of counterpoint, harmonic organization, and motivic development.",
+        "innovations": "Architect of modern polyphony, Well-Tempered Klavier tuning, complex fugal structures.",
+        "keyWorks": ["Brandenburg Concertos", "The Well-Tempered Clavier", "Mass in B Minor", "Goldberg Variations"]
+    },
+    "vivaldi": {
+        "name": "Antonio Vivaldi",
+        "lifespan": "1678 – 1741",
+        "country": "Italy",
+        "flag": "🇮🇹",
+        "era": "Baroque",
+        "highlights": "Virtuoso violinist & composer of 'The Four Seasons'.",
+        "bio": "Known as 'The Red Priest' due to his red hair and ordination as a priest, Vivaldi was an Italian Baroque composer, virtuoso violinist, and teacher in Venice. He wrote over 500 concertos.",
+        "innovations": "Pioneered ritornello form in solo concertos, programmatic musical storytelling.",
+        "keyWorks": ["The Four Seasons", "Gloria in D major", "L'estro armonico", "Stabat Mater"]
+    },
+    "handel": {
+        "name": "George Frideric Handel",
+        "lifespan": "1685 – 1759",
+        "country": "Germany / UK",
+        "flag": "🇬🇧",
+        "era": "Baroque",
+        "highlights": "Famous for Messiah, Water Music & majestic choral works.",
+        "bio": "German-born British Baroque composer renowned for his operas, oratorios, anthems, and organ concertos. He established himself in London and became a naturalized British subject.",
+        "innovations": "Elevated English choral oratorio, dramatic theatricality in sacred music.",
+        "keyWorks": ["Messiah", "Water Music", "Music for the Royal Fireworks", "Zadok the Priest"]
+    },
+    "mozart": {
+        "name": "Wolfgang Amadeus Mozart",
+        "lifespan": "1756 – 1791",
+        "country": "Austria",
+        "flag": "🇦🇹",
+        "era": "Classical",
+        "highlights": "Child prodigy, master of operas, symphonies & piano concertos.",
+        "bio": "A child prodigy born in Salzburg, Mozart composed over 600 works spanning every musical genre of his era. His melodic genius and structural perfection defined the High Classical style.",
+        "innovations": "Mastered and refined sonata-allegro form, opera buffa, and the classical piano concerto.",
+        "keyWorks": ["Symphony No. 41 'Jupiter'", "The Magic Flute", "Requiem in D minor", "Don Giovanni"]
+    },
+    "beethoven": {
+        "name": "Ludwig van Beethoven",
+        "lifespan": "1770 – 1827",
+        "country": "Germany",
+        "flag": "🇩🇪",
+        "era": "Classical / Romantic",
+        "highlights": "Bridged Classical & Romantic eras, 9 monumental symphonies.",
+        "bio": "A crucial figure in the transition between the Classical and Romantic eras in Western art music, Beethoven expanded the scope of symphonic, sonata, and string quartet music even while suffering complete deafness.",
+        "innovations": "Expansion of symphonic structure, introduce choral elements to symphony (Symphony No. 9), heroic musical narrative.",
+        "keyWorks": ["Symphony No. 5 & No. 9", "Piano Sonata No. 14 'Moonlight'", "Violin Concerto", "Fidelio"]
+    },
+    "haydn": {
+        "name": "Joseph Haydn",
+        "lifespan": "1732 – 1809",
+        "country": "Austria",
+        "flag": "🇦🇹",
+        "era": "Classical",
+        "highlights": "'Father of the Symphony' & string quartet pioneer.",
+        "bio": "Joseph Haydn was instrumental in the development of chamber music such as the piano trio and string quartet. His contributions to musical form have earned him the titles 'Father of the Symphony' and 'Father of the String Quartet'.",
+        "innovations": "Established 4-movement symphonic format, developed classical chamber humor and motivic economy.",
+        "keyWorks": ["Symphony No. 104 'London'", "The Creation", "String Quartets Op. 76", "Trumpet Concerto"]
+    },
+    "schubert": {
+        "name": "Franz Schubert",
+        "lifespan": "1797 – 1828",
+        "country": "Austria",
+        "flag": "🇦🇹",
+        "era": "Romantic",
+        "highlights": "Master of German Lieder, Unfinished Symphony & chamber music.",
+        "bio": "Despite a short life, Schubert left behind a vast oeuvre, including over 600 secular vocal works (mainly Lieder), seven complete symphonies, sacred music, operas, and incidental music.",
+        "innovations": "Elevated German Lieder (art songs) to high art, pioneering Romantic lyrical harmonic shifts.",
+        "keyWorks": ["Symphony No. 8 'Unfinished'", "Trout Quintet", "Winterreise", "String Quartet 'Death and the Maiden'"]
+    },
+    "chopin": {
+        "name": "Frédéric Chopin",
+        "lifespan": "1810 – 1849",
+        "country": "Poland / France",
+        "flag": "🇵🇱",
+        "era": "Romantic",
+        "highlights": "The 'Poet of the Piano', nocturnes, mazurkas & ballades.",
+        "bio": "Chopin was a Polish composer and virtuoso pianist of the Romantic era who wrote primarily for solo piano. All of his compositions feature the piano, often combining Polish folk rhythms with French elegance.",
+        "innovations": "Invented the instrumental ballade, revolutionized piano legato, rubato, and chromatic expressive nuances.",
+        "keyWorks": ["Nocturnes", "24 Preludes Op. 28", "Ballade No. 1 in G minor", "Polonaise in A-flat major"]
+    },
+    "tchaikovsky": {
+        "name": "Pyotr Ilyich Tchaikovsky",
+        "lifespan": "1840 – 1893",
+        "country": "Russia",
+        "flag": "🇷🇺",
+        "era": "Romantic",
+        "highlights": "Swan Lake, The Nutcracker, Pathétique Symphony.",
+        "bio": "The first Russian composer whose music made a lasting impression internationally, Tchaikovsky wrote some of the most popular concert and theatrical music in the current classical repertoire.",
+        "innovations": "Elevated ballet music into symphonic art, emotional Russian orchestral nationalism.",
+        "keyWorks": ["Swan Lake", "The Nutcracker", "Symphony No. 6 'Pathétique'", "Violin Concerto in D major"]
+    },
+    "brahms": {
+        "name": "Johannes Brahms",
+        "lifespan": "1833 – 1897",
+        "country": "Germany",
+        "flag": "🇩🇪",
+        "era": "Romantic",
+        "highlights": "Master of classical forms with deep Romantic passion.",
+        "bio": "Brahms was a German composer, pianist, and conductor of the Romantic period. He maintained a devotion to Classical structures while breathing rich, warm Romantic harmony into his works.",
+        "innovations": "'Developing variation' technique, revival of Baroque passacaglia in Romantic symphonies.",
+        "keyWorks": ["Symphony No. 4 in E minor", "A German Requiem", "Violin Concerto in D", "Hungarian Dances"]
+    },
+    "dvořák": {
+        "name": "Antonín Dvořák",
+        "lifespan": "1841 – 1904",
+        "country": "Czechia",
+        "flag": "🇨🇿",
+        "era": "Romantic",
+        "highlights": "New World Symphony, Slavonic Dances & cello masterpieces.",
+        "bio": "Dvořák frequently employed aspects, specifically rhythms, of the folk music of Moravia and his native Bohemia. He later served as director of the National Conservatory of Music in New York.",
+        "innovations": "Incorporated Czech and African American folk melodies into classical symphonic form.",
+        "keyWorks": ["Symphony No. 9 'From the New World'", "Cello Concerto in B minor", "Slavonic Dances", "American String Quartet"]
+    },
+    "dvorak": {
+        "name": "Antonín Dvořák",
+        "lifespan": "1841 – 1904",
+        "country": "Czechia",
+        "flag": "🇨🇿",
+        "era": "Romantic",
+        "highlights": "New World Symphony, Slavonic Dances & cello masterpieces.",
+        "bio": "Dvořák frequently employed aspects, specifically rhythms, of the folk music of Moravia and his native Bohemia. He later served as director of the National Conservatory of Music in New York.",
+        "innovations": "Incorporated Czech and African American folk melodies into classical symphonic form.",
+        "keyWorks": ["Symphony No. 9 'From the New World'", "Cello Concerto in B minor", "Slavonic Dances", "American String Quartet"]
+    },
+    "debussy": {
+        "name": "Claude Debussy",
+        "lifespan": "1862 – 1918",
+        "country": "France",
+        "flag": "🇫🇷",
+        "era": "Impressionist",
+        "highlights": "Pioneer of Impressionism: Clair de lune, La Mer.",
+        "bio": "Debussy was the primary figure of Impressionist music. His use of non-traditional scales and chromaticism influenced almost every major 20th-century composer.",
+        "innovations": "Whole-tone and pentatonic scales, timbre as a primary structural element.",
+        "keyWorks": ["Clair de lune", "Prélude à l'après-midi d'un faune", "La Mer", "Suite bergamasque"]
+    },
+    "ravel": {
+        "name": "Maurice Ravel",
+        "lifespan": "1875 – 1937",
+        "country": "France",
+        "flag": "🇫🇷",
+        "era": "Impressionist",
+        "highlights": "Master orchestrator: Boléro, Daphnis et Chloé.",
+        "bio": "Ravel was a French composer, pianist and conductor, often associated with Impressionism along with his elder contemporary Claude Debussy. He was a master of orchestration.",
+        "innovations": "Complex modal harmonies, ostinato orchestration, Spanish and jazz rhythm fusions.",
+        "keyWorks": ["Boléro", "Daphnis et Chloé", "Pavane pour une infante défunte", "Gaspard de la nuit"]
+    },
+    "stravinsky": {
+        "name": "Igor Stravinsky",
+        "lifespan": "1882 – 1971",
+        "country": "Russia",
+        "flag": "🇷🇺",
+        "era": "Modern",
+        "highlights": "Revolutionary rhythm & harmony: The Rite of Spring.",
+        "bio": "Widely considered one of the most important and influential composers of the 20th century, Stravinsky's compositional career was notable for its stylistic diversity.",
+        "innovations": "Polyrhythms, asymmetric meters, polytonality, Neoclassical revival.",
+        "keyWorks": ["The Rite of Spring", "The Firebird", "Petrushka", "Symphony of Psalms"]
+    },
+    "shostakovich": {
+        "name": "Dmitri Shostakovich",
+        "lifespan": "1906 – 1975",
+        "country": "Russia",
+        "flag": "🇷🇺",
+        "era": "Modern",
+        "highlights": "Dramatic 20th-century symphonist & string quartets.",
+        "bio": "Shostakovich achieved fame in the Soviet Union under the discipline of Joseph Stalin. His music is characterized by sharp contrasts, elements of the grotesque, and ambivalent tonality.",
+        "innovations": "Use of the DSCH musical monogram, intense tragic symphonism, sarcastic scherzos.",
+        "keyWorks": ["Symphony No. 5 in D minor", "Symphony No. 7 'Leningrad'", "String Quartet No. 8", "Cello Concerto No. 1"]
+    },
+    "prokofiev": {
+        "name": "Sergei Prokofiev",
+        "lifespan": "1891 – 1953",
+        "country": "Russia",
+        "flag": "🇷🇺",
+        "era": "Modern",
+        "highlights": "Peter and the Wolf, Romeo and Juliet ballet, piano concertos.",
+        "bio": "A Russian Soviet composer, pianist, and conductor, Prokofiev is regarded as one of the major composers of the 20th century, creating masterpieces across numerous genres.",
+        "innovations": "Motoric rhythms, lyricism juxtaposed with harsh dissonance, Neoclassical revival.",
+        "keyWorks": ["Peter and the Wolf", "Romeo and Juliet Ballet", "Piano Concerto No. 3", "Symphony No. 1 'Classical'"]
+    },
+    "bartók": {
+        "name": "Béla Bartók",
+        "lifespan": "1881 – 1945",
+        "country": "Hungary",
+        "flag": "🇭🇺",
+        "era": "Modern",
+        "highlights": "Ethnomusicologist & pioneer of modern string & orchestral works.",
+        "bio": "Bartók was a Hungarian composer, pianist, and ethnomusicologist. He is considered one of the most important composers of the 20th century.",
+        "innovations": "Synthesis of Eastern European folk melodies with modern atonality and percussive piano technique.",
+        "keyWorks": ["Concerto for Orchestra", "Music for Strings, Percussion and Celesta", "Mikrokosmos", "Duke Bluebeard's Castle"]
+    },
+    "bartok": {
+        "name": "Béla Bartók",
+        "lifespan": "1881 – 1945",
+        "country": "Hungary",
+        "flag": "🇭🇺",
+        "era": "Modern",
+        "highlights": "Ethnomusicologist & pioneer of modern string & orchestral works.",
+        "bio": "Bartók was a Hungarian composer, pianist, and ethnomusicologist. He is considered one of the most important composers of the 20th century.",
+        "innovations": "Synthesis of Eastern European folk melodies with modern atonality and percussive piano technique.",
+        "keyWorks": ["Concerto for Orchestra", "Music for Strings, Percussion and Celesta", "Mikrokosmos", "Duke Bluebeard's Castle"]
+    },
+    "glass": {
+        "name": "Philip Glass",
+        "lifespan": "1937 – Present",
+        "country": "USA",
+        "flag": "🇺🇸",
+        "era": "Contemporary",
+        "highlights": "Minimalist pioneer: Einstein on the Beach, Glassworks.",
+        "bio": "Philip Glass is an American composer and pianist. He is widely regarded as one of the most influential composers of the late 20th century, famous for his minimalist structures.",
+        "innovations": "Additive rhythmic structures, repetitive ostinato arpeggios, opera/film score minimalism.",
+        "keyWorks": ["Einstein on the Beach", "Glassworks", "Violin Concerto No. 1", "Koyaanisqatsi"]
+    },
+    "einaudi": {
+        "name": "Ludovico Einaudi",
+        "lifespan": "1955 – Present",
+        "country": "Italy",
+        "flag": "🇮🇹",
+        "era": "Contemporary",
+        "highlights": "Modern ambient minimalist piano compositions.",
+        "bio": "Italian pianist and composer known for his meditative, ambient classical compositions blending pop, folk, and minimalist classical textures.",
+        "innovations": "Neo-classical ambient piano melodies, modern film and streaming soundtracks.",
+        "keyWorks": ["Nuvole Bianche", "Experience", "I Giorni", "Una Mattina"]
+    }
 }
 
 NON_CLASSICAL_EXCLUSIONS = [

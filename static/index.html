@@ -445,6 +445,59 @@
     <span class="hidden md:inline text-xs font-bold text-white">AI Chat</span>
   </button>
 
+  <!-- Composer Deep-Dive Knowledge Modal -->
+  <div id="composerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeComposerModal()">
+    <div class="glass-panel max-w-2xl w-full rounded-2xl p-6 relative space-y-5 border border-amber-500/40 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <button onclick="closeComposerModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <!-- Composer Header -->
+      <div class="flex items-start gap-4 border-b border-stone-800 pb-4">
+        <div id="composerModalFlag" class="text-4xl p-3 bg-stone-900 rounded-2xl border border-stone-800 flex items-center justify-center flex-shrink-0 shadow-inner">
+          🎼
+        </div>
+        <div class="space-y-1 min-w-0">
+          <div class="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-0.5 rounded-full border border-amber-500/20">
+            <span id="composerModalEra">Baroque Era</span>
+          </div>
+          <h2 id="composerModalName" class="text-2xl font-extrabold text-white tracking-tight">Johann Sebastian Bach</h2>
+          <p id="composerModalLifespan" class="text-xs font-mono text-stone-400">1685 – 1750 • Germany</p>
+        </div>
+      </div>
+
+      <!-- Biography Section -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open text-amber-400"></i> Biography & Historical Context
+        </h4>
+        <p id="composerModalBio" class="text-xs text-stone-300 leading-relaxed bg-stone-950/80 p-3.5 rounded-xl border border-stone-800/80">
+          Detailed biography...
+        </p>
+      </div>
+
+      <!-- Musical Innovations -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-amber-400"></i> Musical Innovations & Legacy
+        </h4>
+        <p id="composerModalInnovations" class="text-xs text-amber-300/90 bg-amber-500/10 p-3.5 rounded-xl border border-amber-500/20 leading-relaxed font-medium">
+          Innovations...
+        </p>
+      </div>
+
+      <!-- Masterpieces & Works in Collection -->
+      <div class="space-y-3 pt-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-compact-disc text-amber-400"></i> Albums in Your Collection
+        </h4>
+        <div id="composerModalAlbumsGrid" class="space-y-2">
+          <!-- Dynamically populated album list -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Fullscreen Lightbox Image Viewer Modal -->
   <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeLightbox()">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center cursor-default" onclick="event.stopPropagation()">
@@ -798,10 +851,7 @@
               </div>
             `;
             card.onclick = () => {
-              selectedEraFilter = 'all';
-              document.getElementById('searchInput').value = comp.name.split(' ').pop();
-              filterCrate();
-              switchTab('crate');
+              openComposerModal(comp);
             };
             composerGrid.appendChild(card);
           });
@@ -851,7 +901,7 @@
                   </span>
                   ${rec.releaseYear ? `<span class="text-[10px] font-mono text-stone-500">${rec.releaseYear}</span>` : ''}
                 </div>
-                <div class="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors truncate">${rec.title}</div>
+                <div class="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors leading-snug break-words">${rec.title}</div>
                 <div class="text-xs font-medium text-stone-400 truncate">${rec.artist}</div>
                 ${rec.aiInsight ? `<div class="mt-1.5 text-[11px] text-amber-300/90 bg-stone-950 p-2 rounded-lg border border-amber-500/20 leading-relaxed italic"><i class="fa-solid fa-sparkles text-[9px] text-amber-400 mr-1.5"></i>${rec.aiInsight}</div>` : ''}
               </div>
@@ -883,6 +933,51 @@
         `;
         container.appendChild(section);
       });
+    }
+
+    function openComposerModal(comp) {
+      document.getElementById('composerModalFlag').innerText = comp.flag || '🎼';
+      document.getElementById('composerModalEra').innerText = `${comp.era || 'Classical'} Era`;
+      document.getElementById('composerModalName').innerText = comp.name;
+      document.getElementById('composerModalLifespan').innerText = `${comp.lifespan} • ${comp.country}`;
+      document.getElementById('composerModalBio').innerText = comp.bio || comp.highlights;
+      document.getElementById('composerModalInnovations').innerText = comp.innovations || 'Master composer of classical music history.';
+
+      const grid = document.getElementById('composerModalAlbumsGrid');
+      grid.innerHTML = '';
+
+      const searchKey = comp.name.split(' ').pop().toLowerCase();
+      const matched = allRecords.filter(r => 
+        (r.artist && r.artist.toLowerCase().includes(searchKey)) || 
+        (r.title && r.title.toLowerCase().includes(searchKey))
+      );
+
+      if (matched.length === 0) {
+        grid.innerHTML = '<div class="text-xs text-stone-500 py-2">No matching albums found in current crate.</div>';
+      } else {
+        matched.forEach(rec => {
+          const row = document.createElement('div');
+          row.className = 'bg-stone-900/90 hover:bg-stone-900 border border-stone-800 p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors';
+          row.innerHTML = `
+            <div class="space-y-1 min-w-0 flex-1">
+              <div class="font-extrabold text-xs text-white leading-snug break-words">${rec.title}</div>
+              <div class="text-[11px] text-stone-400 truncate">${rec.artist}</div>
+            </div>
+            <button onclick="spinRecord('${rec.id}'); closeComposerModal();" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full flex items-center gap-1 shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-play text-[10px]"></i> Spin
+            </button>
+          `;
+          grid.appendChild(row);
+        });
+      }
+
+      document.getElementById('composerModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeComposerModal() {
+      document.getElementById('composerModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
     }
 
     function updateNowSpinningUI_byID(id) {
@@ -1292,7 +1387,7 @@
 
           <!-- Album Meta Info & Action Footer -->
           <div class="space-y-1.5 pt-1">
-            <div class="font-extrabold text-base text-white truncate group-hover:text-amber-400 transition-colors">${rec.title}</div>
+            <div class="font-extrabold text-base text-white leading-snug break-words group-hover:text-amber-400 transition-colors">${rec.title}</div>
             <div class="text-xs font-medium text-stone-400 truncate flex items-center justify-between">
               <span>${rec.artist}</span>
               ${rec.releaseYear ? `<span class="text-stone-500 font-mono text-[11px]">${rec.releaseYear}</span>` : ''}
