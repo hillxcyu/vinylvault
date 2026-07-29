@@ -29,38 +29,39 @@
 <body class="min-h-screen pb-24 sm:pb-12 flex flex-col bg-stone-950 text-stone-100 font-sans selection:bg-amber-500 selection:text-black">
 
   <!-- Navigation Bar with Tabs & Header Stats -->
-  <nav class="sticky top-0 z-40 glass-panel border-b border-gray-800 px-4 py-3 mb-6">
+  <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/80 backdrop-blur-2xl px-4 py-3 mb-6">
     <div class="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
       <!-- Logo & Title -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-xl">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500/30 to-amber-400/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xl shadow-lg shadow-amber-500/10">
           <i class="fa-solid fa-compact-disc"></i>
         </div>
         <div>
-          <h1 class="font-bold text-xl tracking-tight text-white flex items-center gap-2">
+          <h1 class="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
             Vinyl Vault
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-widest">Mobile 2.0</span>
           </h1>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
       <div class="flex items-center gap-2">
-        <div class="flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800 shadow-inner">
-          <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
-            <i class="fa-solid fa-circle-play"></i> Now Spinning
+        <div class="flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
+          <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
+            <i class="fa-solid fa-circle-play"></i> <span class="hidden md:inline">Now Spinning</span><span class="md:hidden">Spinning</span>
           </button>
-          <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2">
-            <i class="fa-solid fa-box-archive"></i> My Crate
-            <span id="recordCountBadge" class="text-xs font-semibold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">0</span>
+          <button id="tabBtnCrate" onclick="switchTab('crate')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2 active-bounce">
+            <i class="fa-solid fa-box-archive"></i> <span class="hidden md:inline">My Crate</span><span class="md:hidden">Crate</span>
+            <span id="recordCountBadge" class="text-xs font-extrabold px-2 py-0.5 bg-black/20 text-stone-900 rounded-full border border-black/10">0</span>
           </button>
-          <button id="tabBtnChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2">
+          <button id="tabBtnChronicle" onclick="switchTab('chronicle')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
             <i class="fa-solid fa-hourglass-half text-amber-500"></i> Chronicle
           </button>
         </div>
 
-        <button onclick="openScannerModal()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-full text-xs sm:text-sm shadow-md flex items-center gap-2 transition-all">
+        <button onclick="openScannerModal()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs sm:text-sm shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all active:scale-95">
           <i class="fa-solid fa-camera"></i>
-          <span class="hidden sm:inline">Scan Cover</span>
+          <span>Scan Cover</span>
         </button>
       </div>
     </div>
