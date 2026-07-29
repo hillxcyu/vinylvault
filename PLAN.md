@@ -1,35 +1,38 @@
-# 📋 Master Execution Plan: Untruncated Titles & Expanded Composer Deep-Dive
+# 📋 Master Execution Plan: Enhanced Comfortable Typography & Readability
 
-### Timestamp: 2026-07-29T05:39:00Z
+### Timestamp: 2026-07-29T08:40:15Z
 
 ## Goal
-1. **Remove Title Truncation**: Allow full album titles to render naturally with clean line-wrapping (`leading-snug`) across Crate grid cards, Chronicle timeline items, and Now Spinning hero views.
-2. **Expand Composer Knowledge Base & Deep-Dive Modal**:
-   - Enrich `COMPOSER_DATABASE` in `classical_service.py` with in-depth biographies, musical innovations, historical context, and signature compositions.
-   - Create a dedicated **Composer Deep-Dive Modal** (`#composerModal`) in `static/index.html` displaying full biography, country flag, lifespan, key innovations, and a filtered list of all albums by that composer with 1-click spin buttons.
+Increase font sizes across all key UI components in `static/index.html` (Crate Cards, Chronicle Timeline, Composer Knowledge Cards, Composer Modal, and Navigation) for an effortless, comfortable reading experience.
 
 ---
 
 ## 🎯 Step-by-Step Implementation Plan
 
-### Step 1: Remove Album Title Truncation (`static/index.html`)
-- Remove `truncate` classes from album title elements in `renderRecordsGrid()`, `renderChronicle()`, and `updateNowSpinningUI()`.
-- Apply `leading-snug break-words` for clean multiline title presentation.
+### Step 1: Crate Cards Typography (`renderRecordsGrid`)
+- Increase album title from `text-base` to `text-lg font-bold`.
+- Increase artist & year from `text-xs` to `text-sm`.
+- Increase genre badge & spin count from `text-[11px]` to `text-xs`.
 
-### Step 2: Expand Composer Database (`classical_service.py`)
-- Expand `COMPOSER_DATABASE` with:
-  - `bio`: In-depth 2-3 sentence historical profile.
-  - `innovations`: Major musical contributions (e.g., *Development of 4-movement symphonic form, Wagnerian Leitmotifs*).
-  - `keyWorks`: Signature masterpieces.
+### Step 2: Chronicle Timeline & Composer Cards (`renderChronicle`)
+- **Chronicle Items**:
+  - Title: `text-sm` -> `text-base font-bold`.
+  - Artist: `text-xs` -> `text-sm`.
+  - Composer badge & release year: `text-[10px]` -> `text-xs`.
+  - AI Insight: `text-[11px]` -> `text-xs leading-relaxed`.
+- **Composer Knowledge Cards**:
+  - Name: `text-sm` -> `text-base font-bold`.
+  - Lifespan & Country: `text-[11px]` -> `text-xs`.
+  - Highlights bio: `text-xs` -> `text-sm leading-relaxed`.
 
-### Step 3: Interactive Composer Modal (`static/index.html`)
-- Add `#composerModal` in `static/index.html` with glassmorphic styling (`ios-liquid-glass`).
-- When a user clicks any Composer Card, trigger `openComposerModal(composerName)`.
-- Display full biography, country flag, lifespan, musical innovations, and a list of their albums in the user's collection.
+### Step 3: Composer Deep-Dive Modal & Tracklist (`#composerModal`)
+- Modal section headings: `text-xs` -> `text-sm font-extrabold`.
+- Bio & Innovations text: `text-xs` -> `text-sm leading-relaxed`.
+- Tracklist items: `text-xs` -> `text-sm`.
 
 ### Step 4: Verification & Integration Tests
 - Run `./test_local_integration.sh`.
-- Restart local Docker container and commit to `main`.
+- Restart local Docker container and commit changes to `main`.
 
 ---
 

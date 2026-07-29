@@ -1,20 +1,22 @@
-# 📝 DEFINE: Task Decomposition - Untruncated Titles & Composer Deep-Dive
+# 📝 DEFINE: Task Decomposition - Comfortable Typography Upgrade
 
-### Timestamp: 2026-07-29T05:39:10Z
+### Timestamp: 2026-07-29T08:40:20Z
 
 ## 🎯 Task Breakdown (TODO List)
 
-- [ ] **[frontend] Full Album Title Display (`static/index.html`)**:
-  - Remove `truncate` from `renderRecordsGrid()` album titles.
-  - Remove `truncate` from `renderChronicle()` album titles.
-  - Add `leading-snug break-words` for clean multiline wrapping.
+- [ ] **[frontend] Crate Cards Font Enlargement (`static/index.html`)**:
+  - Title: `text-base` -> `text-lg font-extrabold`.
+  - Artist: `text-xs` -> `text-sm`.
+  - Badges & Buttons: `text-[11px]` -> `text-xs` / `text-sm`.
 
-- [ ] **[backend] Expanded Composer Database (`classical_service.py`)**:
-  - Add rich `bio`, `innovations`, and `keyWorks` to all composers in `COMPOSER_DATABASE`.
+- [ ] **[frontend] Chronicle & Composer Cards Font Enlargement (`static/index.html`)**:
+  - Chronicle Record Title: `text-sm` -> `text-base font-bold`.
+  - Composer Name: `text-sm` -> `text-base font-bold`.
+  - Composer Bio: `text-xs` -> `text-sm leading-relaxed`.
 
-- [ ] **[frontend] Composer Deep-Dive Modal (`static/index.html`)**:
-  - Build `#composerModal` overlay.
-  - Add `openComposerModal(composerName)` logic to render full biography & owned albums.
+- [ ] **[frontend] Composer Modal & Tracklist Font Enlargement (`static/index.html`)**:
+  - Modal Bio & Innovations: `text-xs` -> `text-sm leading-relaxed`.
+  - Modal Section Headings: `text-xs` -> `text-sm font-extrabold`.
 
 - [ ] **[testing] Integration & Docker Test**:
   - Run `./test_local_integration.sh`.
