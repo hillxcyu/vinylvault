@@ -91,7 +91,9 @@ async def get_wishlist():
 
 @app.get("/api/chronicle")
 async def get_chronicle():
-    return classical_service.get_chronicle_data(db.get_all_records())
+    data = classical_service.get_chronicle_data(db.get_all_records())
+    data["isRebuilding"] = classical_service.is_rebuilding
+    return data
 
 @app.get("/api/stats")
 async def get_stats():

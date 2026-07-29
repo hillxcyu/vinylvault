@@ -142,21 +142,28 @@ class ClassicalService:
         return CLASSICAL_ERAS[2], "Classical Composer"
 
     def _rule_based_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Rule-based chronicle generator fallback.
-        """
-        era_map = {era["id"]: {**era, "count": 0, "records": []} for era in CLASSICAL_ERAS}
+        """Classifies records into classical eras using composer keywords."""
+        era_map = {era["id"]: {**era, "records": [], "count": 0} for era in CLASSICAL_ERAS}
         classical_count = 0
 
-        for rec in records:
-            if not self.is_classical_record(rec):
-                continue
+        for r in records:
+            composer = (r.get("artist") or r.get("title") or "").strip()
+            text_corpus = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
+
+            matched_era_id = "romantic"
+            for era in CLASSICAL_ERAS:
+                for kw in era["keywords"]:
+                    if kw in text_corpus:
+                        matched_era_id = era["id"]
+                        break
+                if matched_era_id == era["id"] and matched_era_id != "romantic":
+                    break
 
             classical_count += 1
-            era, composer = self.classify_record_era(rec)
-            
-            rec_entry = dict(rec)
-            rec_entry["detectedComposer"] = composer
+            era = era_map[matched_era_id]
+
+            rec_entry = dict(r)
+            rec_entry["eraId"] = era["id"]
             rec_entry["eraName"] = era["name"]
             rec_entry["aiInsight"] = f"Masterpiece of the {era['name']} featuring {composer}."
 
@@ -186,21 +193,29 @@ class ClassicalService:
             cached = db.get_chronicle()
             if cached and isinstance(cached, dict) and cached.get("source") == "gemini_3.6_flash" and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0:
                 logger.info("Serving persisted Gemini 3.6 Flash AI Chronicle from Database/Disk.")
+                cached["isRebuilding"] = self.is_rebuilding
                 return cached
 
-        ai_chronicle = gemini_service.generate_chronicle_ai(records)
-        if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
-            ai_chronicle["source"] = "gemini_3.6_flash"
-            db.save_chronicle(ai_chronicle)
-            logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk.")
-            return ai_chronicle
+        self.is_rebuilding = True
+        try:
+            ai_chronicle = gemini_service.generate_chronicle_ai(records)
+            if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
+                ai_chronicle["source"] = "gemini_3.6_flash"
+                db.save_chronicle(ai_chronicle)
+                logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk.")
+                ai_chronicle["isRebuilding"] = False
+                return ai_chronicle
 
-        cached = db.get_chronicle()
-        if cached and isinstance(cached, dict) and "eras" in cached:
-            return cached
+            cached = db.get_chronicle()
+            if cached and isinstance(cached, dict) and "eras" in cached:
+                cached["isRebuilding"] = False
+                return cached
 
-        fallback = self._rule_based_chronicle_data(records)
-        db.save_chronicle(fallback)
-        return fallback
+            fallback = self._rule_based_chronicle_data(records)
+            db.save_chronicle(fallback)
+            fallback["isRebuilding"] = False
+            return fallback
+        finally:
+            self.is_rebuilding = False
 
 classical_service = ClassicalService()

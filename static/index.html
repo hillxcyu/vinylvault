@@ -239,6 +239,20 @@
 
     <!-- TAB 3: CLASSICAL CHRONICLE TIMELINE VIEW -->
     <div id="tabChronicle" class="hidden space-y-8">
+
+      <!-- Chronicle Rebuilding Banner -->
+      <div id="chronicleRebuildingBanner" class="hidden glass-panel rounded-xl p-3.5 border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs font-semibold flex items-center justify-between shadow-lg animate-pulse">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-arrows-rotate animate-spin text-sm"></i>
+          </div>
+          <div>
+            <span class="font-bold text-amber-200 text-sm block">Rebuilding Collection Chronicle...</span>
+            <span class="text-amber-400/80 text-xs">Gemini AI is analyzing your collection and updating historical era timelines in the background.</span>
+          </div>
+        </div>
+      </div>
+
       <div class="glass-panel rounded-2xl p-6 md:p-8 space-y-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-stone-800/80 pb-4">
           <div>
@@ -534,6 +548,7 @@
 
     let chronicleData = null;
     let selectedEraFilter = 'all';
+    let chroniclePollTimer = null;
 
     function switchTab(tabName) {
       activeTab = tabName;
@@ -543,6 +558,7 @@
       const btnNow = document.getElementById('tabBtnNowSpinning');
       const btnCrate = document.getElementById('tabBtnCrate');
       const btnChronicle = document.getElementById('tabBtnChronicle');
+      const crateBadge = document.getElementById('recordCountBadge');
 
       const activeClass = 'px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-2';
       const inactiveClass = 'px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2';
@@ -554,6 +570,10 @@
       btnCrate.className = inactiveClass;
       btnChronicle.className = inactiveClass;
 
+      if (crateBadge) {
+        crateBadge.className = 'text-xs font-bold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20';
+      }
+
       if (tabName === 'nowSpinning') {
         tabNow.classList.remove('hidden');
         btnNow.className = activeClass;
@@ -564,6 +584,9 @@
       } else {
         tabCrate.classList.remove('hidden');
         btnCrate.className = activeClass;
+        if (crateBadge) {
+          crateBadge.className = 'text-xs font-extrabold px-2 py-0.5 bg-black/20 text-stone-900 rounded-full border border-black/10';
+        }
       }
     }
 
@@ -580,6 +603,22 @@
     function renderChronicle() {
       if (!chronicleData) return;
       document.getElementById('chronicleClassicalCount').innerText = chronicleData.totalClassicalRecords || 0;
+
+      const banner = document.getElementById('chronicleRebuildingBanner');
+      if (banner) {
+        if (chronicleData.isRebuilding) {
+          banner.classList.remove('hidden');
+          if (!chroniclePollTimer) {
+            chroniclePollTimer = setInterval(fetchChronicle, 3000);
+          }
+        } else {
+          banner.classList.add('hidden');
+          if (chroniclePollTimer) {
+            clearInterval(chroniclePollTimer);
+            chroniclePollTimer = null;
+          }
+        }
+      }
 
       // 1. Render Era Filter Rail
       const rail = document.getElementById('chronicleEraFilterRail');
@@ -1459,8 +1498,6 @@
             setTimeout(finish, 300);
           });
         }
-
-        showToast('✨ Deskewed Cover Rendered!', 'fa-wand-magic-sparkles');
 
         // Give browser 2 animation frames to repaint the DOM
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
