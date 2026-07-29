@@ -300,6 +300,40 @@
           </div>
         </div>
 
+        <!-- Classical Infographic Dashboard -->
+        <div id="chronicleInfographicSection" class="ios-liquid-glass rounded-2xl p-5 space-y-4 border border-amber-500/30">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie"></i> Collection Infographic & Composer Insights
+            </h3>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">Educational Dashboard</span>
+          </div>
+
+          <!-- Era Distribution Visual Ratio Bar -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-stone-300">
+              <span>Collection Era Distribution</span>
+              <span id="eraRatioLabel" class="text-amber-400 font-mono text-[11px]">1600 – Present</span>
+            </div>
+            <div id="eraProgressBar" class="h-3.5 rounded-full bg-stone-900 overflow-hidden flex shadow-inner border border-stone-800">
+              <!-- Dynamically populated ratio segments -->
+            </div>
+            <div id="eraProgressLegend" class="flex flex-wrap items-center gap-3 text-xs pt-1 text-stone-400">
+              <!-- Legend items -->
+            </div>
+          </div>
+
+          <!-- Featured Composers Knowledge Cards Grid -->
+          <div class="space-y-2.5 pt-2 border-t border-white/10">
+            <h4 class="text-xs font-bold text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-landmark text-amber-400"></i> Composers & Historical Profiles in Your Collection
+            </h4>
+            <div id="composerKnowledgeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <!-- Dynamically populated composer cards -->
+            </div>
+          </div>
+        </div>
+
         <!-- Chronicle Era Filter Rail -->
         <div id="chronicleEraFilterRail" class="flex flex-nowrap overflow-x-auto gap-2 pb-2 scrollbar-none">
           <!-- Dynamically populated filter buttons -->
@@ -689,6 +723,88 @@
             clearInterval(chroniclePollTimer);
             chroniclePollTimer = null;
           }
+        }
+      }
+
+      // Render Infographic Analytics
+      const totalRecs = chronicleData.totalClassicalRecords || 1;
+      const eraColors = {
+        'baroque': { bg: 'bg-purple-500', text: 'text-purple-400', label: 'Baroque' },
+        'classical': { bg: 'bg-amber-400', text: 'text-amber-300', label: 'Classical' },
+        'romantic': { bg: 'bg-rose-500', text: 'text-rose-400', label: 'Romantic' },
+        'modern_20th': { bg: 'bg-sky-400', text: 'text-sky-300', label: 'Modern' },
+        'contemporary': { bg: 'bg-emerald-400', text: 'text-emerald-300', label: 'Contemporary' }
+      };
+
+      const progressBar = document.getElementById('eraProgressBar');
+      const legendContainer = document.getElementById('eraProgressLegend');
+      if (progressBar && legendContainer) {
+        progressBar.innerHTML = '';
+        legendContainer.innerHTML = '';
+
+        chronicleData.eras.forEach(era => {
+          if (era.count > 0) {
+            const pct = Math.round((era.count / totalRecs) * 100);
+            const style = eraColors[era.id] || { bg: 'bg-amber-500', text: 'text-amber-400', label: era.name };
+            
+            const seg = document.createElement('div');
+            seg.className = `${style.bg} h-full transition-all duration-500`;
+            seg.style.width = `${pct}%`;
+            seg.title = `${era.name}: ${era.count} records (${pct}%)`;
+            progressBar.appendChild(seg);
+
+            const leg = document.createElement('div');
+            leg.className = 'flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity';
+            leg.onclick = () => { selectedEraFilter = era.id; renderChronicle(); };
+            leg.innerHTML = `
+              <span class="w-2.5 h-2.5 rounded-full ${style.bg}"></span>
+              <span class="font-semibold text-stone-200">${style.label}</span>
+              <span class="text-stone-500 font-mono">(${pct}%)</span>
+            `;
+            legendContainer.appendChild(leg);
+          }
+        });
+      }
+
+      // Render Composer Knowledge Cards Grid
+      const composerGrid = document.getElementById('composerKnowledgeGrid');
+      if (composerGrid) {
+        composerGrid.innerHTML = '';
+        const composers = chronicleData.composerStats || [];
+        
+        if (composers.length === 0) {
+          composerGrid.innerHTML = '<div class="text-xs text-stone-500 col-span-full">No composer profiles detected in collection.</div>';
+        } else {
+          composers.forEach(comp => {
+            const card = document.createElement('div');
+            card.className = 'bg-stone-900/90 hover:bg-stone-900 border border-stone-800/80 rounded-xl p-3.5 space-y-2 group transition-all cursor-pointer relative shadow-sm hover:border-amber-500/50';
+            card.innerHTML = `
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-extrabold text-sm text-white group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                    <span>${comp.flag}</span>
+                    <span>${comp.name}</span>
+                  </div>
+                  <div class="text-[11px] font-mono text-amber-400/90">${comp.lifespan} • ${comp.country}</div>
+                </div>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/30 whitespace-nowrap">
+                  ${comp.count} ${comp.count === 1 ? 'Album' : 'Albums'}
+                </span>
+              </div>
+              <p class="text-xs text-stone-300 line-clamp-2 leading-relaxed">${comp.highlights}</p>
+              <div class="text-[11px] font-semibold text-stone-400 border-t border-stone-800/80 pt-1.5 flex items-center justify-between">
+                <span class="text-amber-500/90">${comp.era} Era</span>
+                <span class="text-stone-400 group-hover:translate-x-0.5 transition-transform"><i class="fa-solid fa-arrow-right text-[10px]"></i></span>
+              </div>
+            `;
+            card.onclick = () => {
+              selectedEraFilter = 'all';
+              document.getElementById('searchInput').value = comp.name.split(' ').pop();
+              filterCrate();
+              switchTab('crate');
+            };
+            composerGrid.appendChild(card);
+          });
         }
       }
 
