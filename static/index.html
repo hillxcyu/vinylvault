@@ -28,6 +28,14 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0.5px rgba(255, 255, 255, 0.35), inset 0 -1px 0.5px rgba(0, 0, 0, 0.4) !important;
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-enter {
+      animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
     
     /* Prevent mobile browser auto-zoom on input focus */
     @media screen and (max-width: 768px) {
@@ -39,24 +47,38 @@
 </head>
 <body class="min-h-screen pb-24 sm:pb-12 flex flex-col bg-stone-950 text-stone-100 font-sans selection:bg-amber-500 selection:text-black">
 
-  <!-- Navigation Bar with Tabs & Header Stats -->
-  <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/80 backdrop-blur-2xl px-4 py-3 mb-6">
-    <div class="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
+  <!-- Minimalistic Pinned Navigation Bar with Era Dropdown -->
+  <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/85 backdrop-blur-2xl px-4 py-2.5 mb-6">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
       <!-- Logo & Title -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500/30 to-amber-400/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xl shadow-lg shadow-amber-500/10">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500/30 to-amber-400/10 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-lg shadow-lg shadow-amber-500/10">
           <i class="fa-solid fa-compact-disc"></i>
         </div>
         <div>
-          <h1 class="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+          <h1 class="font-extrabold text-base sm:text-xl tracking-tight text-white flex items-center gap-1.5">
             Vinyl Vault
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-widest">Mobile 2.0</span>
           </h1>
         </div>
       </div>
 
-      <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
+      <!-- Header Controls: Era Dropdown & Desktop Navigation Tabs -->
       <div class="flex items-center gap-2">
+        <!-- Era Dropdown Selection Menu -->
+        <div class="relative flex items-center">
+          <select id="eraSelectHeader" onchange="filterCrateByEra(this.value)" class="bg-stone-900/90 text-xs font-bold text-amber-400 border border-amber-500/30 rounded-full px-3 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer shadow-sm appearance-none pr-7">
+            <option value="all">✨ All Eras</option>
+            <option value="Baroque">🎻 Baroque</option>
+            <option value="Classical">🎼 Classical</option>
+            <option value="Romantic">🎹 Romantic</option>
+            <option value="Modern">🎶 Modern</option>
+            <option value="Rock">🎸 Rock / Pop</option>
+            <option value="Jazz">🎷 Jazz / Blues</option>
+          </select>
+          <i class="fa-solid fa-chevron-down text-[10px] text-amber-400 absolute right-2.5 pointer-events-none"></i>
+        </div>
+
+        <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
         <div class="hidden sm:flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
           <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
             <i class="fa-solid fa-circle-play"></i> <span>Now Spinning</span>
@@ -69,11 +91,6 @@
             <i class="fa-solid fa-hourglass-half text-amber-500"></i> Chronicle
           </button>
         </div>
-
-        <button onclick="openScannerModal()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs sm:text-sm shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all active:scale-95">
-          <i class="fa-solid fa-camera"></i>
-          <span>Scan Cover</span>
-        </button>
       </div>
     </div>
   </nav>
@@ -248,8 +265,8 @@
         </div>
       </div>
 
-      <!-- Albums Grid -->
-      <div id="recordsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <!-- Albums Grid (Single Column on Mobile) -->
+      <div id="recordsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <!-- Dynamically populated -->
       </div>
     </div>
@@ -1110,33 +1127,70 @@
       chatLog.scrollTop = chatLog.scrollHeight;
     }
 
+    let selectedEraHeaderFilter = 'all';
+
     function renderRecordsGrid(records) {
       const grid = document.getElementById('recordsGrid');
       grid.innerHTML = '';
 
-      records.forEach(rec => {
-        const card = document.createElement('div');
-        card.className = 'glass-panel rounded-xl p-3 space-y-2 group hover:border-amber-500/50 transition-all cursor-pointer relative shadow-sm hover:shadow-md';
-        card.innerHTML = `
-          <div class="relative overflow-hidden rounded-lg aspect-square bg-stone-900">
-            <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            
-            <!-- Quick Play Button -->
-            <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Spin Record">
-              <i class="fa-solid fa-play text-xs"></i>
-            </button>
-
-            <!-- Delete Record Button -->
-            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" title="Delete Record from Crate">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-          </div>
-          <div>
-            <div class="font-bold text-sm text-white truncate">${rec.title}</div>
-            <div class="text-xs text-gray-400 truncate">${rec.artist}</div>
+      if (!records || records.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 space-y-3">
+            <div class="w-12 h-12 rounded-full bg-stone-900 text-stone-500 flex items-center justify-center mx-auto text-xl border border-stone-800">
+              <i class="fa-solid fa-compact-disc"></i>
+            </div>
+            <p class="text-sm font-bold text-stone-400">No records found in this category.</p>
           </div>
         `;
-        // Clicking on a record loads it into Now Spinning & switches tab to Now Spinning!
+        return;
+      }
+
+      records.forEach((rec, idx) => {
+        const card = document.createElement('div');
+        card.style.animationDelay = `${Math.min(idx * 40, 300)}ms`;
+        card.className = 'card-enter ios-liquid-glass rounded-2xl p-4 space-y-3 group hover:border-amber-500/60 transition-all cursor-pointer relative shadow-xl hover:-translate-y-1 active:scale-[0.98]';
+        card.innerHTML = `
+          <!-- Full-bleed 1:1 Album Cover Art -->
+          <div class="relative overflow-hidden rounded-xl aspect-square bg-stone-900 shadow-md">
+            <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            
+            <!-- Genre Badge Overlay -->
+            <div class="absolute top-2.5 left-2.5 bg-black/65 backdrop-blur-md text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center gap-1">
+              <i class="fa-solid fa-music text-[9px]"></i>
+              <span>${rec.genre || 'Vinyl'}</span>
+            </div>
+
+            <!-- Quick Delete Button -->
+            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md" title="Delete Record">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+
+            <!-- Big Center Play Button Overlay -->
+            <div onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 backdrop-blur-xs transition-opacity flex items-center justify-center">
+              <div class="w-14 h-14 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                <i class="fa-solid fa-play text-xl ml-0.5"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Album Meta Info & Action Footer -->
+          <div class="space-y-1.5 pt-1">
+            <div class="font-extrabold text-base text-white truncate group-hover:text-amber-400 transition-colors">${rec.title}</div>
+            <div class="text-xs font-medium text-stone-400 truncate flex items-center justify-between">
+              <span>${rec.artist}</span>
+              ${rec.releaseYear ? `<span class="text-stone-500 font-mono text-[11px]">${rec.releaseYear}</span>` : ''}
+            </div>
+
+            <div class="pt-2 flex items-center justify-between text-xs border-t border-white/10">
+              <span class="text-stone-400 text-[11px] flex items-center gap-1">
+                <i class="fa-solid fa-fire text-amber-500"></i> ${rec.spinsCount || 0} spins
+              </span>
+              <button onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-full text-xs transition-all flex items-center gap-1 shadow-md">
+                <i class="fa-solid fa-compact-disc"></i> Spin
+              </button>
+            </div>
+          </div>
+        `;
         card.onclick = () => {
           updateNowSpinningUI(rec);
           switchTab('nowSpinning');
@@ -1161,9 +1215,32 @@
     }
 
     function filterCrate() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allRecords.filter(r => r.title.toLowerCase().includes(q) || r.artist.toLowerCase().includes(q) || (r.genre && r.genre.toLowerCase().includes(q)));
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      let filtered = allRecords.filter(r => 
+        r.title.toLowerCase().includes(q) || 
+        r.artist.toLowerCase().includes(q) || 
+        (r.genre && r.genre.toLowerCase().includes(q))
+      );
+
+      if (selectedEraHeaderFilter !== 'all') {
+        filtered = filtered.filter(r => {
+          const g = (r.genre || '').toLowerCase();
+          const t = (r.title || '').toLowerCase();
+          const a = (r.artist || '').toLowerCase();
+          const target = selectedEraHeaderFilter.toLowerCase();
+          return g.includes(target) || t.includes(target) || a.includes(target);
+        });
+      }
+
       renderRecordsGrid(filtered);
+    }
+
+    function filterCrateByEra(eraValue) {
+      selectedEraHeaderFilter = eraValue;
+      filterCrate();
+      if (activeTab !== 'crate') {
+        switchTab('crate');
+      }
     }
 
     async function spinRecord(id) {
