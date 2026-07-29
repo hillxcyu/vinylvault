@@ -28,8 +28,13 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 @app.middleware("http")
 async def add_cache_control_header(request, call_next):
     response = await call_next(request)
-    if request.url.path.startswith("/static/"):
-        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    path = request.url.path.lower()
+    if path == "/" or path.endswith(".html") or path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    elif path.startswith("/static/uploads/") or path.startswith("/static/extracted_covers/"):
+        response.headers["Cache-Control"] = "public, max-age=86400"
     return response
 
 import asyncio
@@ -75,10 +80,18 @@ class FetchCoverRequest(BaseModel):
     forceRefresh: Optional[bool] = False
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/index.html", response_class=HTMLResponse)
 async def serve_index():
     index_path = os.path.join(static_dir, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        return FileResponse(
+            index_path,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return HTMLResponse("<h1>Vinyl Vault Server Running</h1>")
 
 @app.get("/api/records")
