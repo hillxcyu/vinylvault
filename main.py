@@ -33,6 +33,7 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+        response.headers["Clear-Site-Data"] = '"cache"'
     elif path.startswith("/static/uploads/") or path.startswith("/static/extracted_covers/"):
         response.headers["Cache-Control"] = "public, max-age=86400"
     return response
