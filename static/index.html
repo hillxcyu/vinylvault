@@ -1072,13 +1072,50 @@
       document.getElementById('rescanAlbumArtist').innerText = rec.artist || 'Unknown Artist';
       
       const grid = document.getElementById('rescanAssetsGrid');
-      grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">Loading release assets...</p>';
+      grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">🔍 Searching Discogs Japan Pressings & Catalog Art...</p>';
       
       document.getElementById('rescanModal').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
 
-      fetchReleaseAssetsForRescan(rec.artist, rec.title);
+      fetchReleaseAssetsForRescan(rec);
     }
+
+    async function fetchReleaseAssetsForRescan(rec) {
+      const grid = document.getElementById('rescanAssetsGrid');
+      try {
+        const catnoParam = rec.catalogNumber ? `?catno=${encodeURIComponent(rec.catalogNumber)}&country=Japan` : '?country=Japan';
+        const res = await fetch(`/api/release-assets/${rec.id}${catnoParam}`);
+        const data = await res.json();
+        const assets = data.assets || [];
+
+        grid.innerHTML = '';
+        if (assets.length === 0) {
+          grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">No matching Discogs artwork found.</p>';
+          return;
+        }
+
+        assets.slice(0, 10).forEach(asset => {
+          const item = document.createElement('div');
+          item.className = 'relative aspect-square bg-stone-900 rounded-lg overflow-hidden border border-stone-800 hover:border-amber-500 cursor-pointer group transition-all shadow-md';
+          const isJapan = asset.country && asset.country.toLowerCase() === 'japan';
+          
+          item.innerHTML = `
+            <img src="${asset.url}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <div class="absolute top-1 left-1 bg-black/80 backdrop-blur-md text-[9px] font-extrabold px-1.5 py-0.5 rounded text-amber-300 border border-amber-500/20 truncate max-w-[90%]">
+              ${isJapan ? '🇯🇵 Japan' : (asset.country || 'Vinyl')} ${asset.catalogNumber ? `[${asset.catalogNumber}]` : ''}
+            </div>
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[11px] text-amber-400 font-extrabold transition-opacity">
+              <span>Select Cover</span>
+            </div>
+          `;
+          item.onclick = () => selectRescanAsset(asset.url);
+          grid.appendChild(item);
+        });
+      } catch (err) {
+        grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">Error loading release assets.</p>';
+      }
+    }
+
 
     function openRescanModalFromLightbox() {
       closeLightbox();
@@ -1168,34 +1205,7 @@
       }
     }
 
-    async function fetchReleaseAssetsForRescan(artist, title) {
-      const grid = document.getElementById('rescanAssetsGrid');
-      try {
-        const key = `${encodeURIComponent(artist.toLowerCase().trim())}_${encodeURIComponent(title.toLowerCase().trim())}`;
-        const res = await fetch(`/api/release-assets/${key}`);
-        const data = await res.json();
-        const assets = data.assets || [];
 
-        grid.innerHTML = '';
-        if (assets.length === 0) {
-          grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">No extra Discogs assets found.</p>';
-          return;
-        }
-
-        assets.forEach(asset => {
-          const item = document.createElement('div');
-          item.className = 'relative aspect-square bg-stone-900 rounded-lg overflow-hidden border border-stone-800 hover:border-amber-500 cursor-pointer group transition-all';
-          item.innerHTML = `
-            <img src="${asset.url}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-amber-300 font-bold">Select</div>
-          `;
-          item.onclick = () => selectRescanAsset(asset.url);
-          grid.appendChild(item);
-        });
-      } catch (err) {
-        grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">No additional release assets available.</p>';
-      }
-    }
 
     async function selectRescanAsset(url) {
       if (!rescanCurrentRecord || !url) return;

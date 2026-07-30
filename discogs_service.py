@@ -74,85 +74,118 @@ class DiscogsService:
 
 
 
-    def fetch_all_release_assets(self, artist: str, title: str, cover_url: Optional[str] = None) -> List[Dict[str, Any]]:
+    def fetch_all_release_assets(
+        self,
+        artist: str,
+        title: str,
+        cover_url: Optional[str] = None,
+        catalog_number: Optional[str] = None,
+        country: Optional[str] = "Japan"
+    ) -> List[Dict[str, Any]]:
         """
-        Fetch image assets EXCLUSIVELY from Discogs API for VINYL (LP / 12") pressings only.
-        Enforces strict primary artist verification and filters out mismatched lead performers.
+        Fetch image assets EXCLUSIVELY from Discogs API for VINYL pressings.
+        Prioritizes Japan pressings and catalog numbers (catno), returning top 10 front artwork choices.
         """
         assets = []
-        primary_cover = cover_url or "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_2.jpg"
-
-        # Retain original jacket cover as primary fallback
-        assets.append({
-            "type": "Original Jacket Cover Art",
-            "url": primary_cover,
-            "thumbnail": primary_cover,
-            "isPrimary": True,
-            "comment": f"Primary Record Sleeve for {title}"
-        })
 
         clean_a = self.clean_search_term(artist)
         clean_t = self.clean_search_term(title)
-        t_words = [w for w in clean_t.split() if len(w) > 2]
-        w1 = t_words[0] if len(t_words) > 0 else ""
-        w2 = t_words[1] if len(t_words) > 1 else ""
 
-        # Multi-tiered targeted queries (no artist-only query to prevent compilation boxsets)
-        queries = [
-            f"{clean_a} {clean_t}".strip(),
-            f"{clean_a} {w1}".strip(),
-            f"{clean_a} {w2}".strip()
-        ]
+        # Build prioritized search URLs
+        search_urls = []
+        clean_catno = catalog_number.strip() if catalog_number else ""
 
-        for q in queries:
-            if not q or q == clean_a:
-                continue
+        # 1. CatNo + Vinyl Search (Precise matching)
+        if clean_catno:
+            search_urls.append(f"https://api.discogs.com/database/search?catno={urllib.parse.quote(clean_catno)}&type=release&format=vinyl")
+
+        # 2. Artist + Title + Japan Region Search
+        if clean_a and clean_t:
+            search_urls.append(f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country=Japan")
+
+        # 3. Artist + Title General Vinyl Search
+        if clean_a and clean_t:
+            search_urls.append(f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl")
+
+        seen_urls = set()
+
+        for search_url in search_urls:
             try:
-                search_url = f"https://api.discogs.com/database/search?q={urllib.parse.quote(q)}&type=release&format=vinyl"
                 resp = requests.get(search_url, headers=self.headers, timeout=5)
                 if resp.status_code == 200:
                     results = resp.json().get("results", [])
-                    for r in results[:5]:
+                    for r in results[:10]:
                         rel_id = r.get("id")
-                        if rel_id:
+                        rel_country = r.get("country", "")
+                        rel_catno = r.get("catno", "")
+                        cover_image = r.get("cover_image") or r.get("thumb")
+
+                        # Directly extract front cover image from search result if available
+                        if cover_image and "spacer.gif" not in cover_image and cover_image not in seen_urls:
+                            seen_urls.add(cover_image)
+                            badge_country = "🇯🇵 Japan" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
+                            badge_catno = f" [{rel_catno}]" if rel_catno else ""
+
+                            assets.append({
+                                "type": f"{badge_country} Front Cover",
+                                "url": cover_image,
+                                "thumbnail": cover_image,
+                                "isPrimary": rel_country.lower() == "japan",
+                                "country": rel_country,
+                                "catalogNumber": rel_catno,
+                                "comment": f"{badge_country} Pressing{badge_catno}"
+                            })
+
+                        # Deep release details lookup if needed
+                        if len(assets) < 10 and rel_id:
                             rel_url = f"https://api.discogs.com/releases/{rel_id}"
                             rel_resp = requests.get(rel_url, headers=self.headers, timeout=5)
                             if rel_resp.status_code == 200:
                                 rel_data = rel_resp.json()
-                                formats = rel_data.get("formats", [])
-                                fmt_names = [fmt.get("name", "") for fmt in formats]
-                                descriptions = [d for fmt in formats for d in fmt.get("descriptions", [])]
-
-                                # Verify Vinyl / LP / 12" format (strictly exclude CD / Cassette)
-                                is_vinyl = any("Vinyl" in n or "LP" in descriptions or '12"' in descriptions for n in fmt_names)
-                                if not is_vinyl and len(formats) > 0:
-                                    continue
-
                                 if self.is_strict_discogs_match(artist, title, rel_data):
                                     imgs = rel_data.get("images", [])
                                     for idx, img in enumerate(imgs):
                                         uri = img.get("uri") or img.get("resource_url")
-                                        is_prim = img.get("type") == "primary"
-                                        
-                                        img_type = "Discogs Vinyl Front Cover" if is_prim else f"Discogs Vinyl Release Asset (Back/Sleeve/Disc #{idx+1})"
+                                        if uri and uri not in seen_urls:
+                                            seen_urls.add(uri)
+                                            is_prim = img.get("type") == "primary"
+                                            badge_country = "🇯🇵 Japan" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
+                                            badge_catno = f" [{rel_catno}]" if rel_catno else ""
 
-                                        if uri and not any(a["url"] == uri for a in assets):
                                             assets.append({
-                                                "type": img_type,
+                                                "type": f"{badge_country} {'Front Cover' if is_prim else 'Sleeve Asset'}",
                                                 "url": uri,
                                                 "thumbnail": uri,
-                                                "isPrimary": False,
-                                                "comment": f"Discogs Vinyl LP Asset from Release #{rel_id}"
+                                                "isPrimary": is_prim and rel_country.lower() == "japan",
+                                                "country": rel_country,
+                                                "catalogNumber": rel_catno,
+                                                "comment": f"{badge_country}{badge_catno} Release #{rel_id}"
                                             })
-                                    if len(assets) > 1:
-                                        logger.info(f"Retrieved {len(assets)} Vinyl LP Discogs release assets for '{title}'.")
-                                        return assets
-            except Exception as e:
-                logger.warning(f"Discogs API query '{q}' warning: {e}")
+                                            if len(assets) >= 10:
+                                                break
 
-        return assets
+                        if len(assets) >= 10:
+                            break
+            except Exception as e:
+                logger.warning(f"Discogs API search error: {e}")
+
+            if len(assets) >= 10:
+                break
+
+        # Fallback if no online assets were found
+        if not assets and cover_url:
+            assets.append({
+                "type": "Original Jacket Cover Art",
+                "url": cover_url,
+                "thumbnail": cover_url,
+                "isPrimary": True,
+                "comment": "Current Album Cover"
+            })
+
+        return assets[:10]
 
 discogs_service = DiscogsService()
+
 
 if __name__ == "__main__":
     print("\n--- Testing Strict Discogs Vinyl Assets for Isaac Stern ---")

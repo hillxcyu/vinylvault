@@ -1,22 +1,28 @@
 # PLAN
 
-## [2026-07-30 19:49:15] Switch Exclusively to Discogs for Cover Art (Remove iTunes) [COMPLETED]
+## [2026-07-30 20:08:00] Discogs Precise Search with Region/CatNo & Top 10 Front Art Picker [COMPLETED]
 
 
 ### Goal
-Completely remove iTunes Search API integration and rely exclusively on Discogs API for fetching official vinyl album cover art and release assets.
+Enhance Discogs cover art search to prioritize catalog numbers (`catno`) and Japan region pressings (`country=Japan`), returning up to 10 top front artwork candidates for easy user selection in the Rescan Cover Art Modal.
 
 ---
 
 ### Proposed Plan
 
 1. **Update `discogs_service.py`**
-   - Remove `fetch_itunes_cover` method.
-   - Update `fetch_official_cover(artist, title)` to query Discogs API (`https://api.discogs.com/database/search?q={query}&type=release&format=vinyl`) exclusively with strict artist/title matching.
+   - Update `fetch_all_release_assets(artist, title, cover_url=None, catalog_number=None, country="Japan")`:
+     - Query Discogs with `catno={catalog_number}` if available.
+     - Query Discogs with `country=Japan` (or user pressing country) for precise regional matching.
+     - Collect up to **10 top distinct front cover artwork images** across matching vinyl releases.
 
-2. **Update Frontend UI in `static/index.html`**
-   - Update modal text from `Auto-Fetch High-Res Official Cover (iTunes/Discogs)` to `Auto-Fetch Official Cover (Discogs)`.
+2. **Update Backend Endpoint in `main.py`**
+   - Update `GET /api/release-assets/{key}` / `GET /api/records/{record_id}/assets` to accept `catalog_number` and `country` parameters, pulling directly from record metadata.
 
-3. **Verification & Deployment**
-   - Test `discogs_service.fetch_official_cover()` via Python test script.
-   - Commit and push to GitHub to deploy to Cloud Run.
+3. **Update Rescan Modal in `static/index.html`**
+   - Update `#rescanAssetsGrid` in `#rescanModal` to display up to 10 front artwork options with release details (e.g., "Japan Pressing [IMP-2026-001]").
+   - 1-click selection updates the record's `coverUrl` live in Firestore.
+
+4. **Testing & Deployment**
+   - Test Discogs search with Japan pressings and catalog numbers via Python test script.
+   - Commit, push, and verify Cloud Run deployment.

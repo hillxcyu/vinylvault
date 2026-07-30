@@ -452,6 +452,14 @@ async def delete_record_endpoint(record_id: str, background_tasks: BackgroundTas
         return {"status": "success", "message": f"Record {record_id} deleted."}
     raise HTTPException(status_code=404, detail="Record not found.")
 
+class FetchCoverRequest(BaseModel):
+    artist: str
+    title: str
+    coverUrl: Optional[str] = None
+    catalogNumber: Optional[str] = None
+    country: Optional[str] = "Japan"
+    forceRefresh: Optional[bool] = False
+
 @app.post("/api/fetch-official-cover")
 async def fetch_official_cover_endpoint(req: FetchCoverRequest):
     img_url = discogs_service.fetch_official_cover(req.artist, req.title, cover_url=req.coverUrl)
@@ -461,24 +469,56 @@ async def fetch_official_cover_endpoint(req: FetchCoverRequest):
 async def fetch_release_assets_endpoint(req: FetchCoverRequest):
     asset_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.title)}"
     
-    # Check Firestore cache if forceRefresh is False
     if not req.forceRefresh:
         cached_assets = db.firestore.get_release_assets(asset_key)
         if cached_assets:
             return {"status": "success", "assets": cached_assets, "cached": True}
 
     target_cover = req.coverUrl
-    if not target_cover:
+    catno = req.catalogNumber
+    if not target_cover or not catno:
         for r in db.get_all_records():
             if r.get("title") == req.title or r.get("artist") == req.artist:
-                target_cover = r.get("coverUrl")
+                target_cover = target_cover or r.get("coverUrl")
+                catno = catno or r.get("catalogNumber")
                 break
 
-    assets = discogs_service.fetch_all_release_assets(req.artist, req.title, cover_url=target_cover)
+    assets = discogs_service.fetch_all_release_assets(
+        req.artist,
+        req.title,
+        cover_url=target_cover,
+        catalog_number=catno,
+        country=req.country or "Japan"
+    )
     if assets:
         db.firestore.save_release_assets(asset_key, assets)
 
     return {"status": "success", "assets": assets, "cached": False}
+
+@app.get("/api/release-assets/{key}")
+async def get_release_assets_by_key(key: str, catno: Optional[str] = None, country: Optional[str] = "Japan"):
+    all_recs = db.get_all_records()
+    rec = next((r for r in all_recs if r.get("id") == key), None)
+    
+    if rec:
+        artist = rec.get("artist", "")
+        title = rec.get("title", "")
+        catalog_number = catno or rec.get("catalogNumber", "")
+        assets = discogs_service.fetch_all_release_assets(
+            artist,
+            title,
+            cover_url=rec.get("coverUrl"),
+            catalog_number=catalog_number,
+            country=country
+        )
+        return {"status": "success", "assets": assets, "record": rec}
+
+    parts = key.split("_")
+    artist = parts[0] if parts else ""
+    title = parts[1] if len(parts) > 1 else ""
+    assets = discogs_service.fetch_all_release_assets(artist, title, catalog_number=catno, country=country)
+    return {"status": "success", "assets": assets}
+
 
 GUIDE_CACHE_DIR = os.path.join(os.path.dirname(__file__), "data_store", "listening_guides")
 os.makedirs(GUIDE_CACHE_DIR, exist_ok=True)
