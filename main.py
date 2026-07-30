@@ -17,6 +17,8 @@ from discogs_service import discogs_service
 from deskew_service import deskew_service
 from classical_service import classical_service
 from batch_import_webarchive import run_batch_import
+from gcs_service import gcs_service
+from fastapi.responses import RedirectResponse
 
 from fastapi.middleware.gzip import GZipMiddleware
 
@@ -93,6 +95,13 @@ async def serve_index():
 async def get_records():
     return {"records": db.get_all_records(sync_if_needed=True)}
 
+@app.get("/api/covers/{filename}")
+async def serve_cover_image(filename: str):
+    clean_fn = os.path.basename(filename)
+    gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
+    return RedirectResponse(url=gcs_url)
+
+
 
 @app.get("/api/wishlist")
 async def get_wishlist():
@@ -139,15 +148,10 @@ async def scan_cover(file: UploadFile = File(...)):
     deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
     final_bytes = deskewed_bytes if is_deskewed else contents
 
-    # 1. Save uploaded/deskewed cover image to static/uploads/
-    os.makedirs("static/uploads", exist_ok=True)
+    # 1. Upload scan cover image to GCS bucket (covers/)
     ext = ".jpg" if is_deskewed else (os.path.splitext(file.filename)[1] or ".jpg")
     filename = f"scan_{uuid.uuid4().hex[:8]}{ext}"
-    saved_path = os.path.join("static/uploads", filename)
-    with open(saved_path, "wb") as f:
-        f.write(final_bytes)
-
-    uploaded_cover_url = f"/static/uploads/{filename}"
+    uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
 
     # 2. Extract metadata via Gemini Vision API using deskewed image
     extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
@@ -186,7 +190,6 @@ async def detect_corners_endpoint(file: UploadFile = File(...)):
     }
 
 @app.post("/api/crop-deskew")
-
 async def crop_deskew_endpoint(
     file: UploadFile = File(...),
     corners: str = Form(...)
@@ -200,18 +203,15 @@ async def crop_deskew_endpoint(
     deskewed_bytes, is_deskewed = deskew_service.manual_deskew_image(contents, parsed_corners)
     final_bytes = deskewed_bytes if is_deskewed else contents
 
-    os.makedirs("static/uploads", exist_ok=True)
     filename = f"manual_scan_{uuid.uuid4().hex[:8]}.jpg"
-    saved_path = os.path.join("static/uploads", filename)
-    with open(saved_path, "wb") as f:
-        f.write(final_bytes)
+    uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
 
-    uploaded_cover_url = f"/static/uploads/{filename}"
     return {
         "status": "success",
         "coverUrl": uploaded_cover_url,
         "filename": filename
     }
+
 
 @app.post("/api/analyze-deskewed")
 async def analyze_deskewed_endpoint(coverUrl: str):
@@ -263,18 +263,14 @@ async def manual_deskew_endpoint(
     deskewed_bytes, is_deskewed = deskew_service.manual_deskew_image(contents, parsed_corners)
     final_bytes = deskewed_bytes if is_deskewed else contents
 
-    os.makedirs("static/uploads", exist_ok=True)
     filename = f"manual_scan_{uuid.uuid4().hex[:8]}.jpg"
-    saved_path = os.path.join("static/uploads", filename)
-    with open(saved_path, "wb") as f:
-        f.write(final_bytes)
-
-    uploaded_cover_url = f"/static/uploads/{filename}"
+    uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
 
     extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
     extracted_metadata["coverUrl"] = uploaded_cover_url
     extracted_metadata["deskewedCoverUrl"] = uploaded_cover_url
     extracted_metadata["deskewed"] = True
+
 
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")

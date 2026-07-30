@@ -13,15 +13,17 @@
 
 ---
 
-## [2026-07-30 17:31:10] Automatic Corner Detection Implementation Log
+## [2026-07-30 18:04:30] Unified GCS Cover Storage Implementation Log
 
-1. **[2026-07-30 17:31:10] Implemented OpenCV Corner Detection**:
-   - Added `detect_corners(self, image_bytes)` in `deskew_service.py` to calculate normalized container corner points accounting for letterbox aspect ratio.
-2. **[2026-07-30 17:32:35] Added API Endpoints**:
-   - Added `POST /api/detect-corners` and updated `/api/scan` in `main.py` to return `detectedCorners`.
-3. **[2026-07-30 17:33:47] Enhanced Manual Deskew UI**:
-   - Updated `static/index.html` to automatically snap `cornerPoints` handles (`TL`, `TR`, `BR`, `BL`) directly to detected corners on photo load/scan.
-   - Added "Auto Detect Corners" (`Detect`) button in the manual deskew action bar.
-4. **[2026-07-30 17:35:46] Verification Passed**:
-   - Executed `venv/bin/python test_corner_detection.py`. Passed 100% with precise corner detection: `[[0.0408, 0.355], [0.9725, 0.3583], [0.9692, 0.9683], [0.0375, 0.9633]]`.
+1. **[2026-07-30 18:04:30] Implemented GCS Storage Manager**:
+   - Created `gcs_service.py` to stream uploads directly to `gs://universal-trail-492014-n5-vinyl-vault-data/covers/`.
+2. **[2026-07-30 18:05:12] Migrated Catalog & User Covers to GCS**:
+   - Executed `gsutil -m cp static/extracted_covers/* gs://universal-trail-492014-n5-vinyl-vault-data/covers/`.
+   - Uploaded all 99 cover art images to the persistent GCS bucket.
+3. **[2026-07-30 18:05:38] Updated Upload Endpoints & App Proxy**:
+   - Updated `/api/scan`, `/api/crop-deskew`, and `/api/manual-deskew` in `main.py` to stream scan images directly to GCS.
+   - Added `/api/covers/{filename}` proxy route in `main.py`.
+4. **[2026-07-30 18:06:12] Excluded Heavy Image Assets from Docker Image**:
+   - Created `.dockerignore` to exclude `static/extracted_covers/` and `static/uploads/` from Docker build context.
+   - Verified `docker build` context transfer reduced to `<200KB` (instant 0.2s build).
 

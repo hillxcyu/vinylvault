@@ -1,33 +1,35 @@
 # PLAN
 
-## [2026-07-30 17:31:00] Automatic Corner Detection & Initial Bounding Box Snapping for Manual Deskew [COMPLETED]
+## [2026-07-30 18:03:00] Unified Google Cloud Storage (GCS) for All Album Covers (Original 48 & Scans) [COMPLETED]
 
 
 ### Goal
-Enhance the manual deskew process by automatically detecting the 4 physical corners of the vinyl album cover using OpenCV edge/contour detection, drawing the initial bounding box snapped precisely to those detected corners when the manual deskew UI is loaded.
+Establish a single, consistent, persistent storage architecture using Google Cloud Storage (GCS) for **ALL album covers** (both the original 48 catalog covers and new user scans), removing heavy image assets from the Docker image while guaranteeing zero image loss across Cloud Run revisions.
 
 ---
 
 ### Proposed Plan
 
-1. **Implement `detect_corners` in `deskew_service.py`**
-   - Add `detect_corners(self, image_bytes: bytes)` to `DeskewService`.
-   - Use OpenCV (Canny edge detection + contour approximation / minimum area bounding box) to detect quadrilateral corners.
-   - Convert pixel coordinates to normalized `0.0..1.0` container coordinates accounting for aspect ratio and letterboxing.
-   - Return 4 corner coordinates `[[x1,y1], [x2,y2], [x3,y3], [x4,y4]]`.
+1. **Implement `GCSStorageManager` in `gcs_service.py`**
+   - Create `gcs_service.py` with `GCSStorageManager`.
+   - Read `GCS_BUCKET_NAME` (defaults to `$PROJECT_ID-vinyl-vault-data`).
+   - Implement `upload_cover(file_bytes, filename)` returning public GCS URL (`https://storage.googleapis.com/{bucket_name}/covers/{filename}`).
+   - Include local disk fallback (`data_store/covers/`) for offline local development.
 
-2. **Add `/api/detect-corners` Endpoint in `main.py`**
-   - Create `POST /api/detect-corners` endpoint to accept an image file (or uploaded file) and return detected normalized corner coordinates.
-   - Include `detectedCorners` in `/api/scan` response as well so initial scans immediately provide auto-snapped corners.
+2. **Migrate Original 48 Covers to GCS & Remove from Docker Context**
+   - Create `upload_catalog_covers_to_gcs.py` to seed/upload all 48 original covers to GCS bucket `covers/`.
+   - Update Firestore records so all 48 catalog covers point to permanent GCS URLs (`https://storage.googleapis.com/{bucket_name}/covers/shopping_cover_X.jpg`).
+   - Add `static/extracted_covers/` and `static/uploads/` to `.gitignore` / `.dockerignore` so images are not baked into the Docker container image.
 
-3. **Update Manual Deskew UI in `static/index.html`**
-   - Update `resetCornerPoints()` and modal initialization functions to use backend-detected corners if available.
-   - Add an "Auto Detect" button in the manual deskew UI controls to re-snap handles to detected corners at any time.
-   - Render the initial bounding box and draggable handle controls (`TL`, `TR`, `BR`, `BL`) snapped directly on those detected corners.
+3. **Update Upload & Scan Workflows in `main.py`**
+   - Update `/api/scan`, `/api/crop-deskew`, `/api/manual-deskew`, and `add_record` (`/api/records`) in [main.py](file:///Users/hill/src/vinylvault/main.py) to upload scanned images directly to GCS via `gcs_service.upload_cover()`.
+
+4. **Add Endpoint Proxy / Fallback in `main.py`**
+   - Add `/api/covers/{filename}` route in [main.py](file:///Users/hill/src/vinylvault/main.py) to serve cover images reliably with caching.
 
 ---
 
 ### Verification Plan
-- Unit test corner detection algorithm with sample album cover image.
-- Test `/api/detect-corners` and `/api/scan` API responses.
-- Verify UI handle snapping and manual dragging in browser.
+- Run `upload_catalog_covers_to_gcs.py` to seed GCS bucket and update Firestore records.
+- Verify `docker build` image size is drastically reduced (no baked image files).
+- Test image uploads and scans via `/api/scan` and `/api/records`.

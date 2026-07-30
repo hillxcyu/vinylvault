@@ -1,0 +1,22 @@
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Git & Antigravity files
+.git/
+.gitignore
+
+# Virtual environment & logs
+venv/
+.venv/
+*.log
+*.webarchive
+
+# Exclude heavy static image assets from Docker container build context
+# (All cover images are hosted and served from GCS bucket: universal-trail-492014-n5-vinyl-vault-data)
+static/extracted_covers/*
+!static/extracted_covers/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
