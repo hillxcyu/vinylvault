@@ -1,27 +1,22 @@
 # PLAN
 
-## [2026-07-30 18:51:00] Rescan Album Cover Art Feature [COMPLETED]
+## [2026-07-30 19:49:15] Switch Exclusively to Discogs for Cover Art (Remove iTunes) [COMPLETED]
 
 
 ### Goal
-Allow users to click on any album cover art in the UI (Now Spinning, Collection Grid, or Fullscreen Lightbox) to rescan, upload, or auto-fetch new official high-resolution cover art for that record.
+Completely remove iTunes Search API integration and rely exclusively on Discogs API for fetching official vinyl album cover art and release assets.
 
 ---
 
 ### Proposed Plan
 
-1. **Backend Endpoints in `main.py`**
-   - Add `POST /api/records/{record_id}/rescan-cover`: Queries iTunes Search API and Discogs for official high-res 600x600 cover art, updates the record in Firestore/local storage, and returns the updated record.
-   - Add `POST /api/records/{record_id}/update-cover`: Accepts a `coverUrl` parameter, updates the record in Firestore/local storage, and returns success.
+1. **Update `discogs_service.py`**
+   - Remove `fetch_itunes_cover` method.
+   - Update `fetch_official_cover(artist, title)` to query Discogs API (`https://api.discogs.com/database/search?q={query}&type=release&format=vinyl`) exclusively with strict artist/title matching.
 
-2. **Frontend UI in `static/index.html`**
-   - Add a **Rescan Cover Art Modal** (`#rescanModal`).
-   - Add click handlers on album cover images (Now Spinning cover, Collection cards, Lightbox viewer) to trigger `openRescanModal(recordId)`.
-   - Implement 3 rescan action buttons in the modal:
-     - 🔍 **Auto-Fetch Official Cover**: Invokes `POST /api/records/{record_id}/rescan-cover`.
-     - 📷 **Upload/Snap Photo**: Allows file upload/camera photo, runs auto/manual deskew, uploads to GCS, and updates record cover.
-     - 🎨 **Choose from Release Assets**: Fetches Discogs release assets for the album and lets the user pick their preferred artwork with 1 click.
+2. **Update Frontend UI in `static/index.html`**
+   - Update modal text from `Auto-Fetch High-Res Official Cover (iTunes/Discogs)` to `Auto-Fetch Official Cover (Discogs)`.
 
-3. **Verification**
-   - Test `POST /api/records/{record_id}/rescan-cover` via curl.
-   - Verify modal opening and artwork updates in frontend web browser.
+3. **Verification & Deployment**
+   - Test `discogs_service.fetch_official_cover()` via Python test script.
+   - Commit and push to GitHub to deploy to Cloud Run.

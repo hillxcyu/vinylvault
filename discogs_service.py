@@ -55,49 +55,23 @@ class DiscogsService:
         matches = sum(1 for w in work_words if w in d_title)
         return matches >= 1
 
-    def fetch_itunes_cover(self, artist: str, title: str) -> Optional[str]:
-        if not artist or not title:
-            return None
-        clean_artist = artist.split('(')[0].split('/')[0].split('&')[0].strip()
-        clean_title = title.split('(')[0].split(':')[0].strip()
-
-        queries = [
-            f"{clean_artist} {clean_title}",
-            f"{clean_artist} {title.split('(')[0].strip()}",
-            clean_title
-        ]
-
-        for q in queries:
-            if not q:
-                continue
-            url = f"https://itunes.apple.com/search?term={urllib.parse.quote(q)}&entity=album&limit=3"
-            try:
-                resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    results = data.get("results", [])
-                    for r in results:
-                        art = r.get("artworkUrl100", "")
-                        if art:
-                            return art.replace("100x100bb", "600x600bb")
-            except Exception as e:
-                logger.warning(f"iTunes query '{q}' warning: {e}")
-        return None
-
     def fetch_official_cover(self, artist: str, title: str, cover_url: Optional[str] = None) -> Optional[str]:
-        # 1. Try iTunes Search API first for high-res 600x600 official album cover art
-        itunes_art = self.fetch_itunes_cover(artist, title)
-        if itunes_art:
-            return itunes_art
-
-        # 2. Try Discogs vinyl search
+        """
+        Fetch official album cover art EXCLUSIVELY from Discogs API for vinyl releases.
+        """
         assets = self.fetch_all_release_assets(artist, title, cover_url=cover_url)
         if assets:
             for a in assets:
-                if a.get("isPrimary"):
-                    return a.get("url")
+                url = a.get("url", "")
+                if a.get("isPrimary") and url and "shopping_cover_2.jpg" not in url:
+                    return url
+            for a in assets:
+                url = a.get("url", "")
+                if url and "shopping_cover_2.jpg" not in url:
+                    return url
             return assets[0].get("url")
         return cover_url
+
 
 
     def fetch_all_release_assets(self, artist: str, title: str, cover_url: Optional[str] = None) -> List[Dict[str, Any]]:
