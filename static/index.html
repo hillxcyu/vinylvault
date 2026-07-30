@@ -1320,6 +1320,14 @@
         badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> Currently Spinning';
       }
 
+      if (assetBadge) {
+        const countryVal = rec.country || 'Japan';
+        const isJapan = countryVal.toLowerCase().includes('japan');
+        const catNo = rec.catalogNumber || rec.catno || '';
+        assetBadge.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${isJapan ? '🇯🇵 Discogs Japan Release' : '💿 Discogs Release'} ${catNo ? `[${catNo}]` : ''}`;
+      }
+
+
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
