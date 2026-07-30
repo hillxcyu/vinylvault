@@ -1,9 +1,9 @@
 # DEFINE
 
-## [2026-07-30 17:03:00] TODO List
+## [2026-07-30 17:31:00] TODO List
 
-- [x] `[backend]` Remove `@app.on_event("startup")` hook from `main.py` so Uvicorn binds instantly to port 8080.
-- [x] `[backend]` Refactor `database.py` to add `_has_synced_firestore` flag and perform lazy Firestore sync when requested.
-- [x] `[backend]` Update `GET /api/records` in `main.py` to trigger on-demand Firestore sync.
-- [x] `[testing]` Test Docker container build (`docker build -t vinyl-vault:test .`).
-- [x] `[testing]` Test Docker container health check and instant startup on port 8080 via OrbStack.
+- [x] `[backend]` Add `detect_corners(self, image_bytes)` in `deskew_service.py` to calculate normalized container corner coordinates.
+- [x] `[backend]` Add `POST /api/detect-corners` endpoint and include `detectedCorners` in `/api/scan` response in `main.py`.
+- [x] `[x]` `[frontend]` Update `static/index.html` to snap initial `cornerPoints` handles (`TL`, `TR`, `BR`, `BL`) directly to detected corners.
+- [x] `[frontend]` Add "Auto Detect Corners" button to the manual deskew control bar in `static/index.html`.
+- [x] `[testing]` Create `test_corner_detection.py` and run verification tests on sample images.

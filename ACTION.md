@@ -13,16 +13,15 @@
 
 ---
 
-## [2026-07-30 17:03:10] Lazy Firestore Sync Implementation Log
+## [2026-07-30 17:31:10] Automatic Corner Detection Implementation Log
 
-1. **[2026-07-30 17:03:10] Pipeline Started**:
-   - Refactored startup lifecycle: removed `@app.on_event("startup")` from `main.py`.
-   - Implemented lazy Firestore sync in `database.py` (`ensure_firestore_synced()`) triggered on demand by `GET /api/records`.
-2. **[2026-07-30 17:03:55] Built Local Docker Image**:
-   - `docker build -t vinyl-vault:test .` (`task-190` completed successfully).
-3. **[2026-07-30 17:04:45] Verified Instant Container Startup**:
-   - Executed `docker run -d -p 8080:8080 -e PORT=8080 vinyl-vault:test`.
-   - Server process bound to `0.0.0.0:8080` instantly (< 20ms).
-   - Verified `GET /` and `GET /api/records` returned `200 OK` and 48 records with lazy Firestore sync.
-
+1. **[2026-07-30 17:31:10] Implemented OpenCV Corner Detection**:
+   - Added `detect_corners(self, image_bytes)` in `deskew_service.py` to calculate normalized container corner points accounting for letterbox aspect ratio.
+2. **[2026-07-30 17:32:35] Added API Endpoints**:
+   - Added `POST /api/detect-corners` and updated `/api/scan` in `main.py` to return `detectedCorners`.
+3. **[2026-07-30 17:33:47] Enhanced Manual Deskew UI**:
+   - Updated `static/index.html` to automatically snap `cornerPoints` handles (`TL`, `TR`, `BR`, `BL`) directly to detected corners on photo load/scan.
+   - Added "Auto Detect Corners" (`Detect`) button in the manual deskew action bar.
+4. **[2026-07-30 17:35:46] Verification Passed**:
+   - Executed `venv/bin/python test_corner_detection.py`. Passed 100% with precise corner detection: `[[0.0408, 0.355], [0.9725, 0.3583], [0.9692, 0.9683], [0.0375, 0.9633]]`.
 

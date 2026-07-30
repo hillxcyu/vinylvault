@@ -558,18 +558,22 @@
         </div>
       </div>
 
-      <!-- External 3-Button Action Bar: Located Below Preview Area & Above Manual Search -->
-      <div id="scannerActionsBar" class="hidden grid grid-cols-3 gap-2 pt-1">
-        <button onclick="applyManualDeskew()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-white/20">
-          <i class="fa-solid fa-crop-simple text-sm"></i> Apply
+      <!-- External Action Bar: Located Below Preview Area & Above Manual Search -->
+      <div id="scannerActionsBar" class="hidden grid grid-cols-4 gap-1.5 pt-1">
+        <button onclick="applyManualDeskew()" class="w-full py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-white/20">
+          <i class="fa-solid fa-crop-simple text-xs"></i> Apply
         </button>
-        <button onclick="triggerAutoScan()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-stone-700">
-          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i> Auto
+        <button onclick="autoDetectCornersAndSnap()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-amber-400 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-amber-500/30">
+          <i class="fa-solid fa-object-group text-xs"></i> Detect
         </button>
-        <button onclick="document.getElementById('photoInput').click()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-stone-700">
-          <i class="fa-solid fa-camera text-amber-400 text-sm"></i> Resnap
+        <button onclick="triggerAutoScan()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-stone-700">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i> Auto
+        </button>
+        <button onclick="document.getElementById('photoInput').click()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-stone-700">
+          <i class="fa-solid fa-camera text-amber-400 text-xs"></i> Resnap
         </button>
       </div>
+
 
       <!-- Manual Query Form -->
       <div class="space-y-3 pt-2">
@@ -1609,10 +1613,9 @@
         if (actionsBar) actionsBar.classList.remove('hidden');
         previewImg.src = rawUrl;
         resetZoomPan();
-        resetCornerPoints();
+        lastDetectedCorners = null;
+        autoDetectCornersAndSnap();
       }
-
-      showScanLoading('Photo ready! Drag the 4 corner handles to outline the vinyl cover, then click "Apply 4-Corner Crop" or "Auto Deskew".');
     }
 
     async function triggerAutoScan() {
@@ -1634,6 +1637,10 @@
         const data = await res.json();
         lastScannedMetadata = data.metadata;
 
+        if (data.detectedCorners && data.detectedCorners.length === 4) {
+          lastDetectedCorners = data.detectedCorners;
+        }
+
         if (data.metadata && data.metadata.coverUrl) {
           const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg) previewImg.src = data.metadata.coverUrl;
@@ -1653,6 +1660,7 @@
     }
 
     let currentRawFile = null;
+    let lastDetectedCorners = null;
     let cornerPoints = [
       { x: 0.08, y: 0.08 },
       { x: 0.92, y: 0.08 },
@@ -1671,15 +1679,45 @@
       if (svg) svg.style.display = show ? 'block' : 'none';
     }
 
-    function resetCornerPoints() {
+    function resetCornerPoints(customCorners = null) {
       toggleCornerHandles(true);
-      cornerPoints = [
-        { x: 0.08, y: 0.08 },
-        { x: 0.92, y: 0.08 },
-        { x: 0.92, y: 0.92 },
-        { x: 0.08, y: 0.92 }
+      const targetCorners = customCorners || lastDetectedCorners || [
+        [0.08, 0.08],
+        [0.92, 0.08],
+        [0.92, 0.92],
+        [0.08, 0.92]
       ];
+      cornerPoints = targetCorners.map(pt => Array.isArray(pt) ? { x: pt[0], y: pt[1] } : pt);
       setTimeout(updateCornerHandlesUI, 50);
+    }
+
+    async function autoDetectCornersAndSnap() {
+      if (!currentRawFile) {
+        resetCornerPoints();
+        return;
+      }
+      showScanLoading('Detecting album cover corners with OpenCV...');
+      try {
+        const formData = new FormData();
+        formData.append('file', currentRawFile);
+        const res = await fetch('/api/detect-corners', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.corners && data.corners.length === 4) {
+            lastDetectedCorners = data.corners;
+            resetCornerPoints(data.corners);
+            showScanLoading('Corners auto-detected! Drag any handle to fine-tune, then click Apply.');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Auto detect corners fallback:', err);
+      }
+      resetCornerPoints();
+      showScanLoading('Photo ready! Drag the 4 corner handles to outline the vinyl cover, then click Apply.');
     }
 
     let dragOffsetPctX = 0;

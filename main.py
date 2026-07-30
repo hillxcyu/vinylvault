@@ -135,6 +135,7 @@ async def scan_cover(file: UploadFile = File(...)):
     contents = await file.read()
     
     # 0. Auto-deskew & perspective correct image
+    detected_corners = deskew_service.detect_corners(contents)
     deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
     final_bytes = deskewed_bytes if is_deskewed else contents
 
@@ -171,10 +172,21 @@ async def scan_cover(file: UploadFile = File(...)):
     return {
         "metadata": extracted_metadata,
         "duplicateCheck": duplicate_result,
-        "deskewed": is_deskewed
+        "deskewed": is_deskewed,
+        "detectedCorners": detected_corners
+    }
+
+@app.post("/api/detect-corners")
+async def detect_corners_endpoint(file: UploadFile = File(...)):
+    contents = await file.read()
+    corners = deskew_service.detect_corners(contents)
+    return {
+        "status": "success",
+        "corners": corners
     }
 
 @app.post("/api/crop-deskew")
+
 async def crop_deskew_endpoint(
     file: UploadFile = File(...),
     corners: str = Form(...)

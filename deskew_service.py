@@ -136,7 +136,108 @@ class DeskewService:
 
         return image_bytes, False
 
+    def detect_corners(self, image_bytes: bytes) -> List[List[float]]:
+        """
+        Detects 4 physical corners of album cover in image_bytes and returns
+        normalized 0.0..1.0 container coordinates [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+        ordered as [TL, TR, BR, BL] accounting for container letterboxing.
+        """
+        default_corners = [
+            [0.08, 0.08],
+            [0.92, 0.08],
+            [0.92, 0.92],
+            [0.08, 0.92]
+        ]
+
+        if not OPENCV_AVAILABLE or not image_bytes:
+            return default_corners
+
+        try:
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                return default_corners
+
+            h_img, w_img = img.shape[:2]
+            image_area = h_img * w_img
+
+            img_aspect = w_img / h_img
+            if img_aspect > 1.0:
+                w_rendered = 1.0
+                h_rendered = 1.0 / img_aspect
+                offset_x = 0.0
+                offset_y = (1.0 - h_rendered) / 2.0
+            else:
+                h_rendered = 1.0
+                w_rendered = img_aspect
+                offset_x = (1.0 - w_rendered) / 2.0
+                offset_y = 0.0
+
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            edged = cv2.Canny(blurred, 50, 200)
+
+            contours, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+
+            screen_cnt = None
+            for c in contours:
+                area = cv2.contourArea(c)
+                if area < 0.08 * image_area:
+                    continue
+
+                peri = cv2.arcLength(c, True)
+                approx = cv2.approxPolyDP(c, 0.03 * peri, True)
+
+                if 4 <= len(approx) <= 8:
+                    rect_box = cv2.minAreaRect(c)
+                    box = cv2.boxPoints(rect_box)
+                    screen_cnt = np.int32(box)
+                    break
+
+            if screen_cnt is not None:
+                pts = screen_cnt.reshape(4, 2)
+            elif contours and cv2.contourArea(contours[0]) >= 0.08 * image_area:
+                c = contours[0]
+                x, y, w_c, h_c = cv2.boundingRect(c)
+                pts = np.array([[x, y], [x + w_c, y], [x + w_c, y + h_c], [x, y + h_c]], dtype="float32")
+            else:
+                margin_x = int(w_img * 0.06)
+                margin_y = int(h_img * 0.06)
+                pts = np.array([
+                    [margin_x, margin_y],
+                    [w_img - margin_x, margin_y],
+                    [w_img - margin_x, h_img - margin_y],
+                    [margin_x, h_img - margin_y]
+                ], dtype="float32")
+
+            ordered_pts = self._order_points(pts)
+
+            normalized_corners = []
+            for i in range(4):
+                px_x = ordered_pts[i, 0]
+                px_y = ordered_pts[i, 1]
+
+                rel_x = px_x / w_img
+                rel_y = px_y / h_img
+
+                container_x = offset_x + rel_x * w_rendered
+                container_y = offset_y + rel_y * h_rendered
+
+                container_x = max(0.02, min(0.98, float(container_x)))
+                container_y = max(0.02, min(0.98, float(container_y)))
+
+                normalized_corners.append([round(container_x, 4), round(container_y, 4)])
+
+            return normalized_corners
+
+        except Exception as e:
+            logger.error(f"Error in detect_corners: {e}")
+
+        return default_corners
+
     def manual_deskew_image(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 800) -> Tuple[bytes, bool]:
+
         """
         Applies a 4-point perspective transform using user-specified corner points
         [[x1,y1], [x2,y2], [x3,y3], [x4,y4]] (where coordinates can be 0-1 normalized or pixel space).
