@@ -144,26 +144,36 @@ async def rescan_record_cover_endpoint(record_id: str):
     title = rec.get("title", "")
     catno = rec.get("catalogNumber", "")
 
-    official_art = discogs_service.fetch_official_cover(
+    info = discogs_service.fetch_release_info(
         artist,
         title,
         cover_url=rec.get("coverUrl"),
         catalog_number=catno,
-        country="Japan"
+        country=rec.get("country", "Japan")
     )
+    official_art = info.get("coverUrl")
+
     if official_art:
         rec["coverUrl"] = official_art
+        if info.get("releaseYear") and info.get("releaseYear") > 1900:
+            rec["releaseYear"] = info.get("releaseYear")
+        if info.get("catalogNumber") and not rec.get("catalogNumber"):
+            rec["catalogNumber"] = info.get("catalogNumber")
+        if info.get("country") and not rec.get("country"):
+            rec["country"] = info.get("country")
+
         db.save_records()
         if db.firestore.db:
             db.firestore.save_record(rec)
         return {
             "status": "success",
-            "message": f"Successfully fetched official cover art for '{title}'",
+            "message": f"Successfully fetched official cover art & metadata for '{title}'",
             "coverUrl": official_art,
             "record": rec
         }
     else:
         raise HTTPException(status_code=404, detail="No official cover art found for this record")
+
 
 
 @app.post("/api/records/{record_id}/update-cover")
