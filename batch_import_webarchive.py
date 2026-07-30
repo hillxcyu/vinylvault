@@ -47,7 +47,7 @@ def run_batch_import() -> Dict[str, Any]:
             with open(saved_path, "wb") as img_file:
                 img_file.write(res_data)
 
-            local_url = f"/static/extracted_covers/{filename}"
+            local_url = f"https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/{filename}"
             image_map[url] = local_url
             image_map[img_count] = (local_url, res_data, filename)
 
@@ -75,7 +75,7 @@ def run_batch_import() -> Dict[str, Any]:
         if idx in image_map:
             cover_url, res_data, fname = image_map[idx]
         else:
-            cover_url = f"/static/extracted_covers/shopping_cover_{min(idx, img_count)}.jpg"
+            cover_url = f"https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_{min(idx, img_count)}.jpg"
             res_data = None
 
         # Parse artist and title from text

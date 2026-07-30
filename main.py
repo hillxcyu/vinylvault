@@ -101,6 +101,21 @@ async def serve_cover_image(filename: str):
     gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
     return RedirectResponse(url=gcs_url)
 
+@app.get("/static/extracted_covers/{filename}")
+async def redirect_legacy_extracted_cover(filename: str):
+    clean_fn = os.path.basename(filename)
+    return RedirectResponse(
+        url=f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
+    )
+
+@app.get("/static/uploads/{filename}")
+async def redirect_legacy_upload_cover(filename: str):
+    clean_fn = os.path.basename(filename)
+    return RedirectResponse(
+        url=f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
+    )
+
+
 @app.post("/api/admin/repair-covers")
 async def repair_covers_admin_endpoint():
     recs = db.get_all_records(sync_if_needed=True)

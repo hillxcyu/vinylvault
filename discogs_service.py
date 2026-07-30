@@ -70,7 +70,7 @@ class DiscogsService:
         Enforces strict primary artist verification and filters out mismatched lead performers.
         """
         assets = []
-        primary_cover = cover_url or "/static/extracted_covers/shopping_cover_2.jpg"
+        primary_cover = cover_url or "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_2.jpg"
 
         # Retain original jacket cover as primary fallback
         assets.append({
@@ -146,6 +146,6 @@ discogs_service = DiscogsService()
 
 if __name__ == "__main__":
     print("\n--- Testing Strict Discogs Vinyl Assets for Isaac Stern ---")
-    assets1 = discogs_service.fetch_all_release_assets("Isaac Stern (伊萨克·斯特恩)", "Sibelius & Bruch: Violin Concertos", "/static/extracted_covers/shopping_cover_3.jpg")
+    assets1 = discogs_service.fetch_all_release_assets("Isaac Stern (伊萨克·斯特恩)", "Sibelius & Bruch: Violin Concertos", "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_3.jpg")
     for a in assets1:
         print(f" - [{a['type']}]: {a['url']}")
