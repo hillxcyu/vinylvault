@@ -1181,44 +1181,16 @@
       }
     }
 
+    let rescanTargetRecordForDeskew = null;
+
     async function rescanUploadPhoto(input) {
       if (!input.files || !input.files[0] || !rescanCurrentRecord) return;
       const file = input.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const uploadRes = await fetch('/api/upload-cover', {
-          method: 'POST',
-          body: formData
-        });
-        const uploadData = await uploadRes.json();
-        const uploadedUrl = uploadData.coverUrl;
-
-        if (uploadedUrl) {
-          const updateRes = await fetch(`/api/records/${rescanCurrentRecord.id}/update-cover`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coverUrl: uploadedUrl })
-          });
-
-          if (updateRes.ok) {
-            rescanCurrentRecord.coverUrl = uploadedUrl;
-            document.getElementById('rescanPreviewImg').src = uploadedUrl;
-            if (currentSpinning && currentSpinning.id === rescanCurrentRecord.id) {
-              currentSpinning.coverUrl = uploadedUrl;
-              updateNowSpinningUI(currentSpinning);
-            }
-            await fetchCollection();
-            alert(`✅ Photo uploaded & set for '${rescanCurrentRecord.title}'!`);
-            closeRescanModal();
-          }
-        }
-      } catch (err) {
-        console.error('Error uploading cover photo:', err);
-        alert('❌ Failed to upload cover photo.');
-      }
+      rescanTargetRecordForDeskew = rescanCurrentRecord;
+      closeRescanModal();
+      openScannerModalWithFile(file);
     }
+
 
 
 
@@ -1826,12 +1798,32 @@
       document.getElementById('scannerModal').classList.remove('hidden');
     }
 
+    function openScannerModalWithFile(file) {
+      currentRawFile = file;
+      openScannerModal();
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewImg = document.getElementById('scannerPreviewImg');
+        if (previewImg) {
+          previewImg.src = e.target.result;
+          document.getElementById('scannerPlaceholderContent').classList.add('hidden');
+          document.getElementById('scannerPreviewContainer').classList.remove('hidden');
+          document.getElementById('scannerActionsBar').classList.remove('hidden');
+          autoDetectCornersAndSnap();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
     function closeScannerModal() {
       resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.add('hidden');
       document.getElementById('scanResultContainer').classList.add('hidden');
       document.getElementById('photoInput').value = '';
+      rescanTargetRecordForDeskew = null;
     }
+
 
     function showScanLoading(messageText = 'Analyzing album cover with Gemini AI...') {
       const container = document.getElementById('scanResultContainer');
@@ -2205,8 +2197,35 @@
         // Give browser 2 animation frames to repaint the DOM
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
+        // If user is deskewing cover art for an existing record, update coverUrl directly
+        if (rescanTargetRecordForDeskew) {
+          const rec = rescanTargetRecordForDeskew;
+          showScanLoading(`Saving deskewed cover art for '${rec.title}'...`);
+          const updateRes = await fetch(`/api/records/${rec.id}/update-cover`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coverUrl: cropData.coverUrl })
+          });
+
+          if (updateRes.ok) {
+            rec.coverUrl = cropData.coverUrl;
+            if (currentSpinning && currentSpinning.id === rec.id) {
+              currentSpinning.coverUrl = cropData.coverUrl;
+              updateNowSpinningUI(currentSpinning);
+            }
+            await fetchCollection();
+            closeScannerModal();
+            showToast(`✨ Cover art cropped & set for '${rec.title}'!`, 'fa-crop-simple');
+          } else {
+            throw new Error('Failed to update record cover art.');
+          }
+          rescanTargetRecordForDeskew = null;
+          return;
+        }
+
         // STEP 3 GEMINI ANALYSIS: Now send deskewed image to Gemini AI for vision analysis
         showScanLoading('Step 2/2: Parsing title, artist & pressing details via Gemini AI...');
+
 
         const analyzeRes = await fetch(`/api/analyze-deskewed?coverUrl=${encodeURIComponent(cropData.coverUrl)}`, {
           method: 'POST'
