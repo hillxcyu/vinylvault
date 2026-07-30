@@ -137,7 +137,7 @@ async def repair_covers_admin_endpoint():
 
     for r in recs:
         old_url = r.get("coverUrl", "")
-        rec_id = r.get("id")
+        rec_id = r.get("id", "")
         artist = r.get("artist", "")
         title = r.get("title", "")
         new_url = None
@@ -145,12 +145,12 @@ async def repair_covers_admin_endpoint():
         if old_url.startswith("/static/extracted_covers/"):
             fname = os.path.basename(old_url)
             new_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{fname}"
-        elif old_url.startswith("/static/uploads/") or not old_url or "shopping_cover" in old_url:
-            discogs_url = discogs_service.fetch_official_cover(artist, title)
-            if discogs_url and "shopping_cover" not in discogs_url:
-                new_url = discogs_url
-            else:
-                new_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/shopping_cover_2.jpg"
+
+        # Fetch unique high-res official artwork for user scans & records using duplicate fallback
+        if "rec-user" in rec_id or "shopping_cover_2.jpg" in old_url or old_url.startswith("/static/uploads/") or not old_url:
+            official_url = discogs_service.fetch_official_cover(artist, title)
+            if official_url and "shopping_cover_2.jpg" not in official_url:
+                new_url = official_url
 
         if new_url and new_url != old_url:
             r["coverUrl"] = new_url
@@ -166,6 +166,7 @@ async def repair_covers_admin_endpoint():
         "updatedCount": updated_count,
         "totalRecords": len(recs)
     }
+
 
 
 
