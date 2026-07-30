@@ -1,0 +1,49 @@
+{
+  "albumBackground": "Composed by Johann Sebastian Bach between 1722 and 1725 for his second wife Anna Magdalena, the six French Suites (BWV 812–817) represent some of the most intimate, melodically graceful, and rhythmically varied keyboard works in the Baroque canon. Unlike Bach's grander English Suites or Partitas, the French Suites bypass formal preludes, launching directly into courtly dance movements—Allemandes, Courantes, Sarabandes, Gavottes, and Gigues. In late 1971 through 1973, legendary Canadian pianist Glenn Gould set out to record the complete cycle for Columbia Masterworks, resulting in one of the most distinctive and critically discussed interpretations in recorded classical history.\n\nThe recording sessions took place at Columbia Records' famed 30th Street Studio in New York City (affectionately known as 'The Church'), prized for its 100-foot vaulted ceiling, wooden flooring, and natural ambient resonance. Produced by Andrew Kazdin and engineered by Frank Dean Dennowitz and Kent Warden, Gould performed on his heavily modified Steinway CD 318 grand piano. Gould had his technician regulation-adjust the instrument's action to be extraordinarily shallow and light, giving it an almost harpsichord-like tactile staccato and swift transient response. Captured through custom Columbia tube/solid-state mixing consoles onto multi-track Ampex tape machines, the recording vividly captures both the delicate mechanics of the piano action and Gould's infamous, inescapable vocal humming in the studio room air.\n\nOriginal vinyl editions were released as two separate volumes—Vol. 1 (M 32347) in 1973 and Vol. 2 (M 32853) in 1974—before being pressed as a definitive 2-LP Masterworks box set. Early US pressing masters cut at Columbia Recording Studios in New York (noted by stamped 'MAL/MBL' matrix runouts) feature remarkable dynamic immediacy and crisp high-frequency air. Because of Gould's dry, non-legato articulation and minimal use of the sustain pedal, the vinyl mastering requires exceptional pitch stability and low surface noise to allow the decay of each note to float effortlessly in 'The Church's' natural reverberant soundstage.",
+  "tracklist": [
+    {
+      "position": "A1",
+      "title": "French Suite No. 1 in D Minor, BWV 812",
+      "duration": "11:16",
+      "highlight": true,
+      "whatToListenFor": "Listen for Gould's signature ultra-detached staccato on the modified Steinway CD 318 during the opening Allemande; the upper-register attack mimics a plucked harpsichord while preserving the resonant body of a grand piano [1.2.4]."
+    },
+    {
+      "position": "A2",
+      "title": "French Suite No. 2 in C Minor, BWV 813",
+      "duration": "9:32",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "B1",
+      "title": "French Suite No. 3 in B Minor, BWV 814",
+      "duration": "8:56",
+      "highlight": true,
+      "whatToListenFor": "Pay close attention to the delicate, singing voicings in the Sarabande and Anglaise, where Gould's faint vocal humming is clearly audible leaking into the omnidirectional room microphones."
+    },
+    {
+      "position": "B2",
+      "title": "French Suite No. 4 in E-Flat Major, BWV 815",
+      "duration": "9:13",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "C1",
+      "title": "French Suite No. 5 in G Major, BWV 816",
+      "duration": "10:57",
+      "highlight": true,
+      "whatToListenFor": "The explosive, polyphonic drive of the concluding Gigue showcases lightning-fast transient attacks that will test your phono cartridge's tracking ability and channel separation."
+    },
+    {
+      "position": "D1",
+      "title": "French Suite No. 6 in E Major, BWV 817",
+      "duration": "12:20",
+      "highlight": true,
+      "whatToListenFor": "Notice the wide, realistic soundstage during the Sarabande and Polonaise, where the acoustic decay inside Columbia's 30th Street Studio creates a stunning 3D room ambiance around the instrument."
+    }
+  ],
+  "vinylTip": "Because Gould's custom Steinway CD 318 possesses rapid high-frequency attacks and delicate micro-dynamics, play this record with a MicroLine or Fine-Line stylus calibrated to exact tracking force to prevent inner-groove distortion during complex contrapuntal passages.",
+  "recommendedMood": "Late night in a quiet room with warm amber lighting, tube amplification, and a glass of aged single-malt scotch."
+}

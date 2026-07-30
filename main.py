@@ -33,18 +33,12 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
-        response.headers["Clear-Site-Data"] = '"cache"'
     elif path.startswith("/static/uploads/") or path.startswith("/static/extracted_covers/"):
         response.headers["Cache-Control"] = "public, max-age=86400"
     return response
 
-import asyncio
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(asyncio.to_thread(db.sync_firestore_on_startup))
-
 # Mount static directory and subdirectories safely
+
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 covers_dir = os.path.join(static_dir, "extracted_covers")
 os.makedirs(static_dir, exist_ok=True)
@@ -97,7 +91,8 @@ async def serve_index():
 
 @app.get("/api/records")
 async def get_records():
-    return {"records": db.get_all_records()}
+    return {"records": db.get_all_records(sync_if_needed=True)}
+
 
 @app.get("/api/wishlist")
 async def get_wishlist():

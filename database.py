@@ -1327,13 +1327,22 @@ class VinylDatabase:
     def __init__(self):
         os.makedirs(DATA_DIR, exist_ok=True)
         self.firestore = FirestoreManager()
+        self._has_synced_firestore = False
 
         self.wishlist = list(INITIAL_WISHLIST)
         self.records = self._load_records()
         self.spins_log = self._load_spins()
         self.chronicle = self._load_chronicle()
 
+    def ensure_firestore_synced(self):
+        """Lazy-syncs Firestore on demand when /api/records is called."""
+        if self._has_synced_firestore:
+            return
+        self._has_synced_firestore = True
+        self.sync_firestore_on_startup()
+
     def sync_firestore_on_startup(self):
+
         """Non-blocking background sync called after web server binds to PORT."""
         if not self.firestore.db:
             print("Firestore client unavailable; skipping startup sync.")
@@ -1471,8 +1480,11 @@ class VinylDatabase:
     def save_spins(self):
         self._save_json(SPINS_FILE, self.spins_log)
 
-    def get_all_records(self) -> List[Dict[str, Any]]:
+    def get_all_records(self, sync_if_needed: bool = False) -> List[Dict[str, Any]]:
+        if sync_if_needed:
+            self.ensure_firestore_synced()
         return self.records
+
 
     def get_record_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
         for r in self.records:

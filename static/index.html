@@ -118,7 +118,7 @@
           <!-- Track Info & Controls with Audio Pronunciation Buttons -->
           <div class="flex-1 text-center md:text-left space-y-3">
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <div id="nowSpinningBadge" class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
                 Currently Spinning
               </div>
@@ -1023,9 +1023,8 @@
         document.getElementById('recordCountBadge').innerText = allRecords.length;
         document.getElementById('statTotalRecords').innerText = allRecords.length;
 
-        if (allRecords.length > 0 && !currentSpinning) {
-          currentSpinning = allRecords[0];
-          updateNowSpinningUI(currentSpinning);
+        if (!currentSpinning) {
+          updateNowSpinningUI(null);
         }
         renderRecordsGrid(allRecords);
       } catch (err) {
@@ -1045,6 +1044,56 @@
 
     function updateNowSpinningUI(rec) {
       currentSpinning = rec;
+
+      const badge = document.getElementById('nowSpinningBadge');
+      const assetBadge = document.getElementById('discogsAssetBadge');
+
+      if (!rec) {
+        // Standby / Idle Mode
+        document.getElementById('spinningCover').src = SVG_PLACEHOLDER;
+        document.getElementById('spinningTitle').innerText = 'No Record Spinning';
+        document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
+        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
+        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready';
+
+        if (badge) {
+          badge.className = 'inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 bg-stone-800/60 px-3 py-1 rounded-full border border-stone-700/60';
+          badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> Standby Mode';
+        }
+        if (assetBadge) {
+          assetBadge.innerText = 'Awaiting Album Selection';
+        }
+
+        const assetsGrid = document.getElementById('officialAssetsGrid');
+        if (assetsGrid) {
+          assetsGrid.innerHTML = '<div class="text-xs text-stone-500 col-span-4 italic py-2">Select a record to load release assets from Discogs.</div>';
+        }
+
+        const bgEl = document.getElementById('guideBackground');
+        if (bgEl) {
+          bgEl.innerHTML = '<span class="text-stone-500 italic">Select a record from your Crate or Chronicle to generate an AI listening guide, backstory, and tracklist.</span>';
+        }
+
+        const tracklistContainer = document.getElementById('tracklistContainer');
+        if (tracklistContainer) {
+          tracklistContainer.innerHTML = '<div class="text-xs text-stone-500 italic py-2">No record currently spinning.</div>';
+        }
+
+        const vinylTip = document.getElementById('guideVinylTip');
+        if (vinylTip) vinylTip.innerText = 'Spin an album to unlock audiophile mastering pro-tips.';
+
+        const mood = document.getElementById('guideMood');
+        if (mood) mood.innerText = 'Awaiting vinyl selection.';
+
+        return;
+      }
+
+      // Active Spinning Mode
+      if (badge) {
+        badge.className = 'inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20';
+        badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> Currently Spinning';
+      }
+
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;

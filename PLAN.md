@@ -1,40 +1,22 @@
-# 📋 Master Execution Plan: Enhanced Comfortable Typography & Readability
+# PLAN
 
-### Timestamp: 2026-07-29T08:40:15Z
+## [2026-07-30 16:59:00] Cloud Run Fast Startup & Lazy On-Demand /api/records Firestore Sync [COMPLETED]
 
-## Goal
-Increase font sizes across all key UI components in `static/index.html` (Crate Cards, Chronicle Timeline, Composer Knowledge Cards, Composer Modal, and Navigation) for an effortless, comfortable reading experience.
 
----
-
-## 🎯 Step-by-Step Implementation Plan
-
-### Step 1: Crate Cards Typography (`renderRecordsGrid`)
-- Increase album title from `text-base` to `text-lg font-bold`.
-- Increase artist & year from `text-xs` to `text-sm`.
-- Increase genre badge & spin count from `text-[11px]` to `text-xs`.
-
-### Step 2: Chronicle Timeline & Composer Cards (`renderChronicle`)
-- **Chronicle Items**:
-  - Title: `text-sm` -> `text-base font-bold`.
-  - Artist: `text-xs` -> `text-sm`.
-  - Composer badge & release year: `text-[10px]` -> `text-xs`.
-  - AI Insight: `text-[11px]` -> `text-xs leading-relaxed`.
-- **Composer Knowledge Cards**:
-  - Name: `text-sm` -> `text-base font-bold`.
-  - Lifespan & Country: `text-[11px]` -> `text-xs`.
-  - Highlights bio: `text-xs` -> `text-sm leading-relaxed`.
-
-### Step 3: Composer Deep-Dive Modal & Tracklist (`#composerModal`)
-- Modal section headings: `text-xs` -> `text-sm font-extrabold`.
-- Bio & Innovations text: `text-xs` -> `text-sm leading-relaxed`.
-- Tracklist items: `text-xs` -> `text-sm`.
-
-### Step 4: Verification & Integration Tests
-- Run `./test_local_integration.sh`.
-- Restart local Docker container and commit changes to `main`.
+### Goal
+Fix Cloud Run container startup failure (`PORT=8080` health check timeout) by removing all blocking startup event handlers from `main.py` and deferring Firestore synchronization to only when the `GET /api/records` endpoint is explicitly invoked by the client.
 
 ---
 
-## 💬 User Review Request
-Please review this plan. Upon your confirmation, we will proceed with execution!
+### Proposed Plan
+
+1. **Remove Startup Event in `main.py`**
+   - Remove `@app.on_event("startup")` in [main.py](file:///Users/hill/src/vinylvault/main.py) so FastAPI and Uvicorn start immediately (< 50ms) and bind to `0.0.0.0:${PORT}` without waiting for network I/O.
+
+2. **Refactor Firestore Sync to On-Demand in `database.py` & `main.py`**
+   - Add a lazy sync flag `_has_synced_firestore` to `VinylDatabase` in [database.py](file:///Users/hill/src/vinylvault/database.py).
+   - In `get_records()`, if Firestore sync has not occurred yet, run `sync_firestore_on_startup()` on demand when `GET /api/records` is called.
+
+3. **Verify Local & Docker Container Execution**
+   - Run integration tests (`./test_local_integration.sh`).
+   - Test Docker build & local container startup (`docker build` and `docker run -p 8080:8080`).

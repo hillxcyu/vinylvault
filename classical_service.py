@@ -439,23 +439,9 @@ class ClassicalService:
             "source": "rule_based_fallback"
         }
 
-    def get_chronicle_data(self, records: List[Dict[str, Any]], force_ai_refresh: bool = False) -> Dict[str, Any]:
-        """
-        Returns Classical Music Chronicle categorized by composer era.
-        Uses database-persisted AI Chronicle if available.
-        Calls Gemini 3.6 Flash when force_ai_refresh=True or when no DB cache exists.
-        Falls back to rule-based classification if offline/unreachable.
-        """
+    def _rebuild_ai_chronicle_bg(self, records: List[Dict[str, Any]]):
         from database import db
         from gemini_service import gemini_service
-
-        if not force_ai_refresh:
-            cached = db.get_chronicle()
-            if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0:
-                logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
-                cached["isRebuilding"] = self.is_rebuilding
-                cached["composerStats"] = self._compute_composer_stats(records)
-                return cached
 
         self.is_rebuilding = True
         try:
@@ -464,21 +450,40 @@ class ClassicalService:
                 ai_chronicle["source"] = "gemini_3.6_flash"
                 ai_chronicle["composerStats"] = self._compute_composer_stats(records)
                 db.save_chronicle(ai_chronicle)
-                logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk.")
-                ai_chronicle["isRebuilding"] = False
-                return ai_chronicle
-
-            cached = db.get_chronicle()
-            if cached and isinstance(cached, dict) and "eras" in cached:
-                cached["isRebuilding"] = False
-                cached["composerStats"] = self._compute_composer_stats(records)
-                return cached
-
-            fallback = self._rule_based_chronicle_data(records)
-            db.save_chronicle(fallback)
-            fallback["isRebuilding"] = False
-            return fallback
+                logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk in background.")
+        except Exception as e:
+            logger.error(f"Background AI chronicle rebuild error: {e}")
         finally:
             self.is_rebuilding = False
+
+    def get_chronicle_data(self, records: List[Dict[str, Any]], force_ai_refresh: bool = False) -> Dict[str, Any]:
+        """
+        Returns Classical Music Chronicle categorized by composer era.
+        Uses database-persisted AI Chronicle if available (< 5ms).
+        If missing or force_ai_refresh=True, returns immediate rule-based fallback (< 10ms)
+        and triggers Gemini 3.6 Flash rebuilding asynchronously in a background thread.
+        """
+        import threading
+        from database import db
+
+        cached = db.get_chronicle()
+        if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0 and not force_ai_refresh:
+            logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
+            cached["isRebuilding"] = self.is_rebuilding
+            cached["composerStats"] = self._compute_composer_stats(records)
+            return cached
+
+        if not self.is_rebuilding:
+            threading.Thread(target=self._rebuild_ai_chronicle_bg, args=(records,), daemon=True).start()
+
+        if cached and isinstance(cached, dict) and "eras" in cached:
+            cached["isRebuilding"] = True
+            cached["composerStats"] = self._compute_composer_stats(records)
+            return cached
+
+        fallback = self._rule_based_chronicle_data(records)
+        db.save_chronicle(fallback)
+        fallback["isRebuilding"] = True
+        return fallback
 
 classical_service = ClassicalService()

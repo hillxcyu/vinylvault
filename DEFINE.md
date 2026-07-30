@@ -1,23 +1,9 @@
-# 📝 DEFINE: Task Decomposition - Comfortable Typography Upgrade
+# DEFINE
 
-### Timestamp: 2026-07-29T08:40:20Z
+## [2026-07-30 17:03:00] TODO List
 
-## 🎯 Task Breakdown (TODO List)
-
-- [ ] **[frontend] Crate Cards Font Enlargement (`static/index.html`)**:
-  - Title: `text-base` -> `text-lg font-extrabold`.
-  - Artist: `text-xs` -> `text-sm`.
-  - Badges & Buttons: `text-[11px]` -> `text-xs` / `text-sm`.
-
-- [ ] **[frontend] Chronicle & Composer Cards Font Enlargement (`static/index.html`)**:
-  - Chronicle Record Title: `text-sm` -> `text-base font-bold`.
-  - Composer Name: `text-sm` -> `text-base font-bold`.
-  - Composer Bio: `text-xs` -> `text-sm leading-relaxed`.
-
-- [ ] **[frontend] Composer Modal & Tracklist Font Enlargement (`static/index.html`)**:
-  - Modal Bio & Innovations: `text-xs` -> `text-sm leading-relaxed`.
-  - Modal Section Headings: `text-xs` -> `text-sm font-extrabold`.
-
-- [ ] **[testing] Integration & Docker Test**:
-  - Run `./test_local_integration.sh`.
-  - Restart local Docker container and commit to `main`.
+- [x] `[backend]` Remove `@app.on_event("startup")` hook from `main.py` so Uvicorn binds instantly to port 8080.
+- [x] `[backend]` Refactor `database.py` to add `_has_synced_firestore` flag and perform lazy Firestore sync when requested.
+- [x] `[backend]` Update `GET /api/records` in `main.py` to trigger on-demand Firestore sync.
+- [x] `[testing]` Test Docker container build (`docker build -t vinyl-vault:test .`).
+- [x] `[testing]` Test Docker container health check and instant startup on port 8080 via OrbStack.
