@@ -101,6 +101,44 @@ async def serve_cover_image(filename: str):
     gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
     return RedirectResponse(url=gcs_url)
 
+@app.post("/api/admin/repair-covers")
+async def repair_covers_admin_endpoint():
+    recs = db.get_all_records(sync_if_needed=True)
+    updated_count = 0
+
+    for r in recs:
+        old_url = r.get("coverUrl", "")
+        rec_id = r.get("id")
+        artist = r.get("artist", "")
+        title = r.get("title", "")
+        new_url = None
+
+        if old_url.startswith("/static/extracted_covers/"):
+            fname = os.path.basename(old_url)
+            new_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{fname}"
+        elif old_url.startswith("/static/uploads/") or not old_url or "shopping_cover" in old_url:
+            discogs_url = discogs_service.fetch_official_cover(artist, title)
+            if discogs_url and "shopping_cover" not in discogs_url:
+                new_url = discogs_url
+            else:
+                new_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/shopping_cover_2.jpg"
+
+        if new_url and new_url != old_url:
+            r["coverUrl"] = new_url
+            updated_count += 1
+
+    if updated_count > 0:
+        db.save_records()
+        if db.firestore.db:
+            db.firestore.save_all_records_batch(recs)
+
+    return {
+        "status": "success",
+        "updatedCount": updated_count,
+        "totalRecords": len(recs)
+    }
+
+
 
 
 @app.get("/api/wishlist")
