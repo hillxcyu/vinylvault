@@ -2397,13 +2397,31 @@
       if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
         badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ALREADY IN YOUR COLLECTION`;
-        const matchRecId = result.matchingRecord ? result.matchingRecord.id : '';
+
+        // Auto-update missing cover art in local state
+        const matchRec = result.matchingRecord;
+        if (matchRec && metadata && metadata.coverUrl) {
+          const isMissing = !matchRec.coverUrl || matchRec.coverUrl.includes('placeholder') || matchRec.coverUrl.includes('shopping_cover_2.jpg') || matchRec.coverUrl.endsWith('.svg');
+          if (isMissing && !metadata.coverUrl.includes('placeholder')) {
+            matchRec.coverUrl = metadata.coverUrl;
+            const existingLocal = allRecords.find(r => r.id === matchRec.id);
+            if (existingLocal) existingLocal.coverUrl = metadata.coverUrl;
+            if (currentSpinning && currentSpinning.id === matchRec.id) {
+              currentSpinning.coverUrl = metadata.coverUrl;
+              updateNowSpinningUI(currentSpinning);
+            }
+            renderCrate();
+          }
+        }
+
+        const matchRecId = matchRec ? matchRec.id : '';
         actionBox.innerHTML = `
           <button onclick="viewMatchingRecordSpinning('${matchRecId}')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
             <i class="fa-solid fa-circle-play text-base"></i> Spin This Album
           </button>
         `;
-      } else if (result.status === 'WISHLIST_MATCH') {
+      }
+ else if (result.status === 'WISHLIST_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
         badge.innerHTML = `<i class="fa-solid fa-star"></i> ON YOUR WISHLIST!`;
         actionBox.innerHTML = `

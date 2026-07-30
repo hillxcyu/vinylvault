@@ -263,6 +263,19 @@ async def check_duplicate(query: DuplicateCheckQuery):
     )
     return result
 
+def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
+    if not cover_url or not isinstance(cover_url, str):
+        return True
+    cover_url_lower = cover_url.lower().strip()
+    if not cover_url_lower:
+        return True
+    return (
+        "placeholder" in cover_url_lower
+        or "shopping_cover_2.jpg" in cover_url_lower
+        or cover_url_lower.endswith(".svg")
+        or "data:image/svg+xml" in cover_url_lower
+    )
+
 @app.post("/api/scan")
 async def scan_cover(file: UploadFile = File(...)):
     contents = await file.read()
@@ -306,12 +319,25 @@ async def scan_cover(file: UploadFile = File(...)):
         db.get_wishlist()
     )
 
+    # 5. Auto-fill missing cover art for existing record if scanned image exists
+    if duplicate_result.get("status") in ["EXACT_MATCH", "VARIANT_MATCH"]:
+        matching_rec = duplicate_result.get("matchingRecord")
+        if matching_rec and is_missing_or_placeholder_cover(matching_rec.get("coverUrl")):
+            scanned_cover = extracted_metadata.get("coverUrl")
+            if scanned_cover and not is_missing_or_placeholder_cover(scanned_cover):
+                matching_rec["coverUrl"] = scanned_cover
+                db.save_records()
+                if db.firestore.db:
+                    db.firestore.save_record(matching_rec)
+                logger.info(f"Updated missing cover art for existing record '{matching_rec.get('title')}' with scanned image: {scanned_cover}")
+
     return {
         "metadata": extracted_metadata,
         "duplicateCheck": duplicate_result,
         "deskewed": is_deskewed,
         "detectedCorners": detected_corners
     }
+
 
 @app.post("/api/upload-cover")
 async def upload_cover_direct_endpoint(file: UploadFile = File(...)):
@@ -413,7 +439,20 @@ async def analyze_deskewed_endpoint(coverUrl: str):
         db.get_wishlist()
     )
 
+    # Auto-fill missing cover art for existing record if scanned image exists
+    if duplicate_result.get("status") in ["EXACT_MATCH", "VARIANT_MATCH"]:
+        matching_rec = duplicate_result.get("matchingRecord")
+        if matching_rec and is_missing_or_placeholder_cover(matching_rec.get("coverUrl")):
+            scanned_cover = extracted_metadata.get("coverUrl")
+            if scanned_cover and not is_missing_or_placeholder_cover(scanned_cover):
+                matching_rec["coverUrl"] = scanned_cover
+                db.save_records()
+                if db.firestore.db:
+                    db.firestore.save_record(matching_rec)
+                logger.info(f"Updated missing cover art for existing record '{matching_rec.get('title')}' with scanned image: {scanned_cover}")
+
     return {
+
         "status": "success",
         "metadata": extracted_metadata,
         "duplicateCheck": duplicate_result,
