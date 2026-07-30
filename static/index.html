@@ -1173,12 +1173,12 @@
       formData.append('file', file);
 
       try {
-        const scanRes = await fetch('/api/scan', {
+        const uploadRes = await fetch('/api/upload-cover', {
           method: 'POST',
           body: formData
         });
-        const scanData = await scanRes.json();
-        const uploadedUrl = scanData.metadata?.coverUrl || scanData.coverUrl;
+        const uploadData = await uploadRes.json();
+        const uploadedUrl = uploadData.coverUrl;
 
         if (uploadedUrl) {
           const updateRes = await fetch(`/api/records/${rescanCurrentRecord.id}/update-cover`, {
@@ -1195,7 +1195,7 @@
               updateNowSpinningUI(currentSpinning);
             }
             await fetchCollection();
-            alert(`✅ Photo uploaded & cover art updated for '${rescanCurrentRecord.title}'!`);
+            alert(`✅ Photo uploaded & set for '${rescanCurrentRecord.title}'!`);
             closeRescanModal();
           }
         }
@@ -1204,6 +1204,7 @@
         alert('❌ Failed to upload cover photo.');
       }
     }
+
 
 
 

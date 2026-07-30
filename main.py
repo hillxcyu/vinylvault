@@ -272,13 +272,13 @@ async def scan_cover(file: UploadFile = File(...)):
     extracted_metadata["coverUrl"] = uploaded_cover_url
     extracted_metadata["deskewed"] = is_deskewed
 
-    # 3. Try fetching genuine Discogs release cover image
+    # 3. Store optional Discogs official cover suggestion without overwriting user photo
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     if artist and title:
         official_img = discogs_service.fetch_official_cover(artist, title, cover_url=uploaded_cover_url)
-        if official_img and "shopping_cover" not in official_img:
-            extracted_metadata["coverUrl"] = official_img
+        if official_img:
+            extracted_metadata["officialCoverUrl"] = official_img
 
     # 4. Automatically run duplicate check on extracted metadata
     duplicate_result = DuplicateEngine.check_duplicate(
@@ -292,6 +292,18 @@ async def scan_cover(file: UploadFile = File(...)):
         "duplicateCheck": duplicate_result,
         "deskewed": is_deskewed,
         "detectedCorners": detected_corners
+    }
+
+@app.post("/api/upload-cover")
+async def upload_cover_direct_endpoint(file: UploadFile = File(...)):
+    contents = await file.read()
+    ext = os.path.splitext(file.filename)[1] or ".jpg"
+    filename = f"user_cover_{uuid.uuid4().hex[:8]}{ext}"
+    uploaded_url = gcs_service.upload_cover(contents, filename)
+    return {
+        "status": "success",
+        "coverUrl": uploaded_url,
+        "filename": filename
     }
 
 @app.post("/api/detect-corners")
@@ -325,6 +337,7 @@ async def crop_deskew_endpoint(
         "coverUrl": uploaded_cover_url,
         "filename": filename
     }
+
 
 
 @app.post("/api/analyze-deskewed")
