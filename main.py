@@ -39,15 +39,20 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "public, max-age=86400"
     return response
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 class RedirectingStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
-        response = await super().get_response(path, scope)
-        if response.status_code == 404:
-            clean_fn = os.path.basename(path)
-            if clean_fn and ("extracted_covers" in path or "uploads" in path or clean_fn.endswith((".jpg", ".png", ".jpeg"))):
-                gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
-                return RedirectResponse(url=gcs_url, status_code=307)
-        return response
+        try:
+            return await super().get_response(path, scope)
+        except (HTTPException, StarletteHTTPException) as exc:
+            if exc.status_code == 404:
+                clean_fn = os.path.basename(path)
+                if clean_fn and ("extracted_covers" in path or "uploads" in path or clean_fn.endswith((".jpg", ".png", ".jpeg"))):
+                    gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
+                    return RedirectResponse(url=gcs_url, status_code=307)
+            raise exc
+
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 covers_dir = os.path.join(static_dir, "extracted_covers")
