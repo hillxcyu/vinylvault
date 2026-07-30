@@ -50,39 +50,68 @@ class DeskewService:
             h, w = img.shape[:2]
             image_area = h * w
 
-            # 2. Preprocess: Gray -> GaussianBlur -> Canny
+            # 2. Preprocess: Gray -> GaussianBlur -> Canny + Otsu Closing
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-            edged = cv2.Canny(blurred, 50, 200)
+            edged = cv2.Canny(blurred, 30, 150)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
             # 3. Find contours and sort by area descending
-            contours, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            if not contours:
+                _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
             screen_cnt = None
             for c in contours:
                 area = cv2.contourArea(c)
-                if area < 0.08 * image_area:
+                if area < 0.05 * image_area:
                     continue
 
-                peri = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, 0.03 * peri, True)
+                hull = cv2.convexHull(c)
+                peri = cv2.arcLength(hull, True)
 
-                if 4 <= len(approx) <= 8:
-                    rect_box = cv2.minAreaRect(c)
-                    box = cv2.boxPoints(rect_box)
-                    screen_cnt = np.int32(box)
+                for eps in [0.02, 0.03, 0.04, 0.05, 0.01, 0.06, 0.08]:
+                    approx = cv2.approxPolyDP(hull, eps * peri, True)
+                    if len(approx) == 4:
+                        screen_cnt = approx.reshape(4, 2)
+                        break
+
+                if screen_cnt is not None:
+                    break
+
+                pts_hull = hull.reshape(-1, 2)
+                if len(pts_hull) >= 4:
+                    s = pts_hull.sum(axis=1)
+                    diff = np.diff(pts_hull, axis=1).reshape(-1)
+                    tl = pts_hull[np.argmin(s)]
+                    br = pts_hull[np.argmax(s)]
+                    tr = pts_hull[np.argmin(diff)]
+                    bl = pts_hull[np.argmax(diff)]
+                    screen_cnt = np.array([tl, tr, br, bl], dtype="float32")
                     break
 
             if screen_cnt is not None:
                 pts = screen_cnt.reshape(4, 2)
                 rect = self._order_points(pts)
-            elif contours and cv2.contourArea(contours[0]) >= 0.08 * image_area:
+            elif contours and cv2.contourArea(contours[0]) >= 0.05 * image_area:
                 c = contours[0]
-                x, y, w_c, h_c = cv2.boundingRect(c)
-                pts = np.array([[x, y], [x + w_c, y], [x + w_c, y + h_c], [x, y + h_c]], dtype="float32")
+                hull = cv2.convexHull(c)
+                pts_hull = hull.reshape(-1, 2)
+                s = pts_hull.sum(axis=1)
+                diff = np.diff(pts_hull, axis=1).reshape(-1)
+                tl = pts_hull[np.argmin(s)]
+                br = pts_hull[np.argmax(s)]
+                tr = pts_hull[np.argmin(diff)]
+                bl = pts_hull[np.argmax(diff)]
+                pts = np.array([tl, tr, br, bl], dtype="float32")
                 rect = self._order_points(pts)
             else:
+
                 # Default tight 5% margin crop of full image frame
                 margin_x = int(w * 0.05)
                 margin_y = int(h * 0.05)
@@ -175,32 +204,66 @@ class DeskewService:
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-            edged = cv2.Canny(blurred, 50, 200)
 
-            contours, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            # Dual edge detection: Canny + Otsu thresholding with morphological closing
+            edged = cv2.Canny(blurred, 30, 150)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
+
+            contours, _ = cv2.findContours(closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # Fallback to Otsu threshold if Canny contours are empty/small
+            if not contours:
+                _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
             screen_cnt = None
             for c in contours:
                 area = cv2.contourArea(c)
-                if area < 0.08 * image_area:
+                if area < 0.05 * image_area:
                     continue
 
-                peri = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, 0.03 * peri, True)
+                hull = cv2.convexHull(c)
+                peri = cv2.arcLength(hull, True)
 
-                if 4 <= len(approx) <= 8:
-                    rect_box = cv2.minAreaRect(c)
-                    box = cv2.boxPoints(rect_box)
-                    screen_cnt = np.int32(box)
+                # Try approximating the convex hull into a 4-point polygon (skewed quad)
+                for eps in [0.02, 0.03, 0.04, 0.05, 0.01, 0.06, 0.08]:
+                    approx = cv2.approxPolyDP(hull, eps * peri, True)
+                    if len(approx) == 4:
+                        screen_cnt = approx.reshape(4, 2)
+                        break
+
+                if screen_cnt is not None:
+                    break
+
+                # Extract the 4 true extreme perspective corners of the convex hull
+                pts_hull = hull.reshape(-1, 2)
+                if len(pts_hull) >= 4:
+                    s = pts_hull.sum(axis=1)
+                    diff = np.diff(pts_hull, axis=1).reshape(-1)
+                    tl = pts_hull[np.argmin(s)]
+                    br = pts_hull[np.argmax(s)]
+                    tr = pts_hull[np.argmin(diff)]
+                    bl = pts_hull[np.argmax(diff)]
+                    screen_cnt = np.array([tl, tr, br, bl], dtype="float32")
                     break
 
             if screen_cnt is not None:
                 pts = screen_cnt.reshape(4, 2)
-            elif contours and cv2.contourArea(contours[0]) >= 0.08 * image_area:
+            elif contours and cv2.contourArea(contours[0]) >= 0.05 * image_area:
                 c = contours[0]
-                x, y, w_c, h_c = cv2.boundingRect(c)
-                pts = np.array([[x, y], [x + w_c, y], [x + w_c, y + h_c], [x, y + h_c]], dtype="float32")
+                hull = cv2.convexHull(c)
+                pts_hull = hull.reshape(-1, 2)
+                s = pts_hull.sum(axis=1)
+                diff = np.diff(pts_hull, axis=1).reshape(-1)
+                tl = pts_hull[np.argmin(s)]
+                br = pts_hull[np.argmax(s)]
+                tr = pts_hull[np.argmin(diff)]
+                bl = pts_hull[np.argmax(diff)]
+                pts = np.array([tl, tr, br, bl], dtype="float32")
             else:
                 margin_x = int(w_img * 0.06)
                 margin_y = int(h_img * 0.06)
@@ -212,6 +275,8 @@ class DeskewService:
                 ], dtype="float32")
 
             ordered_pts = self._order_points(pts)
+
+
 
             normalized_corners = []
             for i in range(4):

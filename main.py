@@ -3,7 +3,9 @@ import uuid
 import json
 import re
 import logging
+import urllib.request
 from datetime import datetime
+
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, JSONResponse
@@ -359,14 +361,30 @@ async def crop_deskew_endpoint(
 
 @app.post("/api/analyze-deskewed")
 async def analyze_deskewed_endpoint(coverUrl: str):
-    rel_path = coverUrl.lstrip("/")
-    if not os.path.exists(rel_path):
-        raise HTTPException(status_code=404, detail="Deskewed image file not found.")
+    final_bytes = None
+    filename = os.path.basename(coverUrl)
 
-    with open(rel_path, "rb") as f:
-        final_bytes = f.read()
+    if coverUrl.startswith("http://") or coverUrl.startswith("https://"):
+        try:
+            req = urllib.request.Request(
+                coverUrl,
+                headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                final_bytes = resp.read()
+        except Exception as e:
+            logger.warning(f"Error downloading coverUrl from HTTP/GCS: {e}")
 
-    filename = os.path.basename(rel_path)
+
+    if not final_bytes:
+        rel_path = coverUrl.lstrip("/")
+        if os.path.exists(rel_path):
+            with open(rel_path, "rb") as f:
+                final_bytes = f.read()
+
+    if not final_bytes:
+        raise HTTPException(status_code=404, detail="Deskewed image file could not be retrieved.")
+
     extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
     extracted_metadata["coverUrl"] = coverUrl
     extracted_metadata["deskewedCoverUrl"] = coverUrl
@@ -374,11 +392,20 @@ async def analyze_deskewed_endpoint(coverUrl: str):
 
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
+    catno = extracted_metadata.get("catalogNumber", "")
+    country = extracted_metadata.get("country", "Japan")
+
     if artist and title:
         asset_key = f"{sanitize_cache_key(artist)}_{sanitize_cache_key(title)}"
-        assets = discogs_service.fetch_all_release_assets(artist, title, cover_url=coverUrl)
-        if assets:
-            db.firestore.save_release_assets(asset_key, assets)
+        official_img = discogs_service.fetch_official_cover(
+            artist,
+            title,
+            cover_url=coverUrl,
+            catalog_number=catno,
+            country=country
+        )
+        if official_img:
+            extracted_metadata["officialCoverUrl"] = official_img
 
     duplicate_result = DuplicateEngine.check_duplicate(
         extracted_metadata,
@@ -392,6 +419,7 @@ async def analyze_deskewed_endpoint(coverUrl: str):
         "duplicateCheck": duplicate_result,
         "deskewed": True
     }
+
 
 @app.post("/api/manual-deskew")
 async def manual_deskew_endpoint(

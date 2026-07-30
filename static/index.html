@@ -2168,11 +2168,14 @@
           }
           showToast('✨ Album Metadata Analyzed!', 'fa-wand-magic-sparkles');
           renderDuplicateResult(analyzeData.duplicateCheck, analyzeData.metadata);
+        } else {
+          throw new Error(analyzeData.detail || 'Album metadata analysis failed');
         }
       } catch (err) {
         console.error('Manual deskew error:', err);
-        renderScanError(`Manual deskew failed: ${err.message}`);
+        renderScanError(`Scan & analysis error: ${err.message}`);
       }
+
     }
 
     let zoomScale = 1.0;

@@ -1,24 +1,21 @@
 # PLAN
 
-## [2026-07-30 20:28:30] Extract & Pass Catalog Number and Country in Vision Scan Engine [COMPLETED]
-
+## [2026-07-30 21:06:30] Fix Scan Sticking at Step 2/2 in /api/analyze-deskewed
 
 ### Goal
-Enhance Gemini Vision scanning to explicitly extract Catalog Numbers (`catalogNumber`) and Pressing Country (`country`) from cover art, spines, and obi strips, and pass them to Discogs for precise release matching.
+Fix issue where snapping/scanning a cover image got stuck at "Step 2/2: Parsing title, artist & pressing details via Gemini AI..." because `/api/analyze-deskewed` failed when `coverUrl` was a full HTTP/GCS URL instead of a local disk path.
 
 ---
 
 ### Proposed Plan
 
-1. **Update Gemini Vision Prompt in `gemini_service.py`**
-   - Instruct Gemini Vision to explicitly extract `catalogNumber` (from spine, obi strip, top/bottom cover corners) and `country` (e.g. "Japan", "US", "UK").
+1. **Update `/api/analyze-deskewed` in `main.py`**
+   - Support reading image bytes directly from HTTP/GCS URLs (`https://storage.googleapis.com/...`) as well as local disk paths.
+   - Pass extracted `catalogNumber` and `country` to Discogs.
 
-2. **Update `discogs_service.py`**
-   - Update `fetch_official_cover(artist, title, cover_url=None, catalog_number=None, country="Japan")` to accept `catalog_number` and `country` and pass them to Discogs search.
+2. **Update Scan Exception Handling in `static/index.html`**
+   - Ensure errors during Gemini analysis render a clear toast/error alert so the UI never stays stuck in the loading state.
 
-3. **Update `/api/scan` in `main.py`**
-   - Pass `catalog_number = extracted_metadata.get("catalogNumber")` and `country = extracted_metadata.get("country")` from Gemini Vision to Discogs search queries.
-
-4. **Testing & Deployment**
-   - Test Gemini Vision extraction with catalog number prompt locally.
-   - Commit, push to GitHub, and restart local Docker container + trigger Cloud Run deploy.
+3. **Testing & Deployment**
+   - Test `/api/analyze-deskewed` with HTTP/GCS cover URLs via Python test script.
+   - Commit, push to GitHub, restart local Docker container, and deploy to Cloud Run.
