@@ -39,13 +39,22 @@ async def add_cache_control_header(request, call_next):
         response.headers["Cache-Control"] = "public, max-age=86400"
     return response
 
-# Mount static directory and subdirectories safely
+class RedirectingStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            clean_fn = os.path.basename(path)
+            if clean_fn and ("extracted_covers" in path or "uploads" in path or clean_fn.endswith((".jpg", ".png", ".jpeg"))):
+                gcs_url = f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
+                return RedirectResponse(url=gcs_url, status_code=307)
+        return response
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 covers_dir = os.path.join(static_dir, "extracted_covers")
 os.makedirs(static_dir, exist_ok=True)
 os.makedirs(covers_dir, exist_ok=True)
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+app.mount("/static", RedirectingStaticFiles(directory=static_dir), name="static")
+
 
 class DuplicateCheckQuery(BaseModel):
     artist: str
