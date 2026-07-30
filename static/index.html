@@ -555,8 +555,9 @@
 
 
   <!-- Anti-Duplicate Shield Scanner Modal -->
-  <div id="scannerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-lg w-full rounded-2xl p-6 relative space-y-6">
+  <div id="scannerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="glass-panel max-w-lg w-full rounded-2xl p-5 sm:p-6 pb-14 sm:pb-8 relative space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+
       <button onclick="closeScannerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
@@ -2346,6 +2347,21 @@
       `;
     }
 
+    function viewMatchingRecordSpinning(recId) {
+      closeScannerModal();
+      const rec = allRecords.find(r => r.id === recId);
+      if (rec) {
+        updateNowSpinningUI(rec);
+        switchTab('nowSpinning');
+        showToast(`Now Spinning '${rec.title}'!`, 'fa-compact-disc');
+      } else if (allRecords.length > 0) {
+        updateNowSpinningUI(allRecords[0]);
+        switchTab('nowSpinning');
+      } else {
+        switchTab('nowSpinning');
+      }
+    }
+
     function renderDuplicateResult(result, metadata) {
       const container = document.getElementById('scanResultContainer');
       const badge = document.getElementById('scanStatusBadge');
@@ -2362,37 +2378,39 @@
       if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
         badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ALREADY IN YOUR COLLECTION`;
+        const matchRecId = result.matchingRecord ? result.matchingRecord.id : '';
         actionBox.innerHTML = `
-          <button onclick="closeScannerModal()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg border border-stone-700">
-            View Copy in Crate
+          <button onclick="viewMatchingRecordSpinning('${matchRecId}')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
+            <i class="fa-solid fa-circle-play text-base"></i> Spin This Album
           </button>
         `;
       } else if (result.status === 'WISHLIST_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
         badge.innerHTML = `<i class="fa-solid fa-star"></i> ON YOUR WISHLIST!`;
         actionBox.innerHTML = `
-          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
-            Purchased! Add to Collection
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
+            <i class="fa-solid fa-plus text-base"></i> Purchased! Add to Crate & Spin
           </button>
         `;
       } else if (result.status === 'SIMILAR_ALBUM') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30';
         badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> NOT OWNED (Own other records by ${metadata.artist || 'Artist'})`;
         actionBox.innerHTML = `
-          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
-            Add New Record to Crate
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
+            <i class="fa-solid fa-plus text-base"></i> Add New Record to Crate & Spin
           </button>
         `;
       } else {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-blue-500/20 text-blue-400 border border-blue-500/30';
         badge.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> NOT IN COLLECTION - SAFE TO BUY`;
         actionBox.innerHTML = `
-          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold rounded-lg flex items-center justify-center gap-2">
-            Add New Record to Crate
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
+            <i class="fa-solid fa-plus text-base"></i> Add New Record to Crate & Spin
           </button>
         `;
       }
     }
+
 
     async function addLastScannedRecord(btnElement) {
       if (!lastScannedMetadata) return;
