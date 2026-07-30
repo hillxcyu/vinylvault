@@ -1,6 +1,12 @@
 import re
 from typing import Dict, Any, List
 
+CONDUCTOR_SOLOIST_STOP_WORDS = {
+    "orchestra", "philharmonic", "symphony", "quartet", "trio", "ensemble", "band", "sir", "chorus", "choir",
+    "chamber", "national", "state", "radio", "philharmonia", "vienna", "berlin", "london", "chicago", "new", "york",
+    "boston", "cleveland", "philadelphia", "concertgebouw", "bbc", "dresden", "symphonie", "orchester", "orchestre"
+}
+
 def normalize_string(s: str) -> str:
     if not s:
         return ""
@@ -9,8 +15,15 @@ def normalize_string(s: str) -> str:
 def get_keywords(s: str) -> set:
     if not s:
         return set()
-    words = re.findall(r'[a-zA-Z0-9]+', s.lower())
+    words = re.findall(r'[a-zA-Z0-9\u00C0-\u024F]+', s.lower())
     stop_words = {"the", "a", "an", "and", "or", "of", "in", "on", "for", "with", "by", "no", "op", "vol"}
+    return {w for w in words if len(w) > 1 and w not in stop_words}
+
+def get_performer_keywords(s: str) -> set:
+    if not s:
+        return set()
+    words = re.findall(r'[a-zA-Z0-9\u00C0-\u024F]+', s.lower())
+    stop_words = {"the", "a", "an", "and", "or", "of", "in", "on", "for", "with", "by", "no", "op", "vol", "major", "minor", "symphony", "concerto", "sonata"} | CONDUCTOR_SOLOIST_STOP_WORDS
     return {w for w in words if len(w) > 1 and w not in stop_words}
 
 class DuplicateEngine:
@@ -21,7 +34,6 @@ class DuplicateEngine:
         q_cat_no = normalize_string(query.get("catalogNumber", "") or query.get("catno", ""))
 
         # 1. CATALOG NUMBER MATCH (Highest Precision):
-        # If catalog numbers match exactly (e.g. SLA 6187 == SLA 6187), it is 100% the same record!
         if q_cat_no and len(q_cat_no) >= 3:
             for record in collection:
                 r_cat = normalize_string(record.get("catalogNumber", "") or record.get("catno", ""))
@@ -50,26 +62,42 @@ class DuplicateEngine:
                 "message": "Insufficient info to check duplicate."
             }
 
-        q_art_kw = get_keywords(query.get("artist", ""))
-        q_title_kw = get_keywords(query.get("albumTitle", "") or query.get("title", ""))
+        q_art_raw = query.get("artist", "")
+        q_title_raw = query.get("albumTitle", "") or query.get("title", "")
+
+        q_art_kw = get_keywords(q_art_raw)
+        q_title_kw = get_keywords(q_title_raw)
+        q_perf_kw = get_performer_keywords(q_art_raw)
 
         # 2. STRING INCLUSION / KEYWORD OVERLAP MATCH IN COLLECTION:
         for record in collection:
-            r_artist = normalize_string(record.get("artist", ""))
-            r_title = normalize_string(record.get("title", ""))
+            r_art_raw = record.get("artist", "")
+            r_title_raw = record.get("title", "")
 
-            r_art_kw = get_keywords(record.get("artist", ""))
-            r_title_kw = get_keywords(record.get("title", ""))
+            r_artist = normalize_string(r_art_raw)
+            r_title = normalize_string(r_title_raw)
+
+            r_art_kw = get_keywords(r_art_raw)
+            r_title_kw = get_keywords(r_title_raw)
+            r_perf_kw = get_performer_keywords(r_art_raw)
 
             # Direct string inclusion match
             artist_match = q_artist and (q_artist in r_artist or r_artist in q_artist)
             title_match = q_title and (q_title in r_title or r_title in q_title)
 
-            # Keyword overlap match (handles different ordering of conductors/composers/soloists)
+            # Check if conductors/soloists conflict (e.g. Furtwängler vs Karl Böhm)
+            perf_conflict = False
+            if q_perf_kw and r_perf_kw:
+                shared_perf = q_perf_kw.intersection(r_perf_kw)
+                if not shared_perf:
+                    perf_conflict = True
+
+            if perf_conflict:
+                continue
+
             art_overlap = len(q_art_kw.intersection(r_art_kw)) >= 1 if (q_art_kw and r_art_kw) else False
             title_overlap = len(q_title_kw.intersection(r_title_kw)) >= 1 if (q_title_kw and r_title_kw) else False
 
-            # Combination of artist + title keyword overlap
             if (artist_match or art_overlap) and (title_match or title_overlap):
                 combined_q = q_art_kw.union(q_title_kw)
                 combined_r = r_art_kw.union(r_title_kw)
@@ -87,10 +115,17 @@ class DuplicateEngine:
 
         # 3. WISHLIST MATCH:
         for item in wishlist:
-            w_artist = normalize_string(item.get("artist", ""))
-            w_title = normalize_string(item.get("title", ""))
-            w_art_kw = get_keywords(item.get("artist", ""))
-            w_title_kw = get_keywords(item.get("title", ""))
+            w_art_raw = item.get("artist", "")
+            w_title_raw = item.get("title", "")
+            w_artist = normalize_string(w_art_raw)
+            w_title = normalize_string(w_title_raw)
+
+            w_art_kw = get_keywords(w_art_raw)
+            w_title_kw = get_keywords(w_title_raw)
+            w_perf_kw = get_performer_keywords(w_art_raw)
+
+            if q_perf_kw and w_perf_kw and not q_perf_kw.intersection(w_perf_kw):
+                continue
 
             w_art_match = (q_artist in w_artist or w_artist in q_artist) or (len(q_art_kw.intersection(w_art_kw)) >= 1 if q_art_kw and w_art_kw else False)
             w_title_match = (q_title in w_title or w_title in q_title) or (len(q_title_kw.intersection(w_title_kw)) >= 1 if q_title_kw and w_title_kw else False)
@@ -104,8 +139,8 @@ class DuplicateEngine:
         # 4. SIMILAR ARTIST MATCH:
         artist_records = []
         for r in collection:
-            r_art_kw = get_keywords(r.get("artist", ""))
-            if q_art_kw and len(q_art_kw.intersection(r_art_kw)) >= 1:
+            r_perf_kw = get_performer_keywords(r.get("artist", ""))
+            if q_perf_kw and r_perf_kw and len(q_perf_kw.intersection(r_perf_kw)) >= 1:
                 artist_records.append(r)
 
         if artist_records:
@@ -115,8 +150,10 @@ class DuplicateEngine:
                 "message": f"NOT OWNED, but you own {len(artist_records)} other album(s) by {query.get('artist')}: {titles_str}."
             }
 
+
         # 5. NOT OWNED
         return {
             "status": "NOT_OWNED",
             "message": f"NOT IN COLLECTION. Safe to buy!"
         }
+
