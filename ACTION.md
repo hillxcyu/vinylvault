@@ -1,12 +1,11 @@
 # ACTION
 
-## [2026-07-30 20:22:20] Uploaded Cover Image Preservation Log
+## [2026-07-30 20:32:05] Catalog Number & Country Vision Extraction Log
 
-1. **[2026-07-30 20:22:37] Updated `main.py`**:
-   - Fixed `/api/scan` to preserve `extracted_metadata["coverUrl"] = uploaded_cover_url` without overwriting with Discogs images.
-   - Added `POST /api/upload-cover` endpoint for direct GCS photo uploads.
-2. **[2026-07-30 20:22:47] Updated `static/index.html`**:
-   - Updated `rescanUploadPhoto()` to invoke `POST /api/upload-cover` and set the record's `coverUrl` directly.
-3. **[2026-07-30 20:22:57] Tested Upload Endpoint**:
-   - Verified `POST /api/upload-cover` returns `HTTP 200 OK` with valid cover URL.
+1. **[2026-07-30 20:32:23] Updated `gemini_service.py`**:
+   - Updated Gemini Vision prompt to explicitly extract `catalogNumber` (from spine, corners, obi strip) and `country` (pressing origin).
+2. **[2026-07-30 20:32:34] Updated `discogs_service.py`**:
+   - Accepted `catalog_number` and `country` parameters in `fetch_official_cover()`.
+3. **[2026-07-30 20:32:50] Updated `main.py`**:
+   - Wired extracted `catalogNumber` and `country` from `/api/scan` and `rescan-cover` routes into Discogs searches.
 

@@ -55,11 +55,25 @@ class DiscogsService:
         matches = sum(1 for w in work_words if w in d_title)
         return matches >= 1
 
-    def fetch_official_cover(self, artist: str, title: str, cover_url: Optional[str] = None) -> Optional[str]:
+    def fetch_official_cover(
+        self,
+        artist: str,
+        title: str,
+        cover_url: Optional[str] = None,
+        catalog_number: Optional[str] = None,
+        country: Optional[str] = "Japan"
+    ) -> Optional[str]:
         """
         Fetch official album cover art EXCLUSIVELY from Discogs API for vinyl releases.
+        Passes catalog number and pressing country for exact matching.
         """
-        assets = self.fetch_all_release_assets(artist, title, cover_url=cover_url)
+        assets = self.fetch_all_release_assets(
+            artist,
+            title,
+            cover_url=cover_url,
+            catalog_number=catalog_number,
+            country=country
+        )
         if assets:
             for a in assets:
                 url = a.get("url", "")
@@ -71,6 +85,7 @@ class DiscogsService:
                     return url
             return assets[0].get("url")
         return cover_url
+
 
 
 

@@ -36,16 +36,21 @@ class GeminiVisionService:
 
                 prompt = (
                     "You are an expert vinyl record collector and archivist specializing in all genres including Classical, Jazz, Rock, and Electronic music. "
-                    "Analyze this image of a vinyl album cover or spine. "
-                    "Extract the exact metadata from the visual text on the cover. "
-                    "For Classical albums: 'artist' should include the main soloist, conductor, or orchestra (e.g., Paul Tortelier / Sir Malcolm Sargent / Philharmonia Orchestra), "
-                    "and 'albumTitle' should include the composer and work title (e.g., Dvořák: Cello Concerto). "
-                    "Use Google Search grounding to verify exact release details, catalog numbers, label, and release year. "
-                    "Return ONLY a valid JSON object with the following fields: "
+                    "Analyze this image of a vinyl album cover, spine, or obi strip. "
+                    "Extract the exact metadata from the visual text: "
+                    "1. 'artist': Main soloist, conductor, orchestra, or performer(s). "
+                    "2. 'albumTitle': Full album title or composer/work title. "
+                    "3. 'catalogNumber': The catalog number visible on the spine, top/bottom corners, or obi strip (e.g. 'VIC-28001', 'SXLP 30018', '25PC-101', 'IMP-2026-001'). "
+                    "4. 'country': Release country or pressing origin if visible or identifiable (e.g. 'Japan', 'US', 'UK', 'Germany'). "
+                    "5. 'label': Record label name. "
+                    "6. 'releaseYear': Release year if visible. "
+                    "Use Google Search grounding to verify exact catalog numbers, label, and pressing release details. "
+                    "Return ONLY a valid JSON object with keys: "
                     "\"artist\" (string), \"albumTitle\" (string), \"releaseYear\" (number or null), "
-                    "\"label\" (string or null), \"catalogNumber\" (string or null), "
+                    "\"label\" (string or null), \"catalogNumber\" (string or null), \"country\" (string or null), "
                     "\"genre\" (string or null), \"confidenceScore\" (number between 0 and 1)."
                 )
+
 
                 config = types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())]

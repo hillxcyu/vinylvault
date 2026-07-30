@@ -140,8 +140,15 @@ async def rescan_record_cover_endpoint(record_id: str):
 
     artist = rec.get("artist", "")
     title = rec.get("title", "")
+    catno = rec.get("catalogNumber", "")
 
-    official_art = discogs_service.fetch_official_cover(artist, title)
+    official_art = discogs_service.fetch_official_cover(
+        artist,
+        title,
+        cover_url=rec.get("coverUrl"),
+        catalog_number=catno,
+        country="Japan"
+    )
     if official_art:
         rec["coverUrl"] = official_art
         db.save_records()
@@ -155,6 +162,7 @@ async def rescan_record_cover_endpoint(record_id: str):
         }
     else:
         raise HTTPException(status_code=404, detail="No official cover art found for this record")
+
 
 @app.post("/api/records/{record_id}/update-cover")
 async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPayload):
@@ -272,13 +280,22 @@ async def scan_cover(file: UploadFile = File(...)):
     extracted_metadata["coverUrl"] = uploaded_cover_url
     extracted_metadata["deskewed"] = is_deskewed
 
-    # 3. Store optional Discogs official cover suggestion without overwriting user photo
+    # 3. Store optional Discogs official cover suggestion using extracted catalog number and country
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
+    catno = extracted_metadata.get("catalogNumber", "")
+    country = extracted_metadata.get("country", "Japan")
     if artist and title:
-        official_img = discogs_service.fetch_official_cover(artist, title, cover_url=uploaded_cover_url)
+        official_img = discogs_service.fetch_official_cover(
+            artist,
+            title,
+            cover_url=uploaded_cover_url,
+            catalog_number=catno,
+            country=country
+        )
         if official_img:
             extracted_metadata["officialCoverUrl"] = official_img
+
 
     # 4. Automatically run duplicate check on extracted metadata
     duplicate_result = DuplicateEngine.check_duplicate(
