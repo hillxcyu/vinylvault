@@ -143,10 +143,13 @@
               </button>
             </div>
 
-            <div class="flex items-center justify-center md:justify-start gap-4 text-sm text-gray-300 pt-1">
-              <span id="spinningGenre" class="bg-stone-800/90 px-3.5 py-1.5 rounded-lg border border-stone-700/60"><i class="fa-solid fa-music mr-1.5 text-amber-400"></i> Psychedelic Rock</span>
-              <span id="spinningSpins" class="bg-stone-800/90 px-3.5 py-1.5 rounded-lg border border-stone-700/60"><i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> 14 Spins</span>
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-sm text-gray-300 pt-1">
+              <span id="spinningGenre" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-music mr-1.5 text-amber-400"></i> Psychedelic Rock</span>
+              <span id="spinningSpins" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> 14 Spins</span>
+              <span id="spinningCountry" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-globe text-emerald-400 mr-1.5"></i> <span id="spinningCountryText">🇯🇵 Japan</span></span>
+              <span id="spinningCatNo" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-barcode text-sky-400 mr-1.5"></i> <span id="spinningCatNoText">IMP-2026-001</span></span>
             </div>
+
 
             <div class="pt-4 flex items-center justify-center md:justify-start gap-3">
               <button onclick="logCurrentSpin()" class="px-5 py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-xl border border-stone-700 transition-all flex items-center gap-2 shadow-md">
@@ -1274,6 +1277,11 @@
         document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
         document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready';
 
+        const countryEl = document.getElementById('spinningCountry');
+        if (countryEl) countryEl.classList.add('hidden');
+        const catNoEl = document.getElementById('spinningCatNo');
+        if (catNoEl) catNoEl.classList.add('hidden');
+
         if (badge) {
           badge.className = 'inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 bg-stone-800/60 px-3 py-1 rounded-full border border-stone-700/60';
           badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> Standby Mode';
@@ -1317,6 +1325,30 @@
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
       document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
       document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
+
+      // Update Country Badge
+      const countryEl = document.getElementById('spinningCountry');
+      const countryText = document.getElementById('spinningCountryText');
+      if (countryEl && countryText) {
+        const countryVal = rec.country || 'Japan';
+        const flag = countryVal.toLowerCase().includes('japan') ? '🇯🇵 ' : countryVal.toLowerCase().includes('uk') ? '🇬🇧 ' : countryVal.toLowerCase().includes('us') ? '🇺🇸 ' : '🌐 ';
+        countryText.innerText = `${flag}${countryVal}`;
+        countryEl.classList.remove('hidden');
+      }
+
+      // Update Catalog Number Badge
+      const catNoEl = document.getElementById('spinningCatNo');
+      const catNoText = document.getElementById('spinningCatNoText');
+      if (catNoEl && catNoText) {
+        const catNoVal = rec.catalogNumber || rec.catno || null;
+        if (catNoVal) {
+          catNoText.innerText = catNoVal;
+          catNoEl.classList.remove('hidden');
+        } else {
+          catNoEl.classList.add('hidden');
+        }
+      }
+
 
       // Fetch official multi-asset image gallery with client caching
       fetchReleaseAssets(rec);
