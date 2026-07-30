@@ -366,7 +366,7 @@
   </footer>
 
   <!-- Distraction-Free Full-Screen AI Chat Modal Overlay -->
-  <div id="chatModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden flex flex-col p-0 md:p-6">
+  <div id="chatModal" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl hidden flex flex-col p-0 md:p-6">
     <div class="w-full h-full md:max-w-4xl mx-auto flex flex-col bg-stone-950 md:glass-panel rounded-none md:rounded-2xl p-3 sm:p-4 md:p-6 border-0 md:border md:border-stone-800 shadow-none md:shadow-2xl relative">
       
       <!-- Modal Header -->
@@ -411,13 +411,14 @@
       </div>
 
       <!-- Chat Input Form -->
-      <div class="flex items-center gap-3 pt-4 flex-shrink-0">
+      <div class="flex items-center gap-3 pt-3 pb-6 md:pb-2 flex-shrink-0">
         <input type="text" id="chatInput" onkeydown="if(event.key==='Enter') sendAlbumChatMessage()" placeholder="Ask AI companion about this album..." class="flex-1 bg-stone-900 border border-stone-800 rounded-xl px-4 py-3.5 text-base text-gray-200 focus:outline-none focus:border-amber-500">
         <button onclick="sendAlbumChatMessage()" class="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl text-sm shadow-lg flex items-center gap-2 transition-all flex-shrink-0">
           <i class="fa-solid fa-paper-plane"></i>
           <span class="hidden sm:inline">Send</span>
         </button>
       </div>
+
     </div>
   </div>
 
@@ -1042,6 +1043,11 @@
       }
       document.getElementById('chatModal').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
+      const navDock = document.getElementById('floatingMobileNavDock');
+      if (navDock) navDock.classList.add('hidden');
+      const chatFab = document.getElementById('chatToggleFab');
+      if (chatFab) chatFab.classList.add('hidden');
+
       const chatLog = document.getElementById('chatLog');
       chatLog.scrollTop = chatLog.scrollHeight;
     }
@@ -1049,7 +1055,12 @@
     function closeChatModal() {
       document.getElementById('chatModal').classList.add('hidden');
       document.body.style.overflow = 'auto';
+      const navDock = document.getElementById('floatingMobileNavDock');
+      if (navDock) navDock.classList.remove('hidden');
+      const chatFab = document.getElementById('chatToggleFab');
+      if (chatFab) chatFab.classList.remove('hidden');
     }
+
 
     function openLightbox(imgUrl, captionText) {
       document.getElementById('lightboxImage').src = imgUrl;
