@@ -1,35 +1,27 @@
 # PLAN
 
-## [2026-07-30 18:03:00] Unified Google Cloud Storage (GCS) for All Album Covers (Original 48 & Scans) [COMPLETED]
+## [2026-07-30 18:51:00] Rescan Album Cover Art Feature [COMPLETED]
 
 
 ### Goal
-Establish a single, consistent, persistent storage architecture using Google Cloud Storage (GCS) for **ALL album covers** (both the original 48 catalog covers and new user scans), removing heavy image assets from the Docker image while guaranteeing zero image loss across Cloud Run revisions.
+Allow users to click on any album cover art in the UI (Now Spinning, Collection Grid, or Fullscreen Lightbox) to rescan, upload, or auto-fetch new official high-resolution cover art for that record.
 
 ---
 
 ### Proposed Plan
 
-1. **Implement `GCSStorageManager` in `gcs_service.py`**
-   - Create `gcs_service.py` with `GCSStorageManager`.
-   - Read `GCS_BUCKET_NAME` (defaults to `$PROJECT_ID-vinyl-vault-data`).
-   - Implement `upload_cover(file_bytes, filename)` returning public GCS URL (`https://storage.googleapis.com/{bucket_name}/covers/{filename}`).
-   - Include local disk fallback (`data_store/covers/`) for offline local development.
+1. **Backend Endpoints in `main.py`**
+   - Add `POST /api/records/{record_id}/rescan-cover`: Queries iTunes Search API and Discogs for official high-res 600x600 cover art, updates the record in Firestore/local storage, and returns the updated record.
+   - Add `POST /api/records/{record_id}/update-cover`: Accepts a `coverUrl` parameter, updates the record in Firestore/local storage, and returns success.
 
-2. **Migrate Original 48 Covers to GCS & Remove from Docker Context**
-   - Create `upload_catalog_covers_to_gcs.py` to seed/upload all 48 original covers to GCS bucket `covers/`.
-   - Update Firestore records so all 48 catalog covers point to permanent GCS URLs (`https://storage.googleapis.com/{bucket_name}/covers/shopping_cover_X.jpg`).
-   - Add `static/extracted_covers/` and `static/uploads/` to `.gitignore` / `.dockerignore` so images are not baked into the Docker container image.
+2. **Frontend UI in `static/index.html`**
+   - Add a **Rescan Cover Art Modal** (`#rescanModal`).
+   - Add click handlers on album cover images (Now Spinning cover, Collection cards, Lightbox viewer) to trigger `openRescanModal(recordId)`.
+   - Implement 3 rescan action buttons in the modal:
+     - 🔍 **Auto-Fetch Official Cover**: Invokes `POST /api/records/{record_id}/rescan-cover`.
+     - 📷 **Upload/Snap Photo**: Allows file upload/camera photo, runs auto/manual deskew, uploads to GCS, and updates record cover.
+     - 🎨 **Choose from Release Assets**: Fetches Discogs release assets for the album and lets the user pick their preferred artwork with 1 click.
 
-3. **Update Upload & Scan Workflows in `main.py`**
-   - Update `/api/scan`, `/api/crop-deskew`, `/api/manual-deskew`, and `add_record` (`/api/records`) in [main.py](file:///Users/hill/src/vinylvault/main.py) to upload scanned images directly to GCS via `gcs_service.upload_cover()`.
-
-4. **Add Endpoint Proxy / Fallback in `main.py`**
-   - Add `/api/covers/{filename}` route in [main.py](file:///Users/hill/src/vinylvault/main.py) to serve cover images reliably with caching.
-
----
-
-### Verification Plan
-- Run `upload_catalog_covers_to_gcs.py` to seed GCS bucket and update Firestore records.
-- Verify `docker build` image size is drastically reduced (no baked image files).
-- Test image uploads and scans via `/api/scan` and `/api/records`.
+3. **Verification**
+   - Test `POST /api/records/{record_id}/rescan-cover` via curl.
+   - Verify modal opening and artwork updates in frontend web browser.

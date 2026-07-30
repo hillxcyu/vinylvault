@@ -129,6 +129,52 @@ async def redirect_legacy_upload_cover(filename: str):
         url=f"https://storage.googleapis.com/{gcs_service.bucket_name}/covers/{clean_fn}"
     )
 
+class UpdateCoverPayload(BaseModel):
+    coverUrl: str
+
+@app.post("/api/records/{record_id}/rescan-cover")
+async def rescan_record_cover_endpoint(record_id: str):
+    rec = db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    artist = rec.get("artist", "")
+    title = rec.get("title", "")
+
+    official_art = discogs_service.fetch_official_cover(artist, title)
+    if official_art:
+        rec["coverUrl"] = official_art
+        db.save_records()
+        if db.firestore.db:
+            db.firestore.save_record(rec)
+        return {
+            "status": "success",
+            "message": f"Successfully fetched official cover art for '{title}'",
+            "coverUrl": official_art,
+            "record": rec
+        }
+    else:
+        raise HTTPException(status_code=404, detail="No official cover art found for this record")
+
+@app.post("/api/records/{record_id}/update-cover")
+async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPayload):
+    rec = db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    rec["coverUrl"] = payload.coverUrl
+    db.save_records()
+    if db.firestore.db:
+        db.firestore.save_record(rec)
+
+    return {
+        "status": "success",
+        "message": f"Cover art updated for '{rec.get('title')}'",
+        "coverUrl": payload.coverUrl,
+        "record": rec
+    }
+
+
 
 @app.post("/api/admin/repair-covers")
 async def repair_covers_admin_endpoint():

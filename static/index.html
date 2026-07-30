@@ -504,10 +504,50 @@
       <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white text-2xl hover:text-amber-400 transition-colors">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <img id="lightboxImage" src="" class="max-w-full max-h-[80vh] object-contain rounded-xl border border-stone-800 shadow-2xl" />
-      <div id="lightboxCaption" class="mt-3 text-sm font-semibold text-amber-400 text-center"></div>
+      <img id="lightboxImage" src="" class="max-w-full max-h-[75vh] object-contain rounded-xl border border-stone-800 shadow-2xl" />
+      <div id="lightboxCaption" class="mt-2 text-sm font-semibold text-amber-400 text-center"></div>
+      <button onclick="openRescanModalFromLightbox()" class="mt-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-full flex items-center gap-1.5 shadow-lg active:scale-95 transition-all">
+        <span>🔄</span> Rescan / Change Cover Art
+      </button>
     </div>
   </div>
+
+  <!-- Rescan Album Cover Art Modal -->
+  <div id="rescanModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeRescanModal()">
+    <div class="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative" onclick="event.stopPropagation()">
+      <button onclick="closeRescanModal()" class="absolute top-4 right-4 text-stone-400 hover:text-white text-xl">✕</button>
+      
+      <div class="flex items-center gap-4 mb-6 pb-4 border-b border-stone-800">
+        <img id="rescanPreviewImg" src="" onerror="handleImageError(this)" class="w-20 h-20 object-cover rounded-xl border border-stone-700 shadow-md flex-shrink-0" />
+        <div class="overflow-hidden">
+          <span class="text-xs font-bold text-amber-500 uppercase tracking-wider">Rescan Album Cover</span>
+          <h3 id="rescanAlbumTitle" class="text-lg font-bold text-white truncate">Album Title</h3>
+          <p id="rescanAlbumArtist" class="text-xs text-stone-400 truncate">Artist Name</p>
+        </div>
+      </div>
+
+      <!-- Actions Stack -->
+      <div class="space-y-3 mb-6">
+        <button id="rescanAutoBtn" onclick="rescanAutoFetch()" class="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold rounded-xl text-sm shadow-lg flex items-center justify-center gap-2 transition-all">
+          <span>🔍</span> Auto-Fetch High-Res Official Cover (iTunes/Discogs)
+        </button>
+
+        <label class="w-full py-3 px-4 bg-stone-800 hover:bg-stone-700 border border-stone-700 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <span>📷</span> Upload / Snap New Cover Photo
+          <input type="file" id="rescanFileInput" accept="image/*" class="hidden" onchange="rescanUploadPhoto(this)" />
+        </label>
+      </div>
+
+      <!-- Release Assets Section -->
+      <div>
+        <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Available Vinyl Release Assets</h4>
+        <div id="rescanAssetsGrid" class="grid grid-cols-3 gap-2.5 max-h-48 overflow-y-auto pr-1">
+          <p class="text-xs text-stone-500 col-span-3 text-center py-4">Click Auto-Fetch or select a photo above</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Anti-Duplicate Shield Scanner Modal -->
   <div id="scannerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
@@ -1019,6 +1059,168 @@
       document.body.style.overflow = 'auto';
     }
 
+    let rescanCurrentRecord = null;
+
+    function openRescanModal(recordId) {
+      const rec = allRecords.find(r => r.id === recordId) || (currentSpinning && currentSpinning.id === recordId ? currentSpinning : null);
+      if (!rec) return;
+
+      rescanCurrentRecord = rec;
+      document.getElementById('rescanPreviewImg').src = rec.coverUrl || '/static/extracted_covers/shopping_cover_2.jpg';
+      document.getElementById('rescanAlbumTitle').innerText = rec.title || 'Unknown Album';
+      document.getElementById('rescanAlbumArtist').innerText = rec.artist || 'Unknown Artist';
+      
+      const grid = document.getElementById('rescanAssetsGrid');
+      grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">Loading release assets...</p>';
+      
+      document.getElementById('rescanModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      fetchReleaseAssetsForRescan(rec.artist, rec.title);
+    }
+
+    function openRescanModalFromLightbox() {
+      closeLightbox();
+      if (currentSpinning) {
+        openRescanModal(currentSpinning.id);
+      } else if (allRecords.length > 0) {
+        openRescanModal(allRecords[0].id);
+      }
+    }
+
+    function closeRescanModal() {
+      document.getElementById('rescanModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    async function rescanAutoFetch() {
+      if (!rescanCurrentRecord) return;
+      const btn = document.getElementById('rescanAutoBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span>⏳</span> Searching Official Artwork...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/records/${rescanCurrentRecord.id}/rescan-cover`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (res.ok && data.coverUrl) {
+          rescanCurrentRecord.coverUrl = data.coverUrl;
+          document.getElementById('rescanPreviewImg').src = data.coverUrl;
+          
+          if (currentSpinning && currentSpinning.id === rescanCurrentRecord.id) {
+            currentSpinning.coverUrl = data.coverUrl;
+            updateNowSpinningUI(currentSpinning);
+          }
+          await fetchCollection();
+          alert(`✅ Official high-res cover art updated for '${rescanCurrentRecord.title}'!`);
+          closeRescanModal();
+        } else {
+          alert(`⚠️ ${data.detail || 'Failed to fetch official cover art'}`);
+        }
+      } catch (err) {
+        console.error('Error rescanning cover art:', err);
+        alert('❌ Error rescanning cover art.');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    async function rescanUploadPhoto(input) {
+      if (!input.files || !input.files[0] || !rescanCurrentRecord) return;
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const scanRes = await fetch('/api/scan', {
+          method: 'POST',
+          body: formData
+        });
+        const scanData = await scanRes.json();
+        const uploadedUrl = scanData.metadata?.coverUrl || scanData.coverUrl;
+
+        if (uploadedUrl) {
+          const updateRes = await fetch(`/api/records/${rescanCurrentRecord.id}/update-cover`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coverUrl: uploadedUrl })
+          });
+
+          if (updateRes.ok) {
+            rescanCurrentRecord.coverUrl = uploadedUrl;
+            document.getElementById('rescanPreviewImg').src = uploadedUrl;
+            if (currentSpinning && currentSpinning.id === rescanCurrentRecord.id) {
+              currentSpinning.coverUrl = uploadedUrl;
+              updateNowSpinningUI(currentSpinning);
+            }
+            await fetchCollection();
+            alert(`✅ Photo uploaded & cover art updated for '${rescanCurrentRecord.title}'!`);
+            closeRescanModal();
+          }
+        }
+      } catch (err) {
+        console.error('Error uploading cover photo:', err);
+        alert('❌ Failed to upload cover photo.');
+      }
+    }
+
+    async function fetchReleaseAssetsForRescan(artist, title) {
+      const grid = document.getElementById('rescanAssetsGrid');
+      try {
+        const key = `${encodeURIComponent(artist.toLowerCase().trim())}_${encodeURIComponent(title.toLowerCase().trim())}`;
+        const res = await fetch(`/api/release-assets/${key}`);
+        const data = await res.json();
+        const assets = data.assets || [];
+
+        grid.innerHTML = '';
+        if (assets.length === 0) {
+          grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">No extra Discogs assets found.</p>';
+          return;
+        }
+
+        assets.forEach(asset => {
+          const item = document.createElement('div');
+          item.className = 'relative aspect-square bg-stone-900 rounded-lg overflow-hidden border border-stone-800 hover:border-amber-500 cursor-pointer group transition-all';
+          item.innerHTML = `
+            <img src="${asset.url}" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-amber-300 font-bold">Select</div>
+          `;
+          item.onclick = () => selectRescanAsset(asset.url);
+          grid.appendChild(item);
+        });
+      } catch (err) {
+        grid.innerHTML = '<p class="text-xs text-stone-500 col-span-3 text-center py-4">No additional release assets available.</p>';
+      }
+    }
+
+    async function selectRescanAsset(url) {
+      if (!rescanCurrentRecord || !url) return;
+      try {
+        const updateRes = await fetch(`/api/records/${rescanCurrentRecord.id}/update-cover`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coverUrl: url })
+        });
+        if (updateRes.ok) {
+          rescanCurrentRecord.coverUrl = url;
+          document.getElementById('rescanPreviewImg').src = url;
+          if (currentSpinning && currentSpinning.id === rescanCurrentRecord.id) {
+            currentSpinning.coverUrl = url;
+            updateNowSpinningUI(currentSpinning);
+          }
+          await fetchCollection();
+          alert(`✅ Cover art updated!`);
+          closeRescanModal();
+        }
+      } catch (err) {
+        console.error('Error selecting asset:', err);
+      }
+    }
+
+
     async function fetchCollection() {
       try {
         const res = await fetch('/api/records');
@@ -1416,27 +1618,33 @@
         card.className = 'card-enter ios-liquid-glass rounded-2xl p-4 space-y-3 group hover:border-amber-500/60 transition-all cursor-pointer relative shadow-xl hover:-translate-y-1 active:scale-[0.98]';
         card.innerHTML = `
           <!-- Full-bleed 1:1 Album Cover Art -->
-          <div class="relative overflow-hidden rounded-xl aspect-square bg-stone-900 shadow-md">
-            <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div class="relative overflow-hidden rounded-xl aspect-square bg-stone-900 shadow-md group/cover" onclick="event.stopPropagation(); openRescanModal('${rec.id}')">
+            <img src="${rec.coverUrl}" loading="lazy" decoding="async" onerror="handleImageError(this)" class="w-full h-full object-cover group-hover/cover:scale-105 transition-transform duration-500 cursor-pointer" title="Click to rescan/change cover art" />
             
             <!-- Genre Badge Overlay -->
-            <div class="absolute top-2.5 left-2.5 bg-black/65 backdrop-blur-md text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center gap-1">
+            <div class="absolute top-2.5 left-2.5 bg-black/65 backdrop-blur-md text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-full border border-white/10 shadow-sm flex items-center gap-1 z-20">
               <i class="fa-solid fa-music text-[9px]"></i>
               <span>${rec.genre || 'Vinyl'}</span>
             </div>
 
+            <!-- Rescan Cover Art Badge Overlay -->
+            <div class="absolute bottom-2.5 left-2.5 bg-black/75 hover:bg-amber-500 hover:text-black text-amber-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full backdrop-blur-md border border-amber-500/30 shadow-md transition-all flex items-center gap-1 opacity-90 group-hover:opacity-100 cursor-pointer z-20" title="Rescan / Change Cover Art" onclick="event.stopPropagation(); openRescanModal('${rec.id}')">
+              <span>🔄</span> Rescan Cover
+            </div>
+
             <!-- Quick Delete Button -->
-            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md" title="Delete Record">
+            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md z-20" title="Delete Record">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
 
             <!-- Big Center Play Button Overlay -->
-            <div onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 backdrop-blur-xs transition-opacity flex items-center justify-center">
+            <div onclick="event.stopPropagation(); spinRecord('${rec.id}')" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 backdrop-blur-xs transition-opacity flex items-center justify-center z-10">
               <div class="w-14 h-14 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold shadow-2xl scale-90 group-hover:scale-100 transition-transform">
                 <i class="fa-solid fa-play text-xl ml-0.5"></i>
               </div>
             </div>
           </div>
+
 
           <!-- Album Meta Info & Action Footer -->
           <div class="space-y-2 pt-1">
