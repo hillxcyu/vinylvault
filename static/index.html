@@ -1168,7 +1168,17 @@
     }
 
 
+    function openRescanModalFromLightbox() {
+      closeLightbox();
+      if (currentSpinning) {
+        openRescanModal(currentSpinning.id);
+      } else if (allRecords.length > 0) {
+        openRescanModal(allRecords[0].id);
+      }
+    }
+
     function reanalyzeCurrentSpinningRecord(btnElement) {
+
       if (currentSpinning) {
         rescanCurrentRecord = currentSpinning;
         reanalyzeCurrentRecord(btnElement);
