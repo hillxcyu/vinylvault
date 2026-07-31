@@ -179,8 +179,76 @@ async def rescan_record_cover_endpoint(record_id: str):
 
 
 
+@app.post("/api/records/{record_id}/reanalyze")
+async def reanalyze_record_metadata_endpoint(record_id: str):
+    rec = db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    cover_url = rec.get("coverUrl", "")
+    if not cover_url or "placeholder" in cover_url:
+        raise HTTPException(status_code=400, detail="Record has no valid cover image to re-analyze")
+
+    image_bytes = None
+    if cover_url.startswith("https://storage.googleapis.com/") or cover_url.startswith("http"):
+        try:
+            headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+            resp = requests.get(cover_url, headers=headers, timeout=10)
+            if resp.status_code == 200:
+                image_bytes = resp.content
+        except Exception as err:
+            logger.warning(f"Error downloading coverUrl for re-analysis: {err}")
+
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="Failed to retrieve cover image for re-analysis")
+
+    # 1. Run upgraded Gemini Vision AI with double-checked label & catalog grounding
+    extracted = gemini_service.analyze_album_cover(image_bytes, filename=f"reanalyze_{record_id}.jpg")
+
+    # 2. Query Discogs using double-checked catalog number & label
+    artist = extracted.get("artist") or rec.get("artist")
+    title = extracted.get("albumTitle") or rec.get("title")
+    catno = extracted.get("catalogNumber") or rec.get("catalogNumber")
+    country = extracted.get("country") or rec.get("country", "Japan")
+
+    discogs_info = discogs_service.fetch_release_info(
+        artist,
+        title,
+        cover_url=cover_url,
+        catalog_number=catno,
+        country=country
+    )
+
+    # 3. Update record fields with fresh double-checked metadata
+    if extracted.get("artist"): rec["artist"] = extracted["artist"]
+    if extracted.get("albumTitle"): rec["title"] = extracted["albumTitle"]
+    if extracted.get("label"): rec["label"] = extracted["label"]
+    if extracted.get("catalogNumber"): rec["catalogNumber"] = extracted["catalogNumber"]
+    if extracted.get("country"): rec["country"] = extracted["country"]
+    if extracted.get("genre"): rec["genre"] = extracted["genre"]
+
+    if extracted.get("releaseYear"):
+        rec["releaseYear"] = extracted["releaseYear"]
+    elif discogs_info.get("releaseYear") and discogs_info.get("releaseYear") > 1900:
+        rec["releaseYear"] = discogs_info["releaseYear"]
+
+    if discogs_info.get("coverUrl") and "shopping_cover_2.jpg" not in discogs_info["coverUrl"]:
+        rec["coverUrl"] = discogs_info["coverUrl"]
+
+    db.save_records()
+    if db.firestore.db:
+        db.firestore.save_record(rec)
+
+    return {
+        "status": "success",
+        "message": f"Successfully re-analyzed metadata for '{rec.get('title')}'",
+        "record": rec,
+        "extracted": extracted
+    }
+
 @app.post("/api/records/{record_id}/update-cover")
 async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPayload):
+
     rec = db.get_record_by_id(record_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Record not found")

@@ -35,21 +35,25 @@ class GeminiVisionService:
                 from google.genai import types
 
                 prompt = (
-                    "You are an expert vinyl record collector and archivist specializing in all genres including Classical, Jazz, Rock, and Electronic music. "
-                    "Analyze this image of a vinyl album cover, spine, or obi strip. "
-                    "Extract the exact metadata from the visual text: "
+                    "You are an expert vinyl record archivist and cataloger specializing in Classical, Jazz, Rock, and Box Sets. "
+                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision. "
+                    "CRITICAL REQUIREMENT: Double-check and verify the exact 'label' and 'catalogNumber'. "
+                    "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv'). "
+                    "Extract exact fields: "
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s). "
                     "2. 'albumTitle': Full album title or composer/work title. "
-                    "3. 'catalogNumber': The catalog number visible on the spine, top/bottom corners, or obi strip (e.g. 'VIC-28001', 'SXLP 30018', '25PC-101', 'IMP-2026-001'). "
-                    "4. 'country': Release country or pressing origin if visible or identifiable (e.g. 'Japan', 'US', 'UK', 'Germany'). "
-                    "5. 'label': Record label name. "
+                    "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLA 6187', 'VIC-28001', '2530 229', 'IMP-2026-001'). "
+                    "4. 'label': Exact record label name (e.g. 'Decca', 'Seraphim', 'Deutsche Grammophon', 'EMI', 'Philips', 'RCA'). "
+                    "5. 'country': Release country or pressing origin if visible or identifiable (e.g. 'Japan', 'US', 'UK', 'Germany'). "
                     "6. 'releaseYear': Release year if visible. "
-                    "Use Google Search grounding to verify exact catalog numbers, label, and pressing release details. "
+                    "7. 'genre': Musical genre/style. "
+                    "Use Google Search grounding to cross-reference and double-check the label name and catalog number against official Discogs/vinyl database entries. "
                     "Return ONLY a valid JSON object with keys: "
                     "\"artist\" (string), \"albumTitle\" (string), \"releaseYear\" (number or null), "
                     "\"label\" (string or null), \"catalogNumber\" (string or null), \"country\" (string or null), "
                     "\"genre\" (string or null), \"confidenceScore\" (number between 0 and 1)."
                 )
+
 
 
                 config = types.GenerateContentConfig(
