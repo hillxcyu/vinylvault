@@ -7,24 +7,28 @@ logger = logging.getLogger("gemini_service")
 
 class GeminiVisionService:
     def __init__(self):
-        self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "vital-octagon-19612")
-        self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
+        self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+        self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
         self.client = None
         self._init_client()
 
     def _init_client(self):
         try:
             from google import genai
-            # Use Google GenAI SDK with Vertex AI backend
+            adc_path = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
+            if os.path.exists(adc_path) and not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = adc_path
+
             self.client = genai.Client(
                 vertexai=True,
                 project=self.project,
                 location=self.location
             )
-            logger.info("Gemini GenAI Vertex AI client initialized successfully.")
+            logger.info(f"Gemini GenAI Vertex AI client initialized for project {self.project} in location {self.location}.")
         except Exception as e:
-            logger.warning(f"Gemini client initialization warning: {e}. Falling back to smart vision parser.")
+            logger.warning(f"Gemini client initialization warning: {e}")
             self.client = None
+
 
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
         """

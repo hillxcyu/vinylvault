@@ -1,4 +1,11 @@
 import os
+os.environ["GOOGLE_CLOUD_PROJECT"] = "universal-trail-492014-n5"
+os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
+
+adc_path = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
+if os.path.exists(adc_path):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = adc_path
+
 import uuid
 import json
 import re
@@ -7,6 +14,8 @@ import urllib.request
 from datetime import datetime
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
