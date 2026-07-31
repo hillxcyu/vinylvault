@@ -157,9 +157,10 @@
               <button onclick="logCurrentSpin()" class="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-xl border border-stone-700 transition-all flex items-center gap-2 shadow-md">
                 <i class="fa-solid fa-rotate-right text-amber-400"></i> Log Spin
               </button>
-              <button onclick="reanalyzeCurrentSpinningRecord()" class="px-4 py-2.5 bg-purple-900/80 hover:bg-purple-800 text-purple-200 text-sm font-semibold rounded-xl border border-purple-700/80 transition-all flex items-center gap-2 shadow-md">
-                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Rescan / Re-analyze
+              <button onclick="reanalyzeCurrentSpinningRecord(this)" class="px-4 py-2.5 bg-purple-900/80 hover:bg-purple-800 text-purple-200 text-sm font-semibold rounded-xl border border-purple-700/80 transition-all flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-arrows-rotate text-amber-300"></i> Refresh
               </button>
+
 
               <button onclick="openChatModal()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
                 <i class="fa-solid fa-comments"></i> AI Chat
@@ -539,9 +540,10 @@
 
       <!-- Actions Stack -->
       <div class="space-y-3 mb-6">
-        <button id="reanalyzeBtn" onclick="reanalyzeCurrentRecord()" class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold rounded-xl text-sm shadow-lg flex items-center justify-center gap-2 transition-all">
-          <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Re-analyze Metadata & Label (Gemini AI)
+        <button id="reanalyzeBtn" onclick="reanalyzeCurrentRecord(this)" class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold rounded-xl text-sm shadow-lg flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-arrows-rotate text-amber-300"></i> Refresh Metadata & Listening Guide (Gemini AI)
         </button>
+
 
         <button id="rescanAutoBtn" onclick="rescanAutoFetch()" class="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold rounded-xl text-sm shadow-lg flex items-center justify-center gap-2 transition-all">
           <span>🔍</span> Auto-Fetch Official Cover (Discogs)
@@ -1166,13 +1168,13 @@
     }
 
 
-    function reanalyzeCurrentSpinningRecord() {
+    function reanalyzeCurrentSpinningRecord(btnElement) {
       if (currentSpinning) {
         rescanCurrentRecord = currentSpinning;
-        reanalyzeCurrentRecord();
+        reanalyzeCurrentRecord(btnElement);
       } else if (allRecords.length > 0) {
         rescanCurrentRecord = allRecords[0];
-        reanalyzeCurrentRecord();
+        reanalyzeCurrentRecord(btnElement);
       }
     }
 
@@ -1181,16 +1183,16 @@
       document.body.style.overflow = 'auto';
     }
 
-    async function reanalyzeCurrentRecord() {
+    async function reanalyzeCurrentRecord(btnElement) {
       if (!rescanCurrentRecord) return;
-      const btn = document.getElementById('reanalyzeBtn');
+      const btn = btnElement || document.getElementById('reanalyzeBtn');
       const originalText = btn ? btn.innerHTML : '';
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Re-analyzing Cover & Listening Guide with Gemini AI...`;
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-amber-300 mr-1.5"></i> Refreshing...`;
       }
 
-      showToast(`🔍 Re-analyzing metadata & updating listening guide for "${rescanCurrentRecord.title}"...`, 'fa-brain');
+      showToast(`🔍 Refreshing metadata & updating listening guide for "${rescanCurrentRecord.title}"...`, 'fa-arrows-rotate');
 
       try {
         const res = await fetch(`/api/records/${rescanCurrentRecord.id}/reanalyze`, {
@@ -1216,14 +1218,14 @@
           }
 
           renderRecordsGrid(allRecords);
-          showToast(`✅ Metadata & Listening Guide re-analyzed for '${updated.title}'!`, 'fa-circle-check');
+          showToast(`✅ Metadata & Listening Guide refreshed for '${updated.title}'!`, 'fa-circle-check');
           closeRescanModal();
         } else {
-          showToast(`⚠️ ${data.detail || 'Failed to re-analyze record metadata'}`, 'fa-triangle-exclamation');
+          showToast(`⚠️ ${data.detail || 'Failed to refresh record metadata'}`, 'fa-triangle-exclamation');
         }
       } catch (err) {
-        console.error('Error re-analyzing record metadata:', err);
-        showToast('❌ Error re-analyzing record metadata.', 'fa-circle-xmark');
+        console.error('Error refreshing record metadata:', err);
+        showToast('❌ Error refreshing record metadata.', 'fa-circle-xmark');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1231,6 +1233,7 @@
         }
       }
     }
+
 
 
     async function rescanAutoFetch() {
