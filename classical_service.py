@@ -378,6 +378,12 @@ class ClassicalService:
 
         return CLASSICAL_ERAS[2], "Classical Composer"
 
+    def _extract_birth_year(self, lifespan_str: str) -> int:
+        match = re.search(r'\b(1[3-9]\d\d|20\d\d)\b', str(lifespan_str))
+        if match:
+            return int(match.group(1))
+        return 9999
+
     def _compute_composer_stats(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         composer_counter = {}
         for r in records:
@@ -396,8 +402,10 @@ class ClassicalService:
                         composer_counter[cname]["albums"].append(r.get("title"))
 
         composer_list = list(composer_counter.values())
-        composer_list.sort(key=lambda x: x["count"], reverse=True)
+        # Sort chronologically by composer birth year, then by album count
+        composer_list.sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
         return composer_list
+
 
     def _rule_based_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Classifies records into classical eras using composer keywords."""

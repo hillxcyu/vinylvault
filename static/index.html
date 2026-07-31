@@ -900,9 +900,18 @@
       const composerGrid = document.getElementById('composerKnowledgeGrid');
       if (composerGrid) {
         composerGrid.innerHTML = '';
-        const composers = chronicleData.composerStats || [];
+        const composers = (chronicleData.composerStats || []).slice();
+        
+        function parseBirthYear(lifespan) {
+          if (!lifespan) return 9999;
+          const match = String(lifespan).match(/\b(1[3-9]\d\d|20\d\d)\b/);
+          return match ? parseInt(match[1], 10) : 9999;
+        }
+
+        composers.sort((a, b) => parseBirthYear(a.lifespan) - parseBirthYear(b.lifespan));
         
         if (composers.length === 0) {
+
           composerGrid.innerHTML = '<div class="text-xs text-stone-500 col-span-full">No composer profiles detected in collection.</div>';
         } else {
           composers.forEach(comp => {
