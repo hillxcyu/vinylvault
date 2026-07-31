@@ -8,9 +8,10 @@ logger = logging.getLogger("gemini_service")
 class GeminiVisionService:
     def __init__(self):
         self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
-        self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+        self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
         self.client = None
         self._init_client()
+
 
     def _init_client(self):
         try:

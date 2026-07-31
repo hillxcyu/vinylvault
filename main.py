@@ -1,6 +1,7 @@
 import os
 os.environ["GOOGLE_CLOUD_PROJECT"] = "universal-trail-492014-n5"
-os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
+os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
+
 
 container_adc = "/root/.config/gcloud/application_default_credentials.json"
 host_adc = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
