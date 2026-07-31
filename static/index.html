@@ -1807,14 +1807,15 @@
 
           <!-- Album Meta Info & Action Footer -->
           <div class="space-y-2 pt-1">
-            <div class="font-extrabold text-lg text-white leading-snug break-words group-hover:text-amber-400 transition-colors">${rec.title}</div>
-            <div class="text-sm font-medium text-stone-300 truncate flex items-center justify-between">
-              <span>${rec.artist}</span>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
-                ${rec.label ? `<span class="text-[10px] font-semibold text-amber-300/90 bg-stone-900/90 px-2 py-0.5 rounded-full border border-stone-800/80">🏛️ ${rec.label}</span>` : ''}
-                ${rec.releaseYear ? `<span class="text-stone-400 font-mono text-xs">${rec.releaseYear}</span>` : ''}
-              </div>
+            <div class="font-extrabold text-base md:text-lg text-white leading-snug break-words group-hover:text-amber-400 transition-colors">${rec.title}</div>
+            <!-- Full Artist Name - No Truncation -->
+            <div class="text-sm font-medium text-stone-300 break-words leading-snug">${rec.artist}</div>
+            <!-- Record Label & Release Year on New Line -->
+            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+              ${rec.label ? `<span class="text-[10px] font-semibold text-amber-300/90 bg-stone-900/90 px-2 py-0.5 rounded-full border border-stone-800/80">🏛️ ${rec.label}</span>` : ''}
+              ${rec.releaseYear ? `<span class="text-[10px] font-semibold text-stone-400 bg-stone-900/90 px-2 py-0.5 rounded-full border border-stone-800/80"><i class="fa-solid fa-calendar-days text-[9px] text-amber-500/80 mr-1"></i>${rec.releaseYear}</span>` : ''}
             </div>
+
 
             <div class="pt-2.5 flex items-center justify-between text-xs border-t border-white/10">
               <span class="text-stone-400 text-xs font-medium flex items-center gap-1">
