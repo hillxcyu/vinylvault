@@ -16,7 +16,9 @@ class DiscogsService:
         if not text:
             return ""
         text_no_cn = re.sub(r'[\u4e00-\u9fff]+', '', text)
-        cleaned = re.sub(r'[^\w\s]', ' ', text_no_cn)
+        # Escape / replace ~ character with space so Discogs search parser doesn't break on Lucene operator ~
+        text_no_tilde = re.sub(r'[~]', ' ', text_no_cn)
+        cleaned = re.sub(r'[^\w\s]', ' ', text_no_tilde)
         return ' '.join(cleaned.split())
 
     def extract_artist_words(self, artist_str: str) -> List[str]:
@@ -106,9 +108,23 @@ class DiscogsService:
         country: Optional[str] = "Japan"
     ) -> List[Dict[str, Any]]:
         assets = []
+        seen_urls = set()
+
+        # Always include original jacket cover art as Asset #1 if available
+        if cover_url and cover_url not in seen_urls and "shopping_cover_2.jpg" not in cover_url:
+            seen_urls.add(cover_url)
+            assets.append({
+                "type": "📸 Original Jacket",
+                "url": cover_url,
+                "thumbnail": cover_url,
+                "isPrimary": True,
+                "country": country or "Original",
+                "comment": "Original Scanned / Uploaded Album Cover"
+            })
+
         clean_a = self.clean_search_term(artist)
         clean_t = self.clean_search_term(title)
-        clean_catno = catalog_number.strip() if catalog_number else ""
+        clean_catno = re.sub(r'[~]', ' ', catalog_number).strip() if catalog_number else ""
 
         search_queries = []
         if clean_catno:
@@ -116,6 +132,7 @@ class DiscogsService:
             pure_cat = " ".join(cat_parts)
             search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&type=release", "is_catno": True})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno)}&type=release", "is_catno": True})
+
 
         if clean_a and clean_t:
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country=Japan", "is_catno": False})

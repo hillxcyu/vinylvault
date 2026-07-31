@@ -79,7 +79,10 @@ class AddRecordRequest(BaseModel):
     genre: Optional[str] = None
     coverUrl: Optional[str] = None
     catalogNumber: Optional[str] = None
+    label: Optional[str] = None
+    country: Optional[str] = None
     formatDetails: Optional[str] = "Standard Black Vinyl"
+
 
 class ListeningGuideRequest(BaseModel):
     artist: str

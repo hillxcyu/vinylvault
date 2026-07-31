@@ -146,8 +146,10 @@
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-sm text-gray-300 pt-1">
               <span id="spinningGenre" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-music mr-1.5 text-amber-400"></i> Psychedelic Rock</span>
               <span id="spinningSpins" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> 14 Spins</span>
+              <span id="spinningLabel" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-record-vinyl text-purple-400 mr-1.5"></i> <span id="spinningLabelText">Decca</span></span>
               <span id="spinningCountry" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-globe text-emerald-400 mr-1.5"></i> <span id="spinningCountryText">🇯🇵 Japan</span></span>
               <span id="spinningCatNo" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-barcode text-sky-400 mr-1.5"></i> <span id="spinningCatNoText">IMP-2026-001</span></span>
+
             </div>
 
 
@@ -612,13 +614,14 @@
         <button onclick="autoDetectCornersAndSnap()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-amber-400 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-amber-500/30">
           <i class="fa-solid fa-object-group text-xs"></i> Detect
         </button>
-        <button onclick="triggerAutoScan()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-stone-700">
-          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i> Auto
+        <button onclick="useOriginalPhoto()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-stone-700">
+          <i class="fa-solid fa-image text-amber-400 text-xs"></i> Original
         </button>
         <button onclick="document.getElementById('photoInput').click()" class="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1 border border-stone-700">
           <i class="fa-solid fa-camera text-amber-400 text-xs"></i> Resnap
         </button>
       </div>
+
 
 
       <!-- Manual Query Form -->
@@ -1330,6 +1333,19 @@
       document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
       document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
 
+      // Update Label Badge
+      const labelEl = document.getElementById('spinningLabel');
+      const labelText = document.getElementById('spinningLabelText');
+      if (labelEl && labelText) {
+        const labelVal = rec.label || null;
+        if (labelVal) {
+          labelText.innerText = labelVal;
+          labelEl.classList.remove('hidden');
+        } else {
+          labelEl.classList.add('hidden');
+        }
+      }
+
       // Update Country Badge
       const countryEl = document.getElementById('spinningCountry');
       const countryText = document.getElementById('spinningCountryText');
@@ -1352,6 +1368,7 @@
           catNoEl.classList.add('hidden');
         }
       }
+
 
 
       // Fetch official multi-asset image gallery with client caching
@@ -1688,7 +1705,7 @@
             </div>
 
             <!-- Quick Delete Button -->
-            <button onclick="event.stopPropagation(); confirmDeleteRecord('${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md z-20" title="Delete Record">
+            <button onclick="event.stopPropagation(); event.preventDefault(); confirmDeleteRecord(event, '${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md z-20" title="Delete Record">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
 
@@ -1706,7 +1723,10 @@
             <div class="font-extrabold text-lg text-white leading-snug break-words group-hover:text-amber-400 transition-colors">${rec.title}</div>
             <div class="text-sm font-medium text-stone-300 truncate flex items-center justify-between">
               <span>${rec.artist}</span>
-              ${rec.releaseYear ? `<span class="text-stone-400 font-mono text-xs">${rec.releaseYear}</span>` : ''}
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                ${rec.label ? `<span class="text-[10px] font-semibold text-amber-300/90 bg-stone-900/90 px-2 py-0.5 rounded-full border border-stone-800/80">🏛️ ${rec.label}</span>` : ''}
+                ${rec.releaseYear ? `<span class="text-stone-400 font-mono text-xs">${rec.releaseYear}</span>` : ''}
+              </div>
             </div>
 
             <div class="pt-2.5 flex items-center justify-between text-xs border-t border-white/10">
@@ -1727,20 +1747,27 @@
       });
     }
 
-    async function confirmDeleteRecord(id, title) {
-      if (confirm(`Are you sure you want to delete "${title}" from your crate?`)) {
-        try {
-          const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
-          const data = await res.json();
-          if (data.status === 'success') {
-            await fetchCollection();
-            await fetchStats();
-          }
-        } catch (err) {
-          console.error('Error deleting record:', err);
-        }
+    async function confirmDeleteRecord(e, id, title) {
+      if (e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.preventDefault) e.preventDefault();
       }
+      setTimeout(async () => {
+        if (confirm(`Are you sure you want to delete "${title}" from your crate?`)) {
+          try {
+            const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.status === 'success') {
+              await fetchCollection();
+              await fetchStats();
+            }
+          } catch (err) {
+            console.error('Error deleting record:', err);
+          }
+        }
+      }, 50);
     }
+
 
     function filterCrate() {
       const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
@@ -2160,7 +2187,19 @@
       }
     }
 
+    function useOriginalPhoto() {
+      cornerPoints = [
+        { x: 0.0, y: 0.0 },
+        { x: 1.0, y: 0.0 },
+        { x: 1.0, y: 1.0 },
+        { x: 0.0, y: 1.0 }
+      ];
+      updateHandlePositionsFromPoints();
+      applyManualDeskew();
+    }
+
     async function applyManualDeskew() {
+
       if (!currentRawFile) {
         showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
         return;

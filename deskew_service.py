@@ -57,12 +57,12 @@ class DeskewService:
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
-            # 3. Find contours and sort by area descending
-            contours, _ = cv2.findContours(closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            # 3. Find outermost contours ONLY (RETR_EXTERNAL) to select album outer frame instead of inner artwork
+            contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if not contours:
                 _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                 otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
-                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
@@ -210,13 +210,14 @@ class DeskewService:
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
-            contours, _ = cv2.findContours(closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
             # Fallback to Otsu threshold if Canny contours are empty/small
             if not contours:
                 _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                 otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
-                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
 
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
