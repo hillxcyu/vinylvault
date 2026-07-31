@@ -2573,17 +2573,28 @@
       // 1. Instantly close scanner modal (0ms UI latency!)
       closeScannerModal();
 
-      // 2. Create optimistic temporary record
+      // 2. Create optimistic temporary record with full scanned label & catalog metadata
       const tempId = 'temp-' + Date.now();
       const tempRecord = {
         id: tempId,
         artist,
         title,
+        label: lastScannedMetadata.label || 'Standard Release',
+        catalogNumber: lastScannedMetadata.catalogNumber || null,
+        country: lastScannedMetadata.country || 'Japan',
         genre: lastScannedMetadata.genre || 'Vinyl',
         releaseYear: lastScannedMetadata.releaseYear || 2024,
         coverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
-        catalogNumber: lastScannedMetadata.catalogNumber || null,
+        originalScannedCoverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
         formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP',
+        pressings: [{
+          id: `press-${tempId}`,
+          recordId: tempId,
+          label: lastScannedMetadata.label || 'Standard Release',
+          catalogNumber: lastScannedMetadata.catalogNumber || '',
+          country: lastScannedMetadata.country || 'Japan',
+          formatDetails: 'Standard Vinyl Pressing'
+        }],
         spinsCount: 0,
         createdAt: new Date().toISOString()
       };
@@ -2607,11 +2618,15 @@
           body: JSON.stringify({
             artist,
             title,
+            label: tempRecord.label,
+            catalogNumber: tempRecord.catalogNumber,
+            country: tempRecord.country,
             genre: tempRecord.genre,
             releaseYear: tempRecord.releaseYear,
             coverUrl: tempRecord.coverUrl,
-            catalogNumber: tempRecord.catalogNumber,
-            formatDetails: tempRecord.formatDetails
+            originalScannedCoverUrl: tempRecord.originalScannedCoverUrl,
+            formatDetails: tempRecord.formatDetails,
+            pressings: tempRecord.pressings
           })
         });
         if (res.ok) {
@@ -2619,11 +2634,13 @@
           if (data.status === 'success' && data.record) {
             tempRecord.id = data.record.id;
             if (data.record.coverUrl) tempRecord.coverUrl = data.record.coverUrl;
+            if (data.record.label) tempRecord.label = data.record.label;
           }
         }
       } catch (err) {
         console.error('Background save error:', err);
       }
+
     }
 
     // Initial load

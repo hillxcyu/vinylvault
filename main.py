@@ -93,10 +93,13 @@ class AddRecordRequest(BaseModel):
     releaseYear: Optional[Any] = None
     genre: Optional[str] = None
     coverUrl: Optional[str] = None
+    originalScannedCoverUrl: Optional[str] = None
     catalogNumber: Optional[str] = None
     label: Optional[str] = None
     country: Optional[str] = None
     formatDetails: Optional[str] = "Standard Black Vinyl"
+    pressings: Optional[List[Dict[str, Any]]] = None
+
 
 
 class ListeningGuideRequest(BaseModel):
