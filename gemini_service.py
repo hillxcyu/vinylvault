@@ -419,7 +419,7 @@ class GeminiVisionService:
                     speech_config=types.SpeechConfig(
                         voice_config=types.VoiceConfig(
                             prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name="Puck"
+                                voice_name="Aoede"
                             )
                         )
                     )
@@ -452,7 +452,7 @@ class GeminiVisionService:
                             "audio_b64": audio_b64,
                             "mime_type": "audio/wav",
                             "model": "gemini-3.1-flash-tts-preview",
-                            "voice": "Puck"
+                            "voice": "Aoede"
                         }
         except Exception as e:
             logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")

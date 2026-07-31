@@ -699,7 +699,7 @@
       }
     }
 
-    // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview (Puck Voice)
+    // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview (Aoede Voice)
     async function pronounceText(text, btnElement) {
       if (!text) return;
       const clean = text.replace(/\([\u4e00-\u9fff\w\s\.]+\)/g, '').trim();
@@ -710,7 +710,7 @@
         icon.classList.add('text-amber-400', 'animate-spin');
       }
 
-      showToast(`🎙️ Gemini 3.1 Flash TTS (Puck Voice) generating...`, 'fa-waveform');
+      showToast(`🎙️ Gemini 3.1 Flash TTS (Aoede Voice) generating...`, 'fa-waveform');
 
       try {
         const res = await fetch('/api/pronounce', {
@@ -721,7 +721,8 @@
         const data = await res.json();
 
         if (res.ok && data.status === 'success' && data.audioB64) {
-          console.log("Playing Gemini 3.1 Flash TTS audio (Voice: " + (data.voice || "Puck") + ")");
+          console.log("Playing Gemini 3.1 Flash TTS audio (Voice: " + (data.voice || "Aoede") + ")");
+
           const audio = new Audio(`data:${data.mimeType || 'audio/wav'};base64,${data.audioB64}`);
           audio.onplay = () => {
             if (icon) {
