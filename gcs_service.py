@@ -61,4 +61,50 @@ class GCSStorageManager:
 
         return f"/static/extracted_covers/{clean_filename}"
 
+    def download_cover_bytes(self, cover_url: str) -> Optional[bytes]:
+        """
+        Downloads cover image bytes from HTTP URL, GCS bucket, or local disk fallback.
+        """
+        if not cover_url:
+            return None
+
+        clean_filename = os.path.basename(cover_url.split("?")[0])
+
+        # 1. Try HTTP / HTTPS download
+        if cover_url.startswith("http://") or cover_url.startswith("https://"):
+            try:
+                import requests
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                    "Referer": "https://www.discogs.com/"
+                }
+                resp = requests.get(cover_url, headers=headers, timeout=12)
+                if resp.status_code == 200 and len(resp.content) > 100:
+                    return resp.content
+            except Exception as e:
+                logger.warning(f"Failed HTTP download for '{cover_url}': {e}")
+
+        # 2. Try GCS Bucket direct blob download
+        if self.bucket and clean_filename:
+            try:
+                blob_path = f"covers/{clean_filename}"
+                blob = self.bucket.blob(blob_path)
+                if blob.exists():
+                    return blob.download_as_bytes()
+            except Exception as e:
+                logger.warning(f"Failed GCS download for '{clean_filename}': {e}")
+
+        # 3. Try Local Disk fallback
+        local_path = os.path.join(os.path.dirname(__file__), "static", "extracted_covers", clean_filename)
+        if os.path.exists(local_path):
+            try:
+                with open(local_path, "rb") as f:
+                    return f.read()
+            except Exception as e:
+                logger.warning(f"Failed local file read for '{local_path}': {e}")
+
+        return None
+
 gcs_service = GCSStorageManager()
+

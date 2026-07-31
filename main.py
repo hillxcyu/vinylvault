@@ -189,18 +189,20 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     if not cover_url or "placeholder" in cover_url:
         raise HTTPException(status_code=400, detail="Record has no valid cover image to re-analyze")
 
-    image_bytes = None
-    if cover_url.startswith("https://storage.googleapis.com/") or cover_url.startswith("http"):
-        try:
-            headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
-            resp = requests.get(cover_url, headers=headers, timeout=10)
-            if resp.status_code == 200:
-                image_bytes = resp.content
-        except Exception as err:
-            logger.warning(f"Error downloading coverUrl for re-analysis: {err}")
+    image_bytes = gcs_service.download_cover_bytes(cover_url)
 
     if not image_bytes:
-        raise HTTPException(status_code=400, detail="Failed to retrieve cover image for re-analysis")
+        assets = rec.get("assets", [])
+        for a in assets:
+            a_url = a.get("url") or a.get("thumbnail")
+            if a_url and "placeholder" not in a_url:
+                image_bytes = gcs_service.download_cover_bytes(a_url)
+                if image_bytes:
+                    break
+
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="Failed to retrieve cover image for re-analysis. Please upload or snap a new cover photo.")
+
 
     # 1. Run upgraded Gemini Vision AI with double-checked label & catalog grounding
     extracted = gemini_service.analyze_album_cover(image_bytes, filename=f"reanalyze_{record_id}.jpg")
