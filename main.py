@@ -884,18 +884,7 @@ async def seed_firestore_endpoint():
         "projectId": db.firestore.project_id
     }
 
-class PronounceRequest(BaseModel):
-    text: str
 
-@app.post("/api/pronounce")
-async def pronounce_endpoint(req: PronounceRequest):
-    text = req.text.strip()
-    clean_text = re.sub(r'\([\u4e00-\u9fff\w\s\.]+\)', '', text).strip()
-    return {
-        "status": "success",
-        "originalText": text,
-        "cleanText": clean_text or text
-    }
 
 @app.get("/api/backup")
 async def export_backup_endpoint():
