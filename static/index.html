@@ -1337,7 +1337,17 @@
       const labelEl = document.getElementById('spinningLabel');
       const labelText = document.getElementById('spinningLabelText');
       if (labelEl && labelText) {
-        const labelVal = rec.label || null;
+        let labelVal = rec.label || null;
+        if (!labelVal && rec.pressings && rec.pressings.length > 0) {
+          const pLabel = rec.pressings[0].label;
+          if (pLabel && pLabel !== 'Standard Release') {
+            labelVal = pLabel;
+          }
+        }
+        if (!labelVal && rec.formatDetails && rec.formatDetails !== 'Standard Black Vinyl') {
+          labelVal = rec.formatDetails;
+        }
+
         if (labelVal) {
           labelText.innerText = labelVal;
           labelEl.classList.remove('hidden');
@@ -1345,6 +1355,7 @@
           labelEl.classList.add('hidden');
         }
       }
+
 
       // Update Country Badge
       const countryEl = document.getElementById('spinningCountry');
