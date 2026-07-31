@@ -49,43 +49,34 @@ class GCSStorageManager:
             except Exception as e:
                 logger.error(f"GCS cover upload error for '{clean_filename}': {e}")
 
-        # Local disk fallback for development
-        local_dir = os.path.join(os.path.dirname(__file__), "static", "extracted_covers")
-        os.makedirs(local_dir, exist_ok=True)
-        local_path = os.path.join(local_dir, clean_filename)
-        try:
-            with open(local_path, "wb") as f:
-                f.write(file_bytes)
-        except Exception as err:
-            logger.error(f"Local cover write error: {err}")
+        return f"https://storage.googleapis.com/{self.bucket_name}/{blob_path}"
 
-        return f"/static/extracted_covers/{clean_filename}"
-
-    def download_cover_bytes(self, cover_url: str) -> Optional[bytes]:
+    def download_gcs_cover_bytes(self, cover_url_or_filename: str) -> Optional[bytes]:
         """
-        Downloads cover image bytes from HTTP URL, GCS bucket, or local disk fallback.
+        Downloads cover image bytes directly from GCS storage bucket (covers/{clean_filename}).
+        Exclusively relies on GCS persistence without local static disk fallbacks.
         """
-        if not cover_url:
+        if not cover_url_or_filename:
             return None
 
-        clean_filename = os.path.basename(cover_url.split("?")[0])
+        clean_filename = os.path.basename(cover_url_or_filename.split("?")[0])
+        gcs_public_url = f"https://storage.googleapis.com/{self.bucket_name}/covers/{clean_filename}"
 
-        # 1. Try HTTP / HTTPS download
-        if cover_url.startswith("http://") or cover_url.startswith("https://"):
-            try:
-                import requests
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                    "Referer": "https://www.discogs.com/"
-                }
-                resp = requests.get(cover_url, headers=headers, timeout=12)
-                if resp.status_code == 200 and len(resp.content) > 100:
-                    return resp.content
-            except Exception as e:
-                logger.warning(f"Failed HTTP download for '{cover_url}': {e}")
+        # 1. Try HTTP GET for GCS public URLs or web URLs
+        target_url = cover_url_or_filename if cover_url_or_filename.startswith("http") else gcs_public_url
+        try:
+            import requests
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Referer": "https://www.discogs.com/"
+            }
+            resp = requests.get(target_url, headers=headers, timeout=12)
+            if resp.status_code == 200 and len(resp.content) > 100:
+                return resp.content
+        except Exception as e:
+            logger.warning(f"HTTP GCS download warning for '{target_url}': {e}")
 
-        # 2. Try GCS Bucket direct blob download
+        # 2. Try GCS Bucket direct blob download as fallback
         if self.bucket and clean_filename:
             try:
                 blob_path = f"covers/{clean_filename}"
@@ -93,18 +84,11 @@ class GCSStorageManager:
                 if blob.exists():
                     return blob.download_as_bytes()
             except Exception as e:
-                logger.warning(f"Failed GCS download for '{clean_filename}': {e}")
-
-        # 3. Try Local Disk fallback
-        local_path = os.path.join(os.path.dirname(__file__), "static", "extracted_covers", clean_filename)
-        if os.path.exists(local_path):
-            try:
-                with open(local_path, "rb") as f:
-                    return f.read()
-            except Exception as e:
-                logger.warning(f"Failed local file read for '{local_path}': {e}")
+                logger.warning(f"Direct GCS blob download warning for '{clean_filename}': {e}")
 
         return None
 
 gcs_service = GCSStorageManager()
+
+
 

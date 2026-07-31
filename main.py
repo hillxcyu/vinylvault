@@ -185,23 +185,29 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     if not rec:
         raise HTTPException(status_code=404, detail="Record not found")
 
-    cover_url = rec.get("coverUrl", "")
-    if not cover_url or "placeholder" in cover_url:
-        raise HTTPException(status_code=400, detail="Record has no valid cover image to re-analyze")
-
-    image_bytes = gcs_service.download_cover_bytes(cover_url)
-
-    if not image_bytes:
-        assets = rec.get("assets", [])
-        for a in assets:
-            a_url = a.get("url") or a.get("thumbnail")
-            if a_url and "placeholder" not in a_url:
-                image_bytes = gcs_service.download_cover_bytes(a_url)
-                if image_bytes:
+    # Re-analyze MUST always use the default scanned GCS cover art image
+    scanned_gcs_url = rec.get("originalScannedCoverUrl")
+    if not scanned_gcs_url or "storage.googleapis.com" not in scanned_gcs_url:
+        if rec.get("coverUrl") and "storage.googleapis.com" in rec.get("coverUrl"):
+            scanned_gcs_url = rec.get("coverUrl")
+        else:
+            for a in rec.get("assets", []):
+                url = a.get("url", "")
+                if "storage.googleapis.com" in url:
+                    scanned_gcs_url = url
                     break
 
+    if not scanned_gcs_url:
+        scanned_gcs_url = rec.get("coverUrl", "")
+
+    if not scanned_gcs_url or "placeholder" in scanned_gcs_url:
+        raise HTTPException(status_code=400, detail="Record has no valid cover image stored on GCS to re-analyze")
+
+    image_bytes = gcs_service.download_gcs_cover_bytes(scanned_gcs_url)
+
     if not image_bytes:
-        raise HTTPException(status_code=400, detail="Failed to retrieve cover image for re-analysis. Please upload or snap a new cover photo.")
+        raise HTTPException(status_code=400, detail="Failed to retrieve GCS cover image for re-analysis. Please upload or snap a new cover photo.")
+
 
 
     # 1. Run upgraded Gemini Vision AI with double-checked label & catalog grounding
