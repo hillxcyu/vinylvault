@@ -754,7 +754,13 @@
     let selectedEraFilter = 'all';
     let chroniclePollTimer = null;
 
+    const tabScrollPositions = {};
+
     function switchTab(tabName) {
+      if (activeTab) {
+        tabScrollPositions[activeTab] = window.scrollY || document.documentElement.scrollTop || 0;
+      }
+
       activeTab = tabName;
       const tabNow = document.getElementById('tabNowSpinning');
       const tabCrate = document.getElementById('tabCrate');
@@ -809,7 +815,14 @@
         else if (tabName === 'chronicle') mobChronicle.className = mobActive;
         else mobCrate.className = mobActive;
       }
+
+      // Restore last saved scroll position for target tab
+      const targetScroll = tabScrollPositions[tabName] !== undefined ? tabScrollPositions[tabName] : 0;
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: targetScroll, behavior: 'instant' });
+      });
     }
+
 
     async function fetchChronicle() {
       try {
