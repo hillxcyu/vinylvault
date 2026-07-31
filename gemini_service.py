@@ -1,10 +1,13 @@
 import os
+import io
+import wave
 import json
 import base64
 import logging
 from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger("gemini_service")
+
 
 
 class GeminiVisionService:
@@ -426,16 +429,36 @@ class GeminiVisionService:
             for candidate in (response.candidates or []):
                 for part in (candidate.content.parts or []):
                     if part.inline_data and part.inline_data.data:
-                        audio_b64 = base64.b64encode(part.inline_data.data).decode('utf-8')
-                        mime_type = part.inline_data.mime_type or "audio/mp3"
+                        raw_pcm = part.inline_data.data
+                        mime = part.inline_data.mime_type or "audio/l16; rate=24000"
+                        
+                        sample_rate = 24000
+                        if "rate=" in mime:
+                            try:
+                                sample_rate = int(mime.split("rate=")[1].split(";")[0].strip())
+                            except Exception:
+                                sample_rate = 24000
+
+                        wav_io = io.BytesIO()
+                        with wave.open(wav_io, 'wb') as wf:
+                            wf.setnchannels(1)
+                            wf.setsampwidth(2)
+                            wf.setframerate(sample_rate)
+                            wf.writeframes(raw_pcm)
+                        
+                        wav_bytes = wav_io.getvalue()
+                        audio_b64 = base64.b64encode(wav_bytes).decode('utf-8')
                         return {
                             "audio_b64": audio_b64,
-                            "mime_type": mime_type
+                            "mime_type": "audio/wav",
+                            "model": "gemini-3.1-flash-tts-preview",
+                            "voice": "Puck"
                         }
         except Exception as e:
             logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
             return None
         return None
+
 
 gemini_service = GeminiVisionService()
 

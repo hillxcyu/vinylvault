@@ -699,7 +699,7 @@
       }
     }
 
-    // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview
+    // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview (Puck Voice)
     async function pronounceText(text, btnElement) {
       if (!text) return;
       const clean = text.replace(/\([\u4e00-\u9fff\w\s\.]+\)/g, '').trim();
@@ -710,6 +710,8 @@
         icon.classList.add('text-amber-400', 'animate-spin');
       }
 
+      showToast(`🎙️ Gemini 3.1 Flash TTS (Puck Voice) generating...`, 'fa-waveform');
+
       try {
         const res = await fetch('/api/pronounce', {
           method: 'POST',
@@ -719,30 +721,35 @@
         const data = await res.json();
 
         if (res.ok && data.status === 'success' && data.audioB64) {
-          const audio = new Audio(`data:${data.mimeType || 'audio/mp3'};base64,${data.audioB64}`);
+          console.log("Playing Gemini 3.1 Flash TTS audio (Voice: " + (data.voice || "Puck") + ")");
+          const audio = new Audio(`data:${data.mimeType || 'audio/wav'};base64,${data.audioB64}`);
           audio.onplay = () => {
             if (icon) {
               icon.classList.remove('animate-spin');
               icon.classList.add('text-amber-400', 'animate-bounce');
             }
+            showToast(`🔊 Playing '${clean}' (Gemini 3.1 Flash TTS)`, 'fa-volume-high');
           };
           audio.onended = () => {
             if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
           };
-          audio.onerror = () => {
+          audio.onerror = (e) => {
+            console.warn('Gemini TTS audio element error:', e);
             if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
             fallbackSpeechSynthesis(clean, icon);
           };
           await audio.play();
           return;
         } else {
+          console.warn('Gemini TTS error:', data.detail);
           fallbackSpeechSynthesis(clean, icon);
         }
       } catch (err) {
-        console.error('Gemini TTS error:', err);
+        console.error('Gemini TTS network error:', err);
         fallbackSpeechSynthesis(clean, icon);
       }
     }
+
 
     function fallbackSpeechSynthesis(cleanText, icon) {
       if ('speechSynthesis' in window) {

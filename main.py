@@ -941,10 +941,13 @@ async def pronounce_endpoint(req: PronounceRequest):
         return {
             "status": "success",
             "audioB64": result["audio_b64"],
-            "mimeType": result.get("mime_type", "audio/mp3")
+            "mimeType": result.get("mime_type", "audio/wav"),
+            "model": result.get("model", "gemini-3.1-flash-tts-preview"),
+            "voice": result.get("voice", "Puck")
         }
     else:
         return {"status": "error", "detail": "Failed to generate audio via gemini-3.1-flash-tts-preview"}
+
 
 if __name__ == "__main__":
 
