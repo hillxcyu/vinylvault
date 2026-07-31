@@ -1705,7 +1705,7 @@
             </div>
 
             <!-- Quick Delete Button -->
-            <button onclick="event.stopPropagation(); event.preventDefault(); confirmDeleteRecord(event, '${rec.id}', \`${rec.title.replace(/`/g, '')}\`)" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md z-20" title="Delete Record">
+            <button onclick="confirmDeleteRecord(event, '${rec.id}')" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/65 hover:bg-rose-600 text-stone-300 hover:text-white backdrop-blur-md flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all shadow-md z-20" title="Delete Record">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
 
@@ -1747,11 +1747,13 @@
       });
     }
 
-    async function confirmDeleteRecord(e, id, title) {
+    async function confirmDeleteRecord(e, id) {
       if (e) {
         if (e.stopPropagation) e.stopPropagation();
         if (e.preventDefault) e.preventDefault();
       }
+      const rec = allRecords.find(r => r.id === id);
+      const title = rec ? rec.title : 'this record';
       setTimeout(async () => {
         if (confirm(`Are you sure you want to delete "${title}" from your crate?`)) {
           try {
@@ -1767,6 +1769,7 @@
         }
       }, 50);
     }
+
 
 
     function filterCrate() {
@@ -2187,16 +2190,15 @@
       }
     }
 
-    function useOriginalPhoto() {
-      cornerPoints = [
-        { x: 0.0, y: 0.0 },
-        { x: 1.0, y: 0.0 },
-        { x: 1.0, y: 1.0 },
-        { x: 0.0, y: 1.0 }
-      ];
-      updateHandlePositionsFromPoints();
-      applyManualDeskew();
+    async function useOriginalPhoto() {
+      if (!currentRawFile) {
+        showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
+        return;
+      }
+      showScanLoading(`Uploading original uncropped photo & analyzing via Gemini AI...`);
+      await triggerAutoScan();
     }
+
 
     async function applyManualDeskew() {
 
