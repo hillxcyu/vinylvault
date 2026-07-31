@@ -45,24 +45,28 @@ class GeminiVisionService:
                 from google.genai import types
 
                 prompt = (
-                    "You are an expert vinyl record archivist and cataloger specializing in Classical, Jazz, Rock, and Box Sets. "
-                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision. "
-                    "CRITICAL REQUIREMENT: Double-check and verify the exact 'label' and 'catalogNumber'. "
-                    "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv'). "
-                    "Extract exact fields: "
-                    "1. 'artist': Main soloist, conductor, orchestra, or performer(s). "
-                    "2. 'albumTitle': Full album title or composer/work title. "
-                    "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLA 6187', 'VIC-28001', '2530 229', 'IMP-2026-001'). "
-                    "4. 'label': Exact record label name (e.g. 'Decca', 'Seraphim', 'Deutsche Grammophon', 'EMI', 'Philips', 'RCA'). "
-                    "5. 'country': Release country or pressing origin if visible or identifiable (e.g. 'Japan', 'US', 'UK', 'Germany'). "
-                    "6. 'releaseYear': Release year if visible. "
-                    "7. 'genre': Musical genre/style. "
-                    "Use Google Search grounding to cross-reference and double-check the label name and catalog number against official Discogs/vinyl database entries. "
-                    "Return ONLY a valid JSON object with keys: "
-                    "\"artist\" (string), \"albumTitle\" (string), \"releaseYear\" (number or null), "
-                    "\"label\" (string or null), \"catalogNumber\" (string or null), \"country\" (string or null), "
-                    "\"genre\" (string or null), \"confidenceScore\" (number between 0 and 1)."
+                    "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
+                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
+                    "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
+                    "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
+                    "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing (e.g., 'EAC-60150-51' was released in 1978, 'UCJG-9012' in 2009). Always return an accurate 4-digit 'releaseYear' integer.\n"
+                    "CRITICAL REQUIREMENT 3: Simultaneously generate a rich audiophile 'listeningGuide' for this album.\n\n"
+                    "Extract and return ONLY a valid JSON object with the following fields:\n"
+                    "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
+                    "2. 'albumTitle': Full album title or composer/work title.\n"
+                    "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLA 6187', 'VIC-28001', '2530 229', 'IMP-2026-001').\n"
+                    "4. 'label': Exact record label name (e.g. 'Decca', 'Seraphim', 'Deutsche Grammophon', 'EMI', 'Philips', 'RCA').\n"
+                    "5. 'country': Release country or pressing origin (e.g. 'Japan', 'US', 'UK', 'Germany').\n"
+                    "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1978, 1961, 2009).\n"
+                    "7. 'genre': Musical genre/style (e.g. 'Baroque', 'Classical Orchestral', 'Violin Concerto', 'Chamber Music', 'Jazz').\n"
+                    "8. 'confidenceScore': Number between 0 and 1.\n"
+                    "9. 'listeningGuide': Object with keys:\n"
+                    "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
+                    "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
+                    "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
+                    "   - 'recommendedMood': (string, ideal listening atmosphere)"
                 )
+
 
 
 

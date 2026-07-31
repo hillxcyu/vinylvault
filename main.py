@@ -266,6 +266,10 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     elif discogs_info.get("releaseYear") and discogs_info.get("releaseYear") > 1900:
         rec["releaseYear"] = discogs_info["releaseYear"]
 
+    if extracted.get("listeningGuide"):
+        rec["listeningGuide"] = extracted["listeningGuide"]
+
+
     if discogs_info.get("coverUrl") and "shopping_cover_2.jpg" not in discogs_info["coverUrl"]:
         rec["coverUrl"] = discogs_info["coverUrl"]
 
