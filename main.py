@@ -2,9 +2,14 @@ import os
 os.environ["GOOGLE_CLOUD_PROJECT"] = "universal-trail-492014-n5"
 os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
 
-adc_path = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
-if os.path.exists(adc_path):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = adc_path
+container_adc = "/root/.config/gcloud/application_default_credentials.json"
+host_adc = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
+
+if os.path.exists(container_adc):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = container_adc
+elif os.path.exists(host_adc):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = host_adc
+
 
 import uuid
 import json
@@ -219,8 +224,12 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
 
 
 
-    # 1. Run upgraded Gemini Vision AI with double-checked label & catalog grounding
-    extracted = gemini_service.analyze_album_cover(image_bytes, filename=f"reanalyze_{record_id}.jpg")
+    try:
+        # 1. Run upgraded Gemini Vision AI with double-checked label & catalog grounding
+        extracted = gemini_service.analyze_album_cover(image_bytes, filename=f"reanalyze_{record_id}.jpg")
+    except Exception as err:
+        logger.error(f"Error in Gemini Vision AI during re-analysis: {err}")
+        raise HTTPException(status_code=500, detail=f"Gemini AI Vision error: {str(err)}")
 
     # 2. Query Discogs using double-checked catalog number & label
     artist = extracted.get("artist") or rec.get("artist")
@@ -228,14 +237,17 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     catno = extracted.get("catalogNumber") or rec.get("catalogNumber")
     country = extracted.get("country") or rec.get("country", "Japan")
 
-    discogs_info = discogs_service.fetch_release_info(
-        artist,
-        title,
-        cover_url=scanned_gcs_url,
-        catalog_number=catno,
-        country=country
-    )
-
+    discogs_info = {}
+    try:
+        discogs_info = discogs_service.fetch_release_info(
+            artist,
+            title,
+            cover_url=scanned_gcs_url,
+            catalog_number=catno,
+            country=country
+        )
+    except Exception as err:
+        logger.warning(f"Discogs release info fetch warning during re-analysis: {err}")
 
     # 3. Update record fields with fresh double-checked metadata
     if extracted.get("artist"): rec["artist"] = extracted["artist"]
@@ -263,6 +275,7 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
         "record": rec,
         "extracted": extracted
     }
+
 
 @app.post("/api/records/{record_id}/update-cover")
 async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPayload):

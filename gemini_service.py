@@ -15,9 +15,14 @@ class GeminiVisionService:
     def _init_client(self):
         try:
             from google import genai
-            adc_path = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
-            if os.path.exists(adc_path) and not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = adc_path
+            container_adc = "/root/.config/gcloud/application_default_credentials.json"
+            host_adc = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
+
+            if os.path.exists(container_adc):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = container_adc
+            elif os.path.exists(host_adc):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = host_adc
+
 
             self.client = genai.Client(
                 vertexai=True,
