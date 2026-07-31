@@ -1,7 +1,9 @@
 import json
 import os
+import uuid
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
+
 
 INITIAL_RECORDS = [
     {
@@ -1168,29 +1170,7 @@ class FirestoreManager:
             print(f"Firestore get_records error: {e}")
             return None
 
-    def save_record(self, record_data: Dict[str, Any]) -> bool:
-        if not self.db:
-            return False
-        try:
-            rec_id = record_data.get("id")
-            if rec_id:
-                self.db.collection("records").document(rec_id).set(record_data)
-                print(f"Saved record {rec_id} to Firestore.")
-                return True
-        except Exception as e:
-            print(f"Firestore save_record error: {e}")
-        return False
 
-    def delete_record(self, record_id: str) -> bool:
-        if not self.db:
-            return False
-        try:
-            self.db.collection("records").document(record_id).delete()
-            print(f"Deleted record {record_id} from Firestore.")
-            return True
-        except Exception as e:
-            print(f"Firestore delete_record error: {e}")
-        return False
 
     def save_all_records_batch(self, records: List[Dict[str, Any]]) -> Tuple[bool, str]:
         if not self.db:
@@ -1504,7 +1484,8 @@ class VinylDatabase:
                 print(f"Prevented adding duplicate record for '{record_data.get('title')}'")
                 return existing
 
-        new_id = f"rec-user-{len(self.records) + 100}"
+        new_id = f"rec-user-{uuid.uuid4().hex[:8]}"
+
         record_data["id"] = new_id
         record_data["createdAt"] = datetime.utcnow().isoformat() + "Z"
         record_data["spinsCount"] = 0
