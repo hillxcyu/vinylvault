@@ -60,26 +60,15 @@ class GeminiVisionService:
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
 
-                response = None
-                models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
-                for m in models_to_try:
+                response = self.client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=[
+                        types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                        prompt
+                    ],
+                    config=config
+                )
 
-                    try:
-                        response = self.client.models.generate_content(
-                            model=m,
-                            contents=[
-                                types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                                prompt
-                            ],
-                            config=config
-                        )
-                        if response:
-                            break
-                    except Exception as m_err:
-                        logger.warning(f"Gemini model '{m}' failed: {m_err}")
-
-                if not response:
-                    raise RuntimeError("All Gemini model attempts failed")
 
 
                 text = response.text.strip()
@@ -188,19 +177,12 @@ class GeminiVisionService:
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
 
-                try:
-                    response = self.client.models.generate_content(
-                        model="gemini-3.6-flash",
-                        contents=prompt,
-                        config=config
-                    )
-                except Exception as model_err:
-                    logger.warning(f"Fallback to gemini-2.5-flash for listening guide: {model_err}")
-                    response = self.client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=prompt,
-                        config=config
-                    )
+                response = self.client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                    config=config
+                )
+
 
                 text = response.text.strip()
                 if text.startswith("```json"):
@@ -319,21 +301,13 @@ class GeminiVisionService:
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
 
-                try:
-                    response = self.client.models.generate_content(
-                        model="gemini-3.6-flash",
-                        contents=prompt,
-                        config=config
-                    )
-                    return response.text.strip()
-                except Exception as model_err:
-                    logger.warning(f"Fallback chat to gemini-2.5-flash: {model_err}")
-                    response = self.client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=prompt,
-                        config=config
-                    )
-                    return response.text.strip()
+                response = self.client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                    config=config
+                )
+                return response.text.strip()
+
             except Exception as e:
                 logger.error(f"Error in Gemini chat API call: {e}")
 
