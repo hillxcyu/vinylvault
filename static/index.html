@@ -1560,6 +1560,13 @@
       if (forceRefresh) {
         sessionStorage.removeItem(cacheKey);
       } else {
+        // 0. Check if currentSpinning has listeningGuide on record object directly
+        if (currentSpinning && currentSpinning.listeningGuide) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(currentSpinning.listeningGuide));
+          renderListeningGuide(currentSpinning.listeningGuide);
+          return;
+        }
+
         const cached = sessionStorage.getItem(cacheKey);
         if (cached) {
           try {
@@ -1569,6 +1576,7 @@
           } catch(e) {}
         }
       }
+
 
       document.getElementById('guideBackground').innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Generating AI listening guide & tracklist...';
       document.getElementById('tracklistContainer').innerHTML = '<div class="text-xs text-stone-500 italic"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Fetching vinyl tracklist...</div>';

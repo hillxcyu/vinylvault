@@ -268,6 +268,9 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
 
     if extracted.get("listeningGuide"):
         rec["listeningGuide"] = extracted["listeningGuide"]
+        guide_key = f"{sanitize_cache_key(rec.get('artist', ''))}_{sanitize_cache_key(rec.get('title', ''))}"
+        db.firestore.save_listening_guide(guide_key, extracted["listeningGuide"])
+
 
 
     if discogs_info.get("coverUrl") and "shopping_cover_2.jpg" not in discogs_info["coverUrl"]:
@@ -748,11 +751,26 @@ def sanitize_cache_key(name: str) -> str:
 async def get_listening_guide(req: ListeningGuideRequest):
     guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.albumTitle)}"
     
+    # 0. Check if target record in database already holds listeningGuide on the record object
+    if not req.forceRefresh:
+        all_recs = db.get_all_records()
+        norm_req_title = (req.albumTitle or "").strip().lower()
+        norm_req_artist = (req.artist or "").strip().lower()
+        for r in all_recs:
+            r_t = (r.get("title") or "").strip().lower()
+            r_a = (r.get("artist") or "").strip().lower()
+            if norm_req_title and (norm_req_title == r_t or norm_req_title in r_t or r_t in norm_req_title):
+                if r.get("listeningGuide"):
+                    guide = r.get("listeningGuide")
+                    db.firestore.save_listening_guide(guide_key, guide)
+                    return {"status": "success", "guide": guide, "cached": True}
+
     # 1. Check Firestore cache if forceRefresh is False
     if not req.forceRefresh:
         cached_guide = db.firestore.get_listening_guide(guide_key)
         if cached_guide:
             return {"status": "success", "guide": cached_guide, "cached": True}
+
 
     # 2. Check local disk cache fallback
     cache_path = os.path.join(GUIDE_CACHE_DIR, f"{guide_key}.json")
