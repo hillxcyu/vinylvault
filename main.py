@@ -222,10 +222,11 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     discogs_info = discogs_service.fetch_release_info(
         artist,
         title,
-        cover_url=cover_url,
+        cover_url=scanned_gcs_url,
         catalog_number=catno,
         country=country
     )
+
 
     # 3. Update record fields with fresh double-checked metadata
     if extracted.get("artist"): rec["artist"] = extracted["artist"]
