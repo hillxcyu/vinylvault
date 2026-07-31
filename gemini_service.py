@@ -80,6 +80,8 @@ class GeminiVisionService:
 
 
 
+
+
                 text = response.text.strip()
                 if text.startswith("```json"):
                     text = text[7:]
@@ -255,7 +257,8 @@ class GeminiVisionService:
                     contents=prompt,
                     config=config
                 )
-                return response.text.strip()
+                if response and response.text:
+                    return response.text.strip()
 
             except Exception as e:
                 logger.error(f"Error in Gemini chat API call: {e}")
@@ -291,12 +294,12 @@ class GeminiVisionService:
                 config = types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
-                response = self.client.models.generate_content_stream(
+                response_stream = self.client.models.generate_content_stream(
                     model="gemini-3.6-flash",
                     contents=prompt,
                     config=config
                 )
-                for chunk in response:
+                for chunk in response_stream:
                     if chunk.text:
                         yield f"data: {json.dumps({'text': chunk.text})}\n\n"
                 yield "data: [DONE]\n\n"
@@ -372,8 +375,12 @@ class GeminiVisionService:
                 contents=prompt,
                 config=config
             )
+            if not response or not response.text:
+                return None
+
 
             text_output = response.text.strip()
+
             if text_output.startswith("```"):
                 text_output = re.sub(r"^```(?:json)?\n|\n```$", "", text_output, flags=re.MULTILINE).strip()
 
