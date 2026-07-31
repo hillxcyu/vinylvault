@@ -741,9 +741,10 @@
           await audio.play();
           return;
         } else {
-          console.warn('Gemini TTS error:', data.detail);
+          console.warn('Gemini TTS error:', data && data.detail ? data.detail : (data && data.message ? data.message : JSON.stringify(data)));
           fallbackSpeechSynthesis(clean, icon);
         }
+
       } catch (err) {
         console.error('Gemini TTS network error:', err);
         fallbackSpeechSynthesis(clean, icon);

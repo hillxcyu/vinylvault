@@ -937,7 +937,7 @@ async def pronounce_endpoint(req: PronounceRequest):
     
     clean_text = req.text.strip()
     result = gemini_service.generate_pronunciation(clean_text)
-    if result and result.get("audio_b64"):
+    if result and isinstance(result, dict) and result.get("audio_b64"):
         return {
             "status": "success",
             "audioB64": result["audio_b64"],
@@ -946,7 +946,9 @@ async def pronounce_endpoint(req: PronounceRequest):
             "voice": result.get("voice", "Puck")
         }
     else:
-        return {"status": "error", "detail": "Failed to generate audio via gemini-3.1-flash-tts-preview"}
+        err_msg = result.get("error") if (result and isinstance(result, dict) and result.get("error")) else "Failed to generate audio via gemini-3.1-flash-tts-preview"
+        return {"status": "error", "detail": err_msg}
+
 
 
 if __name__ == "__main__":

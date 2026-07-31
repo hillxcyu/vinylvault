@@ -456,8 +456,9 @@ class GeminiVisionService:
                         }
         except Exception as e:
             logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
-            return None
-        return None
+            return {"error": str(e)}
+        return {"error": "No audio parts returned from gemini-3.1-flash-tts-preview"}
+
 
 
 gemini_service = GeminiVisionService()
