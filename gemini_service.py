@@ -82,71 +82,11 @@ class GeminiVisionService:
                 parsed = json.loads(text.strip())
                 return parsed
             except Exception as e:
-                logger.error(f"Error in Gemini API call: {e}")
+                logger.error(f"Error in Gemini Vision API call (gemini-3.6-flash): {e}")
+                raise RuntimeError(f"Gemini Vision API error (gemini-3.6-flash): {e}")
 
-        logger.info(f"Using smart vision fallback metadata extractor for {filename}.")
-        fname_lower = filename.lower()
+        raise RuntimeError("Gemini AI client is not initialized")
 
-        if "dvorak" in fname_lower or "cello" in fname_lower or "test_album_cover" in fname_lower or "test" in fname_lower:
-            return {
-                "artist": "Paul Tortelier / Sir Malcolm Sargent / Philharmonia Orchestra",
-                "albumTitle": "Dvořák: Cello Concerto in B minor",
-                "releaseYear": 1963,
-                "label": "EMI / His Master's Voice (Concert Classics Series)",
-                "catalogNumber": "SXLP 30018",
-                "genre": "Classical",
-                "confidenceScore": 0.99
-            }
-        elif "tame" in fname_lower or "slow" in fname_lower or "rush" in fname_lower:
-            return {
-                "artist": "Tame Impala",
-                "albumTitle": "The Slow Rush",
-                "releaseYear": 2020,
-                "label": "Interscope Records",
-                "catalogNumber": "00602508273766",
-                "genre": "Psychedelic Pop",
-                "confidenceScore": 0.98
-            }
-        elif "currents" in fname_lower:
-            return {
-                "artist": "Tame Impala",
-                "albumTitle": "Currents",
-                "releaseYear": 2015,
-                "label": "Modular Recordings",
-                "catalogNumber": "4730677",
-                "genre": "Psychedelic Rock",
-                "confidenceScore": 0.99
-            }
-        elif "radiohead" in fname_lower or "ok" in fname_lower:
-            return {
-                "artist": "Radiohead",
-                "albumTitle": "OK Computer",
-                "releaseYear": 1997,
-                "label": "Parlophone",
-                "catalogNumber": "NODATA 02",
-                "genre": "Alternative Rock",
-                "confidenceScore": 0.96
-            }
-        elif "demon" in fname_lower or "gorillaz" in fname_lower:
-            return {
-                "artist": "Gorillaz",
-                "albumTitle": "Demon Days",
-                "releaseYear": 2005,
-                "label": "Parlophone / EMI",
-                "catalogNumber": "07243 873838 1 6",
-                "genre": "Alternative / Electronic",
-                "confidenceScore": 0.95
-            }
-        else:
-            return {
-                "artist": "Paul Tortelier / Sir Malcolm Sargent / Philharmonia Orchestra",
-                "albumTitle": "Dvořák: Cello Concerto in B minor",
-                "releaseYear": 1963,
-                "label": "EMI / His Master's Voice",
-                "catalogNumber": "SXLP 30018",
-                "genre": "Classical",
-                "confidenceScore": 0.97
-            }
 
     def generate_listening_guide(self, artist: str, title: str) -> Dict[str, Any]:
         """
