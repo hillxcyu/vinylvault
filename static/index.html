@@ -699,58 +699,64 @@
       }
     }
 
-    // Audio Pronunciation Helper (Web Speech API + Backend Fallback)
-    function pronounceText(text, btnElement) {
+    // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview
+    async function pronounceText(text, btnElement) {
       if (!text) return;
       const clean = text.replace(/\([\u4e00-\u9fff\w\s\.]+\)/g, '').trim();
 
       let icon = null;
       if (btnElement) {
         icon = btnElement.querySelector('i') || btnElement;
-        icon.classList.add('text-amber-400', 'animate-bounce');
+        icon.classList.add('text-amber-400', 'animate-spin');
       }
 
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(clean);
-        
-        const lower = clean.toLowerCase();
-        if (lower.includes('dvořák') || lower.includes('dvorak')) {
-          utterance.lang = 'cs-CZ';
-        } else if (lower.includes('tortelier') || lower.includes('french')) {
-          utterance.lang = 'fr-FR';
-        } else if (lower.includes('allegro') || lower.includes('adagio') || lower.includes('verdi') || lower.includes('domingo')) {
-          utterance.lang = 'it-IT';
-        } else if (lower.includes('kobayashi')) {
-          utterance.lang = 'ja-JP';
-        } else if (lower.includes('klemperer') || lower.includes('beethoven') || lower.includes('bach') || lower.includes('bruch')) {
-          utterance.lang = 'de-DE';
-        } else {
-          utterance.lang = 'en-US';
-        }
-
-        utterance.rate = 0.9;
-
-        utterance.onend = () => {
-          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
-        };
-        utterance.onerror = () => {
-          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
-        };
-
-        window.speechSynthesis.speak(utterance);
-      } else {
-        fetch('/api/pronounce', {
+      try {
+        const res = await fetch('/api/pronounce', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: clean })
-        }).then(r => r.json()).then(d => {
-          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
-        }).catch(() => {
-          if (icon) icon.classList.remove('text-amber-400', 'animate-bounce');
         });
+        const data = await res.json();
+
+        if (res.ok && data.status === 'success' && data.audioB64) {
+          const audio = new Audio(`data:${data.mimeType || 'audio/mp3'};base64,${data.audioB64}`);
+          audio.onplay = () => {
+            if (icon) {
+              icon.classList.remove('animate-spin');
+              icon.classList.add('text-amber-400', 'animate-bounce');
+            }
+          };
+          audio.onended = () => {
+            if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+          };
+          audio.onerror = () => {
+            if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+            fallbackSpeechSynthesis(clean, icon);
+          };
+          await audio.play();
+          return;
+        } else {
+          fallbackSpeechSynthesis(clean, icon);
+        }
+      } catch (err) {
+        console.error('Gemini TTS error:', err);
+        fallbackSpeechSynthesis(clean, icon);
       }
     }
+
+    function fallbackSpeechSynthesis(cleanText, icon) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 0.9;
+        utterance.onend = () => { if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin'); };
+        utterance.onerror = () => { if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin'); };
+        window.speechSynthesis.speak(utterance);
+      } else {
+        if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+      }
+    }
+
 
     let chronicleData = null;
     let selectedEraFilter = 'all';

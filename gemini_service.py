@@ -1,9 +1,11 @@
 import os
 import json
+import base64
 import logging
 from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger("gemini_service")
+
 
 class GeminiVisionService:
     def __init__(self):
@@ -397,4 +399,43 @@ class GeminiVisionService:
             logger.error(f"Error generating AI Chronicle via Gemini 3.6 Flash: {e}")
             return None
 
+    def generate_pronunciation(self, text: str) -> Optional[Dict[str, Any]]:
+        """Generates clear audio pronunciation for composer/album/track name using gemini-3.1-flash-tts-preview."""
+        try:
+            if not self.client:
+                self._init_client()
+
+            from google.genai import types
+            prompt = f"Pronounce clearly and naturally in its native musical language: {text}"
+            
+            response = self.client.models.generate_content(
+                model="gemini-3.1-flash-tts-preview",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name="Puck"
+                            )
+                        )
+                    )
+                )
+            )
+
+            for candidate in (response.candidates or []):
+                for part in (candidate.content.parts or []):
+                    if part.inline_data and part.inline_data.data:
+                        audio_b64 = base64.b64encode(part.inline_data.data).decode('utf-8')
+                        mime_type = part.inline_data.mime_type or "audio/mp3"
+                        return {
+                            "audio_b64": audio_b64,
+                            "mime_type": mime_type
+                        }
+        except Exception as e:
+            logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
+            return None
+        return None
+
 gemini_service = GeminiVisionService()
+

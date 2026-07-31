@@ -107,7 +107,11 @@ class ListeningGuideRequest(BaseModel):
     albumTitle: str
     forceRefresh: Optional[bool] = False
 
+class PronounceRequest(BaseModel):
+    text: str
+
 class FetchCoverRequest(BaseModel):
+
     artist: str
     title: str
     coverUrl: Optional[str] = None
@@ -926,9 +930,24 @@ async def batch_import_route():
         return res
     except Exception as e:
         logger.error(f"Error running batch import: {e}")
-        return {"status": "error", "message": str(e)}
+@app.post("/api/pronounce")
+async def pronounce_endpoint(req: PronounceRequest):
+    if not req.text or not req.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+    
+    clean_text = req.text.strip()
+    result = gemini_service.generate_pronunciation(clean_text)
+    if result and result.get("audio_b64"):
+        return {
+            "status": "success",
+            "audioB64": result["audio_b64"],
+            "mimeType": result.get("mime_type", "audio/mp3")
+        }
+    else:
+        return {"status": "error", "detail": "Failed to generate audio via gemini-3.1-flash-tts-preview"}
 
 if __name__ == "__main__":
+
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
