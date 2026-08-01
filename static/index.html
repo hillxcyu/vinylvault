@@ -101,8 +101,16 @@
     <div id="tabNowSpinning" class="hidden space-y-8">
 
       <!-- "Now Spinning" Hero Widget -->
-      <section id="nowSpinningSection" class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden space-y-6">
+      <section id="nowSpinningSection" class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden space-y-6 border border-stone-800/80 shadow-2xl">
+        <!-- Front Matter Style Atmospheric Cover Background -->
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img id="nowSpinningBgCover" src="" onerror="handleImageError(this)" class="w-full h-full object-cover scale-125 blur-3xl opacity-30 transition-all duration-1000 transform-gpu" />
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/80 to-stone-900/60"></div>
+          <div class="absolute inset-0 bg-stone-950/20 backdrop-blur-sm"></div>
+        </div>
+
         <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+
           <!-- Interactive Spinning Vinyl Record - Click to Launch Camera Scan -->
           <div onclick="openScannerModal()" class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center cursor-pointer group" title="Click to snap photo of currently playing vinyl record!">
             <img id="spinningCover" src="/static/extracted_covers/shopping_cover_2.jpg" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
@@ -1389,11 +1397,15 @@
         if (chatSubtitle) chatSubtitle.innerText = 'Standby Mode - No record spinning';
 
         // Standby / Idle Mode
+        const bgImg = document.getElementById('nowSpinningBgCover');
+        if (bgImg) bgImg.src = SVG_PLACEHOLDER;
+
         document.getElementById('spinningCover').src = SVG_PLACEHOLDER;
         document.getElementById('spinningTitle').innerText = 'No Record Spinning';
         document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
         document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
         document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready';
+
 
         const countryEl = document.getElementById('spinningCountry');
         if (countryEl) countryEl.classList.add('hidden');
@@ -1450,11 +1462,15 @@
       }
 
 
+      const bgImg = document.getElementById('nowSpinningBgCover');
+      if (bgImg) bgImg.src = rec.coverUrl || SVG_PLACEHOLDER;
+
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
       document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
       document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
+
 
       // Update Label Badge
       const labelEl = document.getElementById('spinningLabel');
