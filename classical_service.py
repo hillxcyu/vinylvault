@@ -463,6 +463,7 @@ class ClassicalService:
         }
 
     def _rebuild_ai_chronicle_bg(self, records: List[Dict[str, Any]]):
+
         from database import db
         from gemini_service import gemini_service
 
@@ -482,7 +483,13 @@ class ClassicalService:
 
                 ai_chronicle["totalClassicalRecords"] = len(unique_classical_ids)
                 ai_chronicle["totalRecordsInCrate"] = len(records)
-                ai_chronicle["composerStats"] = self._compute_composer_stats(records)
+                
+                # Sort Gemini's dynamic composerStats chronologically by birth year
+                if ai_chronicle.get("composerStats"):
+                    ai_chronicle["composerStats"].sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
+                else:
+                    ai_chronicle["composerStats"] = self._compute_composer_stats(records)
+
                 db.save_chronicle(ai_chronicle)
                 logger.info(f"Saved fresh Gemini 3.6 Flash AI Chronicle ({len(unique_classical_ids)} classical / {len(records)} total records) to Database/Disk in background.")
         except Exception as e:

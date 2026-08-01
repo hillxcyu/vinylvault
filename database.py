@@ -1135,6 +1135,8 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data_store")
 RECORDS_FILE = os.path.join(DATA_DIR, "records.json")
 SPINS_FILE = os.path.join(DATA_DIR, "spins.json")
 CHRONICLE_FILE = os.path.join(DATA_DIR, "chronicle.json")
+NOW_SPINNING_FILE = os.path.join(DATA_DIR, "now_spinning.json")
+
 
 
 class FirestoreManager:
@@ -1259,6 +1261,38 @@ class FirestoreManager:
         except Exception as e:
             print(f"Firestore save_chronicle error: {e}")
         return False
+
+    def get_now_spinning(self) -> Optional[Dict[str, Any]]:
+        if not self.db:
+            return None
+        try:
+            doc = self.db.collection("metadata").document("now_spinning").get(timeout=2.0)
+            if doc.exists:
+                return doc.to_dict()
+        except Exception as e:
+            print(f"Firestore get_now_spinning warning/timeout: {e}")
+        return None
+
+    def save_now_spinning(self, spinning_data: Dict[str, Any]) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("metadata").document("now_spinning").set(spinning_data)
+            return True
+        except Exception as e:
+            print(f"Firestore save_now_spinning error: {e}")
+        return False
+
+    def clear_now_spinning(self) -> bool:
+        if not self.db:
+            return False
+        try:
+            self.db.collection("metadata").document("now_spinning").delete()
+            return True
+        except Exception as e:
+            print(f"Firestore clear_now_spinning error: {e}")
+        return False
+
 
     def get_listening_guide(self, key: str) -> Optional[Dict[str, Any]]:
         if not self.db:
@@ -1464,6 +1498,47 @@ class VinylDatabase:
         if not hasattr(self, "chronicle") or self.chronicle is None:
             self.chronicle = self._load_chronicle()
         return self.chronicle
+
+    def get_now_spinning(self) -> Optional[Dict[str, Any]]:
+        if self.firestore.db:
+            fs_ns = self.firestore.get_now_spinning()
+            if fs_ns is not None:
+                self.now_spinning = fs_ns.get("nowSpinning")
+                return self.now_spinning
+        if not hasattr(self, "now_spinning") or self.now_spinning is None:
+            self.now_spinning = self._load_now_spinning()
+        return self.now_spinning
+
+    def set_now_spinning(self, record_data: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        now_str = datetime.utcnow().isoformat() + "Z"
+        if record_data:
+            spinning_payload = {
+                "recordId": record_data.get("id"),
+                "startedAt": now_str,
+                "record": record_data
+            }
+            self.now_spinning = spinning_payload
+            self._save_json(NOW_SPINNING_FILE, {"nowSpinning": spinning_payload})
+            if self.firestore.db:
+                self.firestore.save_now_spinning({"nowSpinning": spinning_payload})
+            return spinning_payload
+        else:
+            self.now_spinning = None
+            self._save_json(NOW_SPINNING_FILE, {"nowSpinning": None})
+            if self.firestore.db:
+                self.firestore.clear_now_spinning()
+            return None
+
+    def _load_now_spinning(self) -> Optional[Dict[str, Any]]:
+        if os.path.exists(NOW_SPINNING_FILE):
+            try:
+                with open(NOW_SPINNING_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get("nowSpinning")
+            except Exception as e:
+                print(f"Error reading now_spinning.json: {e}")
+        return None
+
 
 
     def save_records(self):

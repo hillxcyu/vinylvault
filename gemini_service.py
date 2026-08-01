@@ -376,14 +376,27 @@ class GeminiVisionService:
                 "       - \"releaseYear\": number or string\n"
                 "       - \"genre\": string\n"
                 "       - \"coverUrl\": cover URL matching input\n"
-                "       - \"detectedComposer\": composer name (e.g., \"Johann Sebastian Bach\", \"Ludwig van Beethoven\", \"Antonín Dvořák\", \"Pyotr Ilyich Tchaikovsky\")\n"
+                "       - \"detectedComposer\": composer name (e.g., \"Hector Berlioz\", \"Johann Sebastian Bach\", \"Ludwig van Beethoven\", \"Antonín Dvořák\", \"Pyotr Ilyich Tchaikovsky\")\n"
                 "       - \"eraName\": era name\n"
                 "       - \"aiInsight\": a 1-sentence audiophile/musicological insight on why this piece or recording is notable.\n\n"
+                "3. Provide a complete, detailed \"composerStats\" list dynamically extracting EVERY classical composer represented across the collection records (e.g. Hector Berlioz, Felix Mendelssohn, Robert Schumann, Franz Liszt, Jean Sibelius, Gustav Mahler, etc.). Order chronologically by composer birth year. For each composer:\n"
+                "   - \"name\": string (full composer name)\n"
+                "   - \"lifespan\": string (e.g. \"1803 – 1869\")\n"
+                "   - \"country\": string (e.g. \"France\")\n"
+                "   - \"flag\": string emoji (e.g. \"🇫🇷\")\n"
+                "   - \"era\": string (e.g. \"Romantic\")\n"
+                "   - \"highlights\": string (1 short sentence summary)\n"
+                "   - \"bio\": string (2-3 sentence biography)\n"
+                "   - \"innovations\": string (notable musical contributions)\n"
+                "   - \"keyWorks\": array of string key works\n"
+                "   - \"count\": integer count of albums owned for this composer\n"
+                "   - \"albums\": array of album title strings owned in crate\n\n"
                 "Return ONLY a valid JSON object matching this structure:\n"
                 "{\n"
-                '  "totalClassicalRecords": 38,\n'
-                '  "totalRecordsInCrate": 50,\n'
-                '  "eras": [ ... ]\n'
+                '  "totalClassicalRecords": 71,\n'
+                '  "totalRecordsInCrate": 83,\n'
+                '  "eras": [ ... ],\n'
+                '  "composerStats": [ ... ]\n'
                 "}"
             )
 
@@ -411,7 +424,7 @@ class GeminiVisionService:
             return parsed_data
 
         except Exception as e:
-            logger.error(f"Error generating AI Chronicle via Gemini 3.6 Flash: {e}")
+            logger.error(f"Gemini 3.6 Flash generate_chronicle_ai error: {e}")
             return None
 
     def generate_pronunciation(self, text: str) -> Optional[Dict[str, Any]]:
@@ -421,7 +434,7 @@ class GeminiVisionService:
                 self._init_client()
 
             from google.genai import types
-            prompt = f"Pronounce clearly and naturally in its native musical language: {text}"
+            prompt = f"Pronounce clearly and naturally as a composer, album, or track name from a vinyl record: {text}"
             
             response = self.client.models.generate_content(
                 model="gemini-3.1-flash-tts-preview",

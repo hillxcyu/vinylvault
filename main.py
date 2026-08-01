@@ -638,11 +638,37 @@ async def manual_deskew_endpoint(
         "deskewed": True
     }
 
+@app.get("/api/now_spinning")
+async def get_now_spinning():
+    ns = db.get_now_spinning()
+    return {"status": "success", "nowSpinning": ns}
+
+class NowSpinningRequest(BaseModel):
+    recordId: str
+
+@app.post("/api/now_spinning")
+async def set_now_spinning(req: NowSpinningRequest):
+    rec = db.get_record_by_id(req.recordId)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record not found")
+    db.log_spin(req.recordId, "Now spinning interactive update")
+    ns = db.set_now_spinning(rec)
+    return {"status": "success", "nowSpinning": ns}
+
+@app.delete("/api/now_spinning")
+@app.post("/api/stop_spinning")
+async def stop_spinning():
+    db.set_now_spinning(None)
+    return {"status": "success", "nowSpinning": None}
+
 @app.post("/api/spin")
 async def log_spin(req: LogSpinRequest):
     spin_entry = db.log_spin(req.recordId, req.notes or "")
     rec = db.get_record_by_id(req.recordId)
+    if rec:
+        db.set_now_spinning(rec)
     return {"status": "success", "spin": spin_entry, "record": rec}
+
 
 @app.post("/api/records")
 async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
@@ -827,26 +853,29 @@ def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
     all_records = db.get_all_records()
     target_record = None
 
-    clean_a = re.sub(r'[^\w\s]', '', artist.lower())
-    clean_t = re.sub(r'[^\w\s]', '', title.lower())
-    a_tokens = set(w for w in clean_a.split() if len(w) > 2)
-    t_tokens = set(w for w in clean_t.split() if len(w) > 2)
+    # Check active backend now_spinning state first
+    active_ns = db.get_now_spinning()
+    if active_ns and isinstance(active_ns, dict) and active_ns.get("record"):
+        target_record = active_ns.get("record")
 
-    for r in all_records:
-        r_a = re.sub(r'[^\w\s]', '', r.get("artist", "").lower())
-        r_t = re.sub(r'[^\w\s]', '', r.get("title", "").lower())
+    if artist or title:
+        clean_a = re.sub(r'[^\w\s]', '', artist.lower())
+        clean_t = re.sub(r'[^\w\s]', '', title.lower())
+        t_tokens = set(w for w in clean_t.split() if len(w) > 2)
 
-        if clean_t and (clean_t in r_t or r_t in clean_t):
-            target_record = r
-            break
-        
-        r_t_tokens = set(r_t.split())
-        if t_tokens and len(t_tokens.intersection(r_t_tokens)) >= 1:
-            target_record = r
-            break
+        for r in all_records:
+            r_a = re.sub(r'[^\w\s]', '', r.get("artist", "").lower())
+            r_t = re.sub(r'[^\w\s]', '', r.get("title", "").lower())
 
-    if not target_record and len(all_records) > 0:
-        target_record = all_records[0]
+            if clean_t and (clean_t in r_t or r_t in clean_t):
+                target_record = r
+                break
+            
+            r_t_tokens = set(r_t.split())
+            if t_tokens and len(t_tokens.intersection(r_t_tokens)) >= 1:
+                target_record = r
+                break
+
 
     safe_key = f"{sanitize_cache_key(artist)}_{sanitize_cache_key(title)}.json"
     cache_path = os.path.join(GUIDE_CACHE_DIR, safe_key)
