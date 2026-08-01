@@ -1162,13 +1162,16 @@ class FirestoreManager:
         if not self.db:
             return None
         try:
-            docs = self.db.collection("records").limit(500).stream(timeout=10)
-            records = [d.to_dict() for d in docs]
+            docs = self.db.collection("records").get(timeout=2.0)
+            records = [d.to_dict() for d in docs if d.exists and d.to_dict()]
             print(f"Loaded {len(records)} records from GCP Firestore.")
             return records
         except Exception as e:
-            print(f"Firestore get_records error: {e}")
+            print(f"Firestore get_records warning/timeout (using local fallback): {e}")
             return None
+
+
+
 
 
 
@@ -1240,11 +1243,11 @@ class FirestoreManager:
         if not self.db:
             return None
         try:
-            doc = self.db.collection("metadata").document("chronicle").get()
+            doc = self.db.collection("metadata").document("chronicle").get(timeout=2.0)
             if doc.exists:
                 return doc.to_dict()
         except Exception as e:
-            print(f"Firestore get_chronicle error: {e}")
+            print(f"Firestore get_chronicle warning/timeout (using local fallback): {e}")
         return None
 
     def save_chronicle(self, chronicle_data: Dict[str, Any]) -> bool:
@@ -1315,14 +1318,14 @@ class VinylDatabase:
         self.chronicle = self._load_chronicle()
 
     def ensure_firestore_synced(self):
-        """Lazy-syncs Firestore on demand when /api/records is called."""
+        """Lazy-syncs Firestore in a non-blocking background thread when /api/records is called."""
         if self._has_synced_firestore:
             return
         self._has_synced_firestore = True
-        self.sync_firestore_on_startup()
+        import threading
+        threading.Thread(target=self.sync_firestore_on_startup, daemon=True).start()
 
     def sync_firestore_on_startup(self):
-
         """Non-blocking background sync called after web server binds to PORT."""
         if not self.firestore.db:
             print("Firestore client unavailable; skipping startup sync.")
@@ -1345,6 +1348,7 @@ class VinylDatabase:
                 self.save_records()
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
+
 
     def _load_records(self) -> List[Dict[str, Any]]:
         loaded = []
@@ -1448,11 +1452,19 @@ class VinylDatabase:
     def save_chronicle(self, chronicle_data: Dict[str, Any]):
         self.chronicle = chronicle_data
         self._save_json(CHRONICLE_FILE, chronicle_data)
+        if self.firestore.db:
+            self.firestore.save_chronicle(chronicle_data)
 
     def get_chronicle(self) -> Optional[Dict[str, Any]]:
+        if self.firestore.db:
+            fs_chronicle = self.firestore.get_chronicle()
+            if fs_chronicle and isinstance(fs_chronicle, dict) and fs_chronicle.get("totalClassicalRecords", 0) > 0:
+                self.chronicle = fs_chronicle
+                return fs_chronicle
         if not hasattr(self, "chronicle") or self.chronicle is None:
             self.chronicle = self._load_chronicle()
         return self.chronicle
+
 
     def save_records(self):
         self._save_json(RECORDS_FILE, self.records)
