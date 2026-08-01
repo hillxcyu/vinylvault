@@ -850,28 +850,31 @@ def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
     all_records = db.get_all_records()
     target_record = None
 
-    # Check active backend now_spinning state first
+    # Priority 1: Check active backend now_spinning state first
     active_ns = db.get_now_spinning()
     if active_ns and isinstance(active_ns, dict) and active_ns.get("record"):
         target_record = active_ns.get("record")
 
-    if artist or title:
-        clean_a = re.sub(r'[^\w\s]', '', artist.lower())
-        clean_t = re.sub(r'[^\w\s]', '', title.lower())
-        t_tokens = set(w for w in clean_t.split() if len(w) > 2)
+    # Priority 2: Match by exact or strong artist/title if no record is currently spinning
+    if not target_record and (artist or title):
+        clean_a = re.sub(r'[^\w\s]', '', (artist or "").lower())
+        clean_t = re.sub(r'[^\w\s]', '', (title or "").lower())
 
         for r in all_records:
             r_a = re.sub(r'[^\w\s]', '', r.get("artist", "").lower())
             r_t = re.sub(r'[^\w\s]', '', r.get("title", "").lower())
 
-            if clean_t and (clean_t in r_t or r_t in clean_t):
+            if clean_a and clean_t and (clean_a in r_a or r_a in clean_a) and (clean_t in r_t or r_t in clean_t):
                 target_record = r
                 break
-            
-            r_t_tokens = set(r_t.split())
-            if t_tokens and len(t_tokens.intersection(r_t_tokens)) >= 1:
-                target_record = r
-                break
+
+        if not target_record and clean_t and len(clean_t) > 3:
+            for r in all_records:
+                r_t = re.sub(r'[^\w\s]', '', r.get("title", "").lower())
+                if clean_t in r_t or r_t in clean_t:
+                    target_record = r
+                    break
+
 
 
     safe_key = f"{sanitize_cache_key(artist)}_{sanitize_cache_key(title)}.json"

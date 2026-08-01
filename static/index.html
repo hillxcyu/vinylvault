@@ -1780,11 +1780,8 @@
       const msg = input.value.trim();
       if (!msg) return;
 
-      if (!currentSpinning && allRecords.length > 0) {
-        updateNowSpinningUI(allRecords[0]);
-      }
-
       const activeRec = currentSpinning || { artist: 'Classical / Vinyl', title: 'Vinyl Vault Collection' };
+
 
       const chatLog = document.getElementById('chatLog');
       
