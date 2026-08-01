@@ -15,7 +15,9 @@ class GeminiVisionService:
         self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
         self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
         self.client = None
+        self._pronunciation_cache = {}
         self._init_client()
+
 
 
     def _init_client(self):
@@ -428,7 +430,15 @@ class GeminiVisionService:
             return None
 
     def generate_pronunciation(self, text: str) -> Optional[Dict[str, Any]]:
-        """Generates clear audio pronunciation for composer/album/track name using gemini-3.1-flash-tts-preview."""
+        """Generates clear audio pronunciation for composer/album/track name using gemini-3.1-flash-tts-preview with in-memory caching."""
+        if not text or not text.strip():
+            return None
+
+        cache_key = text.strip().lower()
+        if cache_key in self._pronunciation_cache:
+            logger.info(f"Serving cached pronunciation audio for '{cache_key}'")
+            return self._pronunciation_cache[cache_key]
+
         try:
             if not self.client:
                 self._init_client()
@@ -473,16 +483,19 @@ class GeminiVisionService:
                         
                         wav_bytes = wav_io.getvalue()
                         audio_b64 = base64.b64encode(wav_bytes).decode('utf-8')
-                        return {
+                        result = {
                             "audio_b64": audio_b64,
                             "mime_type": "audio/wav",
                             "model": "gemini-3.1-flash-tts-preview",
                             "voice": "Aoede"
                         }
+                        self._pronunciation_cache[cache_key] = result
+                        return result
         except Exception as e:
             logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
             return {"error": str(e)}
         return {"error": "No audio parts returned from gemini-3.1-flash-tts-preview"}
+
 
 
 
