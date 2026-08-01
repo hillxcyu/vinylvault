@@ -1164,13 +1164,14 @@ class FirestoreManager:
         if not self.db:
             return None
         try:
-            docs = self.db.collection("records").get(timeout=2.0)
+            docs = self.db.collection("records").get(timeout=10.0)
             records = [d.to_dict() for d in docs if d.exists and d.to_dict()]
             print(f"Loaded {len(records)} records from GCP Firestore.")
             return records
         except Exception as e:
             print(f"Firestore get_records warning/timeout (using local fallback): {e}")
             return None
+
 
 
 

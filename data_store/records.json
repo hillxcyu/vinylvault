@@ -1,2381 +1,2667 @@
 [
   {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_80726e4f.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_80726e4f.jpg",
+    "label": "Erato",
+    "title": "Symphonie Fantastique, Op. 14",
+    "id": "rec-user-5b7bd5f2",
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 3,
     "artist": "Hector Berlioz / Orchestre Philharmonique de Strasbourg / Alain Lombard",
     "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T10:11:44.895309Z",
     "pressings": [
       {
-        "formatDetails": "Standard Vinyl Pressing",
-        "id": "press-temp-1785551981053",
-        "country": "Japan",
         "recordId": "temp-1785551981053",
-        "catalogNumber": "ERA-2009",
-        "label": "Erato"
+        "id": "press-temp-1785551981053",
+        "label": "Erato",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "ERA-2009"
       }
     ],
-    "createdAt": "2026-08-01T02:40:04.868320Z",
-    "title": "Symphonie Fantastique, Op. 14",
     "releaseYear": 1974,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_80726e4f.jpg",
-    "spinsCount": 0,
-    "country": "Japan",
-    "id": "rec-user-5b7bd5f2",
-    "label": "Erato",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_80726e4f.jpg",
-    "catalogNumber": "ERA-2009",
-    "formatDetails": "Standard Vinyl LP"
+    "createdAt": "2026-08-01T02:40:04.868320Z",
+    "catalogNumber": "ERA-2009"
   },
   {
+    "artist": "Friedrich Gulda",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_9.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "label": "Columbia / Amadeo",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T10:33:11.092109Z",
+    "id": "rec-webarchive-008",
     "pressings": [
       {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-008",
-        "catalogNumber": "IMP-2026-008",
         "recordId": "rec-webarchive-008",
+        "id": "press-webarchive-008",
         "releaseYear": 1968,
+        "label": "Decca / Amadeo Pressing",
         "country": "US / Japan",
-        "label": "Decca / Amadeo Pressing"
+        "formatDetails": "12\" Mastered LP",
+        "catalogNumber": "IMP-2026-008"
       }
     ],
-    "country": "Japan",
-    "createdAt": "2026-07-14T07:30:00Z",
-    "lastSpunAt": "2026-07-31T08:42:22.156356Z",
     "title": "Beethoven: 32 Klaviersonaten Vol. 11 (Sonate für Klavier Nr. 31 As-dur Op. 110 / Nr. 32 c-moll Op. 111)",
     "releaseYear": 1963,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_9.jpg",
-    "spinsCount": 32,
-    "artist": "Friedrich Gulda",
-    "id": "rec-webarchive-008",
-    "catalogNumber": "OS-2635-AD",
-    "genre": "Classical",
-    "label": "Columbia / Amadeo"
+    "spinsCount": 34,
+    "country": "Japan",
+    "catalogNumber": "OS-2635-AD"
   },
   {
-    "pressings": [
-      {
-        "catalogNumber": "LPX 11519",
-        "id": "press-temp-1785490709497",
-        "formatDetails": "Standard Vinyl Pressing",
-        "recordId": "temp-1785490709497",
-        "country": "Hungary",
-        "label": "Hungaroton"
-      }
-    ],
-    "country": "Hungary",
-    "artist": "Béla Bartók; Male Choir of the Hungarian People's Army, Zoltán Vásárhelyi, Slovak Philharmonic Choir, Miklós Szabó",
-    "label": "Hungaroton",
-    "title": "Complete Edition: Choral Works (Four Old Hungarian Folk Songs / Slovak Folk Songs / Four Slovak Folk Songs / Hungarian Folk Songs / Székely Songs / From Olden Times)",
-    "releaseYear": 1971,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_87e72fb5.jpg",
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_87e72fb5.jpg",
-    "catalogNumber": "LPX 11519",
+    "label": "Hungaroton",
+    "title": "Complete Edition: Choral Works (Four Old Hungarian Folk Songs / Slovak Folk Songs / Four Slovak Folk Songs / Hungarian Folk Songs / Székely Songs / From Olden Times)",
     "id": "rec-user-d385ab28",
+    "spinsCount": 1,
     "formatDetails": "Standard Vinyl LP",
-    "spinsCount": 0,
+    "country": "Hungary",
+    "artist": "Béla Bartók; Male Choir of the Hungarian People's Army, Zoltán Vásárhelyi, Slovak Philharmonic Choir, Miklós Szabó",
     "genre": "Modern Classical / Choral",
-    "createdAt": "2026-07-31T09:39:01.758333Z"
-  },
-  {
+    "lastSpunAt": "2026-08-01T10:33:23.037506Z",
     "pressings": [
       {
+        "recordId": "temp-1785490709497",
+        "id": "press-temp-1785490709497",
+        "label": "Hungaroton",
+        "country": "Hungary",
         "formatDetails": "Standard Vinyl Pressing",
-        "id": "press-temp-1785468850320",
-        "catalogNumber": "MZ 5013",
-        "recordId": "temp-1785468850320",
-        "country": "Japan",
-        "label": "London Records"
+        "catalogNumber": "LPX 11519"
       }
     ],
-    "catalogNumber": "MZ 5013",
-    "artist": "Bruno Walter / The Vienna Philharmonic Orchestra / Julius Patzak / Kathleen Ferrier",
-    "lastSpunAt": "2026-07-31T08:16:27.961527Z",
-    "country": "Japan",
-    "releaseYear": 1969,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fcdf3892.jpg",
-    "formatDetails": "Standard Vinyl LP",
-    "createdAt": "2026-07-31T03:34:11.971112Z",
-    "title": "Mahler: Das Lied Von Der Erde",
-    "spinsCount": 3,
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fcdf3892.jpg",
-    "id": "rec-user-166",
-    "genre": "Classical",
-    "label": "London Records"
+    "releaseYear": 1971,
+    "createdAt": "2026-07-31T09:39:01.758333Z",
+    "catalogNumber": "LPX 11519"
   },
   {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fcdf3892.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fcdf3892.jpg",
+    "label": "London Records",
+    "id": "rec-user-166",
+    "title": "Mahler: Das Lied Von Der Erde",
+    "country": "Japan",
+    "spinsCount": 3,
+    "formatDetails": "Standard Vinyl LP",
+    "artist": "Bruno Walter / The Vienna Philharmonic Orchestra / Julius Patzak / Kathleen Ferrier",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T08:16:27.961527Z",
+    "pressings": [
+      {
+        "recordId": "temp-1785468850320",
+        "id": "press-temp-1785468850320",
+        "label": "London Records",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "MZ 5013"
+      }
+    ],
+    "releaseYear": 1969,
+    "createdAt": "2026-07-31T03:34:11.971112Z",
+    "catalogNumber": "MZ 5013"
+  },
+  {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_63e87bf8.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_63e87bf8.jpg",
+    "label": "Deutsche Grammophon",
+    "id": "rec-user-593db049",
+    "title": "Beethoven: Piano Sonatas 1 (Nos. 1, 19, 12 & 20)",
+    "country": "Japan",
+    "spinsCount": 1,
+    "formatDetails": "Standard Vinyl LP",
     "artist": "Wilhelm Kempff",
     "genre": "Classical",
+    "lastSpunAt": "2026-08-01T09:46:56.594736Z",
     "pressings": [
       {
-        "formatDetails": "Standard Vinyl Pressing",
-        "id": "press-temp-1785551484595",
-        "country": "Japan",
         "recordId": "temp-1785551484595",
-        "catalogNumber": "MG 2357",
-        "label": "Deutsche Grammophon"
+        "id": "press-temp-1785551484595",
+        "label": "Deutsche Grammophon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "MG 2357"
       }
     ],
-    "createdAt": "2026-08-01T02:31:50.001413Z",
-    "title": "Beethoven: Piano Sonatas 1 (Nos. 1, 19, 12 & 20)",
     "releaseYear": 1975,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_63e87bf8.jpg",
-    "spinsCount": 0,
-    "country": "Japan",
-    "id": "rec-user-593db049",
-    "label": "Deutsche Grammophon",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_63e87bf8.jpg",
-    "catalogNumber": "MG 2357",
-    "formatDetails": "Standard Vinyl LP"
+    "createdAt": "2026-08-01T02:31:50.001413Z",
+    "catalogNumber": "MG 2357"
   },
   {
+    "artist": "Boston Symphony Orchestra, Seiji Ozawa, Joseph Silverstein",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_9e2cc15d.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_9e2cc15d.jpg",
     "country": "Europe",
-    "catalogNumber": "6514 222",
+    "label": "Philips",
+    "genre": "Classical Orchestral",
+    "createdAt": "2026-07-31T10:38:19.955724Z",
+    "title": "Richard Strauss: Ein Heldenleben, Op. 40",
     "pressings": [
       {
-        "label": "Philips",
-        "id": "press-temp-1785494280467",
-        "catalogNumber": "6514 222",
         "recordId": "temp-1785494280467",
+        "id": "press-temp-1785494280467",
+        "label": "Philips",
+        "formatDetails": "Standard Vinyl Pressing",
         "country": "Europe",
-        "formatDetails": "Standard Vinyl Pressing"
+        "catalogNumber": "6514 222"
       }
     ],
-    "label": "Philips",
-    "title": "Richard Strauss: Ein Heldenleben, Op. 40",
-    "releaseYear": 1982,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_9e2cc15d.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_9e2cc15d.jpg",
-    "spinsCount": 0,
     "id": "rec-user-240450f5",
-    "artist": "Boston Symphony Orchestra, Seiji Ozawa, Joseph Silverstein",
-    "createdAt": "2026-07-31T10:38:19.955724Z",
-    "genre": "Classical Orchestral",
-    "formatDetails": "Standard Vinyl LP"
+    "releaseYear": 1982,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "6514 222"
   },
   {
-    "catalogNumber": "H-4359V",
+    "artist": "Rena Kyriakou",
+    "country": "Japan",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/user_cover_1f4bee2e.jpg",
+    "createdAt": "2026-07-29T12:33:39.587059Z",
+    "label": "Vox",
     "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP",
     "lastSpunAt": "2026-07-31T02:21:39.143099Z",
+    "id": "rec-user-162",
+    "pressings": [
+      {
+        "recordId": "rec-user-162",
+        "id": "press-rec-user-162",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "H-4542-V"
+      }
+    ],
     "title": "Piano Music (Complete) Vol. 3: Preludes and Fugues",
     "releaseYear": 1963,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/user_cover_1f4bee2e.jpg",
+    "formatDetails": "Standard Vinyl LP",
     "spinsCount": 17,
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-162",
-        "recordId": "rec-user-162",
-        "catalogNumber": "H-4542-V",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "id": "rec-user-162",
-    "artist": "Rena Kyriakou",
-    "createdAt": "2026-07-29T12:33:39.587059Z",
-    "country": "Japan",
-    "label": "Vox"
+    "catalogNumber": "H-4359V"
   },
   {
-    "genre": "Opera",
-    "country": "Italy",
-    "createdAt": "2026-07-14T07:30:00Z",
-    "lastSpunAt": "2026-07-31T08:44:25.983681Z",
-    "title": "Domingo a Verdi",
-    "releaseYear": 1983,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_5.jpg",
-    "spinsCount": 17,
     "artist": "Plácido Domingo",
+    "createdAt": "2026-07-14T07:30:00Z",
     "id": "rec-webarchive-004",
     "catalogNumber": "VLS 45506",
+    "label": "RCA",
+    "genre": "Opera",
+    "lastSpunAt": "2026-07-31T08:44:25.983681Z",
+    "title": "Domingo a Verdi",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-004",
+        "id": "press-webarchive-004",
+        "releaseYear": 1974,
+        "label": "RCA Red Seal Half-Speed Master",
+        "country": "US / Japan",
+        "formatDetails": "12\" Mastered LP",
+        "catalogNumber": "IMP-2026-004"
+      }
+    ],
     "listeningGuide": {
+      "vinylTip": "Italian RCA Half-Speed Mastered pressings benefit from careful cleaning to reduce surface noise in quieter passages. Play using a microline or fine-line stylus to fully appreciate the extended high-frequency response and orchestra instrument separation captured during the half-speed cutting process.",
       "tracklist": [
         {
-          "duration": "4:25",
+          "position": "A1",
           "highlight": true,
           "title": "Aida: Celeste Aida",
-          "position": "A1",
-          "whatToListenFor": "Listen for Domingo's seamless legato phrasing and warm, resonant middle register, floating the taxing high Bb with heroic projection."
+          "whatToListenFor": "Listen for Domingo's seamless legato phrasing and warm, resonant middle register, floating the taxing high Bb with heroic projection.",
+          "duration": "4:25"
         },
         {
-          "duration": "2:20",
+          "position": "A2",
           "highlight": false,
           "title": "Rigoletto: La donna è mobile",
-          "position": "A2",
-          "whatToListenFor": "Rhythmic buoyancy and effortless vocal charm in the Duke of Mantua's famous canzone."
+          "whatToListenFor": "Rhythmic buoyancy and effortless vocal charm in the Duke of Mantua's famous canzone.",
+          "duration": "2:20"
         },
         {
-          "duration": "5:15",
+          "position": "A3",
           "highlight": true,
           "title": "Luisa Miller: Quando le sere al placido",
-          "position": "A3",
-          "whatToListenFor": "Tragic nuance and melancholic expressive control in Rodolfo's romantic lament."
+          "whatToListenFor": "Tragic nuance and melancholic expressive control in Rodolfo's romantic lament.",
+          "duration": "5:15"
         },
         {
-          "duration": "3:30",
+          "position": "A4",
           "highlight": false,
           "title": "Il Trovatore: Ah! sì, ben mio",
-          "position": "A4",
-          "whatToListenFor": "Noble lyricism and sustained breath support framing Manrico's pre-battle aria to Leonora."
+          "whatToListenFor": "Noble lyricism and sustained breath support framing Manrico's pre-battle aria to Leonora.",
+          "duration": "3:30"
         },
         {
-          "duration": "2:40",
+          "position": "A5",
           "highlight": false,
           "title": "Simon Boccanegra: Sento avvampare nell'anima",
-          "position": "A5",
-          "whatToListenFor": "Fiery emotional outbursts and sharp diction illustrating Gabriele Adorno's jealousy and anguish."
+          "whatToListenFor": "Fiery emotional outbursts and sharp diction illustrating Gabriele Adorno's jealousy and anguish.",
+          "duration": "2:40"
         },
         {
-          "duration": "6:10",
+          "position": "B1",
           "highlight": true,
           "title": "La Forza del Destino: O tu che in seno agli angeli",
-          "position": "B1",
-          "whatToListenFor": "The poignant woodwind solo intro leading into Don Alvaro's demanding, emotionally charged scene."
+          "whatToListenFor": "The poignant woodwind solo intro leading into Don Alvaro's demanding, emotionally charged scene.",
+          "duration": "6:10"
         },
         {
-          "duration": "3:50",
+          "position": "B2",
           "highlight": false,
           "title": "La Traviata: Lunge da lei... De' miei bollenti spiriti",
-          "position": "B2",
-          "whatToListenFor": "Youthful ardent tone depicting Alfredo's romantic joy in the opening of Act II."
+          "whatToListenFor": "Youthful ardent tone depicting Alfredo's romantic joy in the opening of Act II.",
+          "duration": "3:50"
         },
         {
-          "duration": "4:45",
+          "position": "B3",
           "highlight": false,
           "title": "I Vespri Siciliani: Giorno di pianto",
-          "position": "B3",
-          "whatToListenFor": "Deeply expressive dramatic weight and dynamic control in Arrigo's poignant aria."
+          "whatToListenFor": "Deeply expressive dramatic weight and dynamic control in Arrigo's poignant aria.",
+          "duration": "4:45"
         },
         {
-          "duration": "4:50",
+          "position": "B4",
           "highlight": true,
           "title": "Un Ballo in Maschera: Ma se m'è forza perderti",
-          "position": "B4",
-          "whatToListenFor": "Riccardo's solemn farewell aria, featuring Domingo's masterful balance of vocal power and heartbreaking tenderness."
+          "whatToListenFor": "Riccardo's solemn farewell aria, featuring Domingo's masterful balance of vocal power and heartbreaking tenderness.",
+          "duration": "4:50"
         }
       ],
-      "albumBackground": "This compilation album captures Spanish tenor Plácido Domingo at the zenith of his vocal prowess, performing iconic tenor arias from the master of Italian opera, Giuseppe Verdi. Issued by RCA Italy as part of their acclaimed 'First Class Opera Series', the release highlights legendary studio recordings featuring world-class accompaniment from orchestras such as the London Symphony Orchestra and New Philharmonia Orchestra under conductors like Erich Leinsdorf and Zubin Mehta.\n\nCut using RCA's precision Half-Speed Mastering technique, the pressings in this Italian series are highly regarded by operatic vinyl collectors for their clean transfer, expansive acoustic soundstage, and enhanced high-frequency detail. Domingo's legendary stamina, rich baritonal timbre, and dramatic intensity across Verdi's challenging repertoire—from the lyric grace of 'La Traviata' to the heroic demands of 'Aida' and 'Il Trovatore'—make this an exemplary single-disc survey of dramatic tenor art.",
-      "vinylTip": "Italian RCA Half-Speed Mastered pressings benefit from careful cleaning to reduce surface noise in quieter passages. Play using a microline or fine-line stylus to fully appreciate the extended high-frequency response and orchestra instrument separation captured during the half-speed cutting process.",
-      "recommendedMood": "Ideal for a sophisticated evening of classical listening, accompanied by a glass of full-bodied Italian red wine."
+      "recommendedMood": "Ideal for a sophisticated evening of classical listening, accompanied by a glass of full-bodied Italian red wine.",
+      "albumBackground": "This compilation album captures Spanish tenor Plácido Domingo at the zenith of his vocal prowess, performing iconic tenor arias from the master of Italian opera, Giuseppe Verdi. Issued by RCA Italy as part of their acclaimed 'First Class Opera Series', the release highlights legendary studio recordings featuring world-class accompaniment from orchestras such as the London Symphony Orchestra and New Philharmonia Orchestra under conductors like Erich Leinsdorf and Zubin Mehta.\n\nCut using RCA's precision Half-Speed Mastering technique, the pressings in this Italian series are highly regarded by operatic vinyl collectors for their clean transfer, expansive acoustic soundstage, and enhanced high-frequency detail. Domingo's legendary stamina, rich baritonal timbre, and dramatic intensity across Verdi's challenging repertoire—from the lyric grace of 'La Traviata' to the heroic demands of 'Aida' and 'Il Trovatore'—make this an exemplary single-disc survey of dramatic tenor art."
     },
-    "pressings": [
-      {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-004",
-        "catalogNumber": "IMP-2026-004",
-        "recordId": "rec-webarchive-004",
-        "releaseYear": 1974,
-        "country": "US / Japan",
-        "label": "RCA Red Seal Half-Speed Master"
-      }
-    ],
-    "label": "RCA"
+    "releaseYear": 1983,
+    "spinsCount": 17,
+    "country": "Italy",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_5.jpg"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "SMG-2107",
-    "pressings": [
-      {
-        "label": "Deutsche Grammophon",
-        "id": "press-temp-1785494155847",
-        "catalogNumber": "SMG-2107",
-        "recordId": "temp-1785494155847",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "Deutsche Grammophon",
-    "title": "String Quartet No. 3-4",
-    "releaseYear": 1961,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7e9806d9.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7e9806d9.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-03367160",
     "artist": "Hungarian Quartet / Béla Bartók",
-    "createdAt": "2026-07-31T10:36:18.247212Z",
-    "genre": "Chamber Music",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7e9806d9.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7e9806d9.jpg",
     "country": "Japan",
-    "catalogNumber": "K15C-8088",
-    "label": "London Records",
-    "lastSpunAt": "2026-07-31T07:24:14.228473Z",
-    "title": "Brahms: Piano Concerto No. 1 in D Minor, Op. 15",
-    "releaseYear": 1980,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_11.jpg",
-    "spinsCount": 2,
+    "label": "Deutsche Grammophon",
+    "genre": "Chamber Music",
+    "createdAt": "2026-07-31T10:36:18.247212Z",
+    "title": "String Quartet No. 3-4",
     "pressings": [
       {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-010",
-        "catalogNumber": "IMP-2026-010",
+        "recordId": "temp-1785494155847",
+        "id": "press-temp-1785494155847",
+        "label": "Deutsche Grammophon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "SMG-2107"
+      }
+    ],
+    "id": "rec-user-03367160",
+    "releaseYear": 1961,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "SMG-2107"
+  },
+  {
+    "artist": "Sir Clifford Curzon, George Szell, London Symphony Orchestra",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_11.jpg",
+    "title": "Brahms: Piano Concerto No. 1 in D Minor, Op. 15",
+    "spinsCount": 2,
+    "label": "London Records",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-07-31T07:24:14.228473Z",
+    "id": "rec-webarchive-010",
+    "pressings": [
+      {
         "recordId": "rec-webarchive-010",
+        "id": "press-webarchive-010",
+        "formatDetails": "12\" Mastered LP",
         "releaseYear": 1962,
         "country": "US / Japan",
-        "label": "Decca / London Records"
+        "label": "Decca / London Records",
+        "catalogNumber": "IMP-2026-010"
       }
     ],
-    "id": "rec-webarchive-010",
-    "artist": "Sir Clifford Curzon, George Szell, London Symphony Orchestra",
     "listeningGuide": {
+      "vinylTip": "Japanese King Record pressings from the 1980s feature silent vinyl surfaces with flat pressings. Ensure your phono stage dynamic headroom is sufficient, as the sudden orchestral fortissimo climaxes in the first movement can easily clip or strain underpowered systems.",
       "tracklist": [
         {
-          "duration": "22:15",
+          "position": "A1",
           "highlight": true,
           "title": "Piano Concerto No. 1 in D minor, Op. 15 - I. Maestoso",
-          "position": "A1",
-          "whatToListenFor": "Listen for the opening orchestral trill and explosive timpani roll under Szell's intense direction, followed by Curzon's understated yet deeply emotional initial entry, balancing turbulent passion with classical poise."
+          "whatToListenFor": "Listen for the opening orchestral trill and explosive timpani roll under Szell's intense direction, followed by Curzon's understated yet deeply emotional initial entry, balancing turbulent passion with classical poise.",
+          "duration": "22:15"
         },
         {
-          "duration": "14:10",
+          "position": "B1",
           "highlight": true,
           "title": "Piano Concerto No. 1 in D minor, Op. 15 - II. Adagio",
-          "position": "B1",
-          "whatToListenFor": "A serene, hymn-like movement inscribed by Brahms as a portrait of Clara Schumann ('Benedictus qui venit in nomine Domini'). Curzon's delicate touch and subtle rubato shine against muted strings and warm bassoons."
+          "whatToListenFor": "A serene, hymn-like movement inscribed by Brahms as a portrait of Clara Schumann ('Benedictus qui venit in nomine Domini'). Curzon's delicate touch and subtle rubato shine against muted strings and warm bassoons.",
+          "duration": "14:10"
         },
         {
-          "duration": "12:05",
+          "position": "B2",
           "highlight": false,
           "title": "Piano Concerto No. 1 in D minor, Op. 15 - III. Rondo: Allegro non troppo",
-          "position": "B2",
-          "whatToListenFor": "Rhythmic vigor and contrapuntal energy propel this finale. Pay close attention to the intricate fugal section in the development and Curzon's fiery cadenza leading into the exuberant major-key coda."
+          "whatToListenFor": "Rhythmic vigor and contrapuntal energy propel this finale. Pay close attention to the intricate fugal section in the development and Curzon's fiery cadenza leading into the exuberant major-key coda.",
+          "duration": "12:05"
         }
       ],
-      "albumBackground": "Johannes Brahms conceived his Piano Concerto No. 1 in D minor, Op. 15, during a period of severe personal turmoil following the tragic mental breakdown and suicide attempt of his mentor, Robert Schumann, in 1854. Originally sketched as a two-piano sonata and later drafted as a symphony, the work eventually evolved into a monumental piano concerto. Its dramatic weight, thunderous timpani rolls, and symphonic integration between soloist and orchestra challenged traditional 19th-century concerto forms, establishing Brahms as a formidable master of large-scale musical drama.\n\nThis iconic 1962 performance recorded at Kingsway Hall, London, reunited English pianist Sir Clifford Curzon with conductor George Szell leading the London Symphony Orchestra. Produced by Decca's legendary team (engineered by Kenneth Wilkinson and produced by John Culshaw), the recording captures Szell's legendary discipline and structural clarity alongside Curzon's poetic depth and tonal subtlety. It is widely recognized as one of the definitive stereo accounts of the Brahms First Piano Concerto.\n\nThis specific Japanese LP pressing (catalog number K15C-8088) was issued in 1980 by King Record Co., Ltd. as part of the budget-friendly yet audio-grade 'Classic Library 1500' series. Pressed on quiet, high-grade Japanese vinyl with master tapes derived from Decca's Full Frequency Stereo Sound (FFSS) catalog, this release offers exceptionally clean backgrounds, deep dynamic impact, and vibrant acoustic atmosphere.",
-      "vinylTip": "Japanese King Record pressings from the 1980s feature silent vinyl surfaces with flat pressings. Ensure your phono stage dynamic headroom is sufficient, as the sudden orchestral fortissimo climaxes in the first movement can easily clip or strain underpowered systems.",
-      "recommendedMood": "Intense, dramatic, majestic, and introspective—ideal for focused, late-evening listening."
+      "recommendedMood": "Intense, dramatic, majestic, and introspective—ideal for focused, late-evening listening.",
+      "albumBackground": "Johannes Brahms conceived his Piano Concerto No. 1 in D minor, Op. 15, during a period of severe personal turmoil following the tragic mental breakdown and suicide attempt of his mentor, Robert Schumann, in 1854. Originally sketched as a two-piano sonata and later drafted as a symphony, the work eventually evolved into a monumental piano concerto. Its dramatic weight, thunderous timpani rolls, and symphonic integration between soloist and orchestra challenged traditional 19th-century concerto forms, establishing Brahms as a formidable master of large-scale musical drama.\n\nThis iconic 1962 performance recorded at Kingsway Hall, London, reunited English pianist Sir Clifford Curzon with conductor George Szell leading the London Symphony Orchestra. Produced by Decca's legendary team (engineered by Kenneth Wilkinson and produced by John Culshaw), the recording captures Szell's legendary discipline and structural clarity alongside Curzon's poetic depth and tonal subtlety. It is widely recognized as one of the definitive stereo accounts of the Brahms First Piano Concerto.\n\nThis specific Japanese LP pressing (catalog number K15C-8088) was issued in 1980 by King Record Co., Ltd. as part of the budget-friendly yet audio-grade 'Classic Library 1500' series. Pressed on quiet, high-grade Japanese vinyl with master tapes derived from Decca's Full Frequency Stereo Sound (FFSS) catalog, this release offers exceptionally clean backgrounds, deep dynamic impact, and vibrant acoustic atmosphere."
     },
-    "genre": "Classical Orchestral",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1980,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "country": "Japan",
+    "catalogNumber": "K15C-8088"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "X-7696",
-    "label": "Philips",
-    "lastSpunAt": "2026-07-31T07:25:30.081501Z",
-    "title": "Sibelius: Symphony No. 2 in D Major, Op. 43",
-    "releaseYear": 1976,
+    "artist": "Sir Colin Davis, Boston Symphony Orchestra",
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_15.jpg",
-    "spinsCount": 13,
+    "title": "Sibelius: Symphony No. 2 in D Major, Op. 43",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "label": "Philips",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T09:02:23.165807Z",
+    "id": "rec-webarchive-014",
     "pressings": [
       {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-014",
-        "catalogNumber": "IMP-2026-014",
         "recordId": "rec-webarchive-014",
+        "id": "press-webarchive-014",
+        "label": "Philips R-Release",
         "releaseYear": 1976,
         "country": "US / Japan",
-        "label": "Philips R-Release"
+        "formatDetails": "12\" Mastered LP",
+        "catalogNumber": "IMP-2026-014"
       }
     ],
-    "id": "rec-webarchive-014",
-    "artist": "Sir Colin Davis, Boston Symphony Orchestra",
     "listeningGuide": {
+      "vinylTip": "Nippon Phonogram Japanese pressings on Philips vinyl are celebrated for ultra-quiet surfaces. Pay close attention to cartridge alignment and tracking weight to best reproduce the thunderous brass climaxes and subtle low-frequency string pizzicatos without inner groove tracking distortion.",
       "tracklist": [
         {
-          "duration": "9:43",
+          "position": "A1",
           "highlight": true,
           "title": "I. Allegretto - Poco allegro - Tranquillo, ma poco a poco ravvivando il tempo al allegro",
-          "position": "A1",
-          "whatToListenFor": "The rhythmic three-note pulse in the strings that grows into expansive, pastoral wind motifs and sweeping orchestral waves [2.2.1]."
+          "whatToListenFor": "The rhythmic three-note pulse in the strings that grows into expansive, pastoral wind motifs and sweeping orchestral waves [2.2.1].",
+          "duration": "9:43"
         },
         {
-          "duration": "14:34",
+          "position": "A2",
           "highlight": true,
           "title": "II. Tempo andante, ma rubato - Andante sostenuto",
-          "position": "A2",
-          "whatToListenFor": "The dark, pizzicato bass opening paired with mournful bassoon duets, building up to powerful, brass-laden climaxes."
+          "whatToListenFor": "The dark, pizzicato bass opening paired with mournful bassoon duets, building up to powerful, brass-laden climaxes.",
+          "duration": "14:34"
         },
         {
-          "duration": "5:59",
+          "position": "B1",
           "highlight": false,
           "title": "III. Vivacissimo - Lento e suave - Largamente",
-          "position": "B1",
-          "whatToListenFor": "Furious, perpetual-motion string passages interrupted by a hauntingly beautiful oboe song in the Trio section."
+          "whatToListenFor": "Furious, perpetual-motion string passages interrupted by a hauntingly beautiful oboe song in the Trio section.",
+          "duration": "5:59"
         },
         {
-          "duration": "14:31",
+          "position": "B2",
           "highlight": true,
           "title": "IV. Finale: Allegro moderato",
-          "position": "B2",
-          "whatToListenFor": "The seamless attacca transition into the triumphant, soaring brass theme and ultimate glorious major-key resolution."
+          "whatToListenFor": "The seamless attacca transition into the triumphant, soaring brass theme and ultimate glorious major-key resolution.",
+          "duration": "14:31"
         }
       ],
-      "albumBackground": "Sir Colin Davis's mid-1970s Sibelius cycle with the Boston Symphony Orchestra for Philips Records stands as one of the landmark recordings of the composer's orchestral repertoire. Recorded in April 1976 in the famed acoustics of Symphony Hall, Boston, Davis strikes a supreme balance between structural clarity, expansive romanticism, and Nordic brooding intensity. The Boston Symphony Orchestra's rich string timbre and precise woodwind voicing provide the ideal instrument for Sibelius's architectural soundscapes.\n\nThis vintage Japanese pressing by Nippon Phonogram (catalog X-7696) features Philips' iconic green jacket artwork incorporating Edvard Munch's artwork (*Melancholy*), complemented by a vibrant red Japanese obi strip. Renowned among collectors for its low noise floor and warm analog mastering, this edition presents a classic account of Sibelius's most popular symphony.",
-      "vinylTip": "Nippon Phonogram Japanese pressings on Philips vinyl are celebrated for ultra-quiet surfaces. Pay close attention to cartridge alignment and tracking weight to best reproduce the thunderous brass climaxes and subtle low-frequency string pizzicatos without inner groove tracking distortion.",
-      "recommendedMood": "Noble, majestic, and atmospheric—ideal for quiet, reflective listening on cold evenings or winter days."
+      "recommendedMood": "Noble, majestic, and atmospheric—ideal for quiet, reflective listening on cold evenings or winter days.",
+      "albumBackground": "Sir Colin Davis's mid-1970s Sibelius cycle with the Boston Symphony Orchestra for Philips Records stands as one of the landmark recordings of the composer's orchestral repertoire. Recorded in April 1976 in the famed acoustics of Symphony Hall, Boston, Davis strikes a supreme balance between structural clarity, expansive romanticism, and Nordic brooding intensity. The Boston Symphony Orchestra's rich string timbre and precise woodwind voicing provide the ideal instrument for Sibelius's architectural soundscapes.\n\nThis vintage Japanese pressing by Nippon Phonogram (catalog X-7696) features Philips' iconic green jacket artwork incorporating Edvard Munch's artwork (*Melancholy*), complemented by a vibrant red Japanese obi strip. Renowned among collectors for its low noise floor and warm analog mastering, this edition presents a classic account of Sibelius's most popular symphony."
     },
-    "genre": "Classical Orchestral",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1976,
+    "country": "Japan",
+    "spinsCount": 14,
+    "catalogNumber": "X-7696"
   },
   {
-    "pressings": [
-      {
-        "catalogNumber": "IMP-2026-045",
-        "id": "press-webarchive-045",
-        "label": "Warner Bros. Records",
-        "recordId": "rec-webarchive-045",
-        "releaseYear": 1974,
-        "country": "US / Japan",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
-    "genre": "Classic Rock",
     "artist": "The Doobie Brothers (杜比兄弟)",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_46.jpg",
+    "genre": "Classic Rock",
     "lastSpunAt": "2026-07-30T16:09:43.009766Z",
     "title": "What Were Once Vices Are Now Habits",
-    "releaseYear": 1974,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_46.jpg",
-    "spinsCount": 1,
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-045",
+        "id": "press-webarchive-045",
+        "releaseYear": 1974,
+        "label": "Warner Bros. Records",
+        "formatDetails": "12\" Mastered LP",
+        "country": "US / Japan",
+        "catalogNumber": "IMP-2026-045"
+      }
+    ],
     "id": "rec-webarchive-045",
-    "catalogNumber": "IMP-2026-045",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1974,
+    "spinsCount": 1,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "IMP-2026-045"
   },
   {
-    "country": "Japan",
-    "genre": "Classical",
     "artist": "Smetana Quartet",
-    "lastSpunAt": "2026-07-31T09:35:12.549978Z",
-    "title": "Beethoven: String Quartet No.1 / Haydn: String Quartet, Op.103 / Schubert: String Quartet No.12 \"Quartettsatz\"",
-    "releaseYear": 1974,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_19.jpg",
+    "catalogNumber": "OQ-7361-S",
     "spinsCount": 13,
     "label": "Supraphon",
-    "id": "rec-webarchive-018",
-    "catalogNumber": "OQ-7361-S",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T09:35:12.549978Z",
+    "title": "Beethoven: String Quartet No.1 / Haydn: String Quartet, Op.103 / Schubert: String Quartet No.12 \"Quartettsatz\"",
     "pressings": [
       {
-        "catalogNumber": "IMP-2026-018",
+        "recordId": "rec-webarchive-018",
         "id": "press-webarchive-018",
         "formatDetails": "12\" Mastered LP",
-        "recordId": "rec-webarchive-018",
         "releaseYear": 1974,
         "country": "US / Japan",
-        "label": "Supraphon Japan Pressing"
+        "label": "Supraphon Japan Pressing",
+        "catalogNumber": "IMP-2026-018"
       }
     ],
-    "createdAt": "2026-07-14T07:30:00Z"
+    "id": "rec-webarchive-018",
+    "releaseYear": 1974,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "country": "Japan",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_19.jpg"
   },
   {
+    "artist": "Belina & Siegfried Behrend",
+    "createdAt": "2026-07-29T09:55:21.904631Z",
+    "coverUrl": "",
+    "genre": "Folk",
+    "lastSpunAt": "2026-08-01T10:18:23.398334Z",
+    "title": "24 Songs and One Guitar",
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-156",
         "recordId": "rec-user-156",
-        "catalogNumber": "T-2",
-        "formatDetails": "Standard Vinyl Pressing"
+        "id": "press-rec-user-156",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "T-2"
       }
     ],
-    "genre": "Folk",
-    "createdAt": "2026-07-29T09:55:21.904631Z",
-    "lastSpunAt": "2026-07-31T06:48:38.908447Z",
-    "title": "24 Songs and One Guitar",
-    "releaseYear": 1970,
-    "coverUrl": "",
-    "spinsCount": 11,
-    "artist": "Belina & Siegfried Behrend",
     "id": "rec-user-156",
-    "catalogNumber": "T-2",
-    "formatDetails": "Standard Vinyl LP"
+    "releaseYear": 1970,
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 12,
+    "catalogNumber": "T-2"
   },
   {
-    "genre": "Surf Rock / Instrumental",
-    "createdAt": "2026-07-14T07:30:00Z",
+    "artist": "The Ventures (投机者乐队)",
     "catalogNumber": "IMP-2026-030",
+    "genre": "Surf Rock / Instrumental",
     "lastSpunAt": "2026-07-31T03:17:09.262471Z",
     "title": "This Is The Ventures Vol. 2",
-    "releaseYear": 1966,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_31.jpg",
-    "spinsCount": 3,
-    "id": "rec-webarchive-030",
     "pressings": [
       {
-        "catalogNumber": "IMP-2026-030",
+        "recordId": "rec-webarchive-030",
         "id": "press-webarchive-030",
         "formatDetails": "12\" Mastered LP",
-        "recordId": "rec-webarchive-030",
+        "label": "Liberty Records LP",
+        "country": "US / Japan",
         "releaseYear": 1966,
-        "country": "US / Japan",
-        "label": "Liberty Records LP"
+        "catalogNumber": "IMP-2026-030"
       }
     ],
-    "artist": "The Ventures (投机者乐队)"
+    "id": "rec-webarchive-030",
+    "releaseYear": 1966,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "spinsCount": 3,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_31.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Telefunken",
-        "id": "press-temp-1785471612755",
-        "catalogNumber": "SLA 6187",
-        "recordId": "temp-1785471612755",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "formatDetails": "Standard Vinyl LP",
-    "catalogNumber": "SLA 6187",
-    "lastSpunAt": "2026-07-31T12:10:19.955404Z",
-    "artist": "Anton Bruckner, Giuseppe Verdi, Martin Stephani, Philharmonia Hungarica",
-    "releaseYear": 1976,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_2d716e34.jpg",
-    "genre": "Classical",
-    "createdAt": "2026-07-31T04:20:33.103939Z",
-    "title": "Te Deum",
-    "spinsCount": 2,
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_2d716e34.jpg",
+    "label": "Telefunken",
+    "title": "Te Deum",
     "id": "rec-user-152",
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 2,
     "country": "Japan",
-    "label": "Telefunken"
-  },
-  {
+    "artist": "Anton Bruckner, Giuseppe Verdi, Martin Stephani, Philharmonia Hungarica",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T12:10:19.955404Z",
     "pressings": [
       {
-        "catalogNumber": "IMP-2026-034",
-        "id": "press-webarchive-034",
-        "label": "Decca / London Pressing",
-        "recordId": "rec-webarchive-034",
-        "releaseYear": 1963,
-        "country": "US / Japan",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785471612755",
+        "id": "press-temp-1785471612755",
+        "label": "Telefunken",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "SLA 6187"
       }
     ],
+    "releaseYear": 1976,
+    "createdAt": "2026-07-31T04:20:33.103939Z",
+    "catalogNumber": "SLA 6187"
+  },
+  {
     "artist": "Lorin Maazel, Vienna Philharmonic Orchestra",
+    "spinsCount": 15,
     "catalogNumber": "SLC 8150",
-    "lastSpunAt": "2026-07-31T05:53:49.985158Z",
+    "label": "London Records",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T11:16:45.484079Z",
+    "id": "rec-webarchive-034",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-034",
+        "id": "press-webarchive-034",
+        "releaseYear": 1963,
+        "label": "Decca / London Pressing",
+        "formatDetails": "12\" Mastered LP",
+        "country": "US / Japan",
+        "catalogNumber": "IMP-2026-034"
+      }
+    ],
     "title": "Tchaikovsky: Symphony No. 5 In E Minor",
     "releaseYear": 1963,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_35.jpg",
-    "spinsCount": 13,
     "createdAt": "2026-07-14T07:30:00Z",
-    "id": "rec-webarchive-034",
-    "genre": "Classical",
     "country": "Japan",
-    "label": "London Records"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_35.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "RCA Red Seal R-Release",
-        "id": "press-webarchive-038",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-038",
-        "releaseYear": 1981,
-        "catalogNumber": "IMP-2026-038",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "James Levine / Chicago Symphony Orchestra",
+    "catalogNumber": "IMP-2026-038",
     "genre": "Symphony",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-038",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-038",
+        "id": "press-webarchive-038",
+        "country": "US / Japan",
+        "releaseYear": 1981,
+        "formatDetails": "12\" Mastered LP",
+        "label": "RCA Red Seal R-Release",
+        "catalogNumber": "IMP-2026-038"
+      }
+    ],
     "title": "Dvořák: Symphony No. 9 'From the New World'",
     "releaseYear": 1981,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_39.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-038",
-    "catalogNumber": "IMP-2026-038",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_39.jpg"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "WF-4051",
-    "pressings": [
-      {
-        "label": "World Family Record",
-        "id": "press-temp-1785492327246",
-        "catalogNumber": "WF-4051",
-        "recordId": "temp-1785492327246",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "World Family Record",
-    "title": "Symphony No.3 'Eroica'",
-    "releaseYear": 1972,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_6d279c9f.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_6d279c9f.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-055dc7e4",
     "artist": "Ludwig van Beethoven",
-    "createdAt": "2026-07-31T10:05:27.415260Z",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_6d279c9f.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_6d279c9f.jpg",
+    "country": "Japan",
+    "label": "World Family Record",
     "genre": "Classical Orchestral",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
+    "createdAt": "2026-07-31T10:05:27.415260Z",
+    "title": "Symphony No.3 'Eroica'",
     "pressings": [
       {
-        "label": "Columbia Records",
-        "id": "press-webarchive-028",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-028",
-        "releaseYear": 1978,
-        "catalogNumber": "IMP-2026-028",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785492327246",
+        "id": "press-temp-1785492327246",
+        "label": "World Family Record",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "WF-4051"
       }
     ],
+    "id": "rec-user-055dc7e4",
+    "releaseYear": 1972,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "WF-4051"
+  },
+  {
     "artist": "Billy Joel",
+    "catalogNumber": "IMP-2026-028",
     "genre": "Pop / Rock",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-028",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-028",
+        "id": "press-webarchive-028",
+        "country": "US / Japan",
+        "releaseYear": 1978,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Columbia Records",
+        "catalogNumber": "IMP-2026-028"
+      }
+    ],
     "title": "52nd Street",
     "releaseYear": 1978,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_29.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-028",
-    "catalogNumber": "IMP-2026-028",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_29.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "CBS Masterworks R-Release",
-        "id": "press-webarchive-020",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-020",
-        "releaseYear": 1981,
-        "catalogNumber": "IMP-2026-020",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Isaac Stern & Seiji Ozawa",
+    "catalogNumber": "IMP-2026-020",
     "genre": "Violin Concerto",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-020",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-020",
+        "id": "press-webarchive-020",
+        "country": "US / Japan",
+        "releaseYear": 1981,
+        "formatDetails": "12\" Mastered LP",
+        "label": "CBS Masterworks R-Release",
+        "catalogNumber": "IMP-2026-020"
+      }
+    ],
     "title": "Mendelssohn: Violin Concerto in E minor",
     "releaseYear": 1981,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_21.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 0,
-    "id": "rec-webarchive-020",
-    "catalogNumber": "IMP-2026-020",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_21.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Philips 12\" LP",
-        "id": "press-webarchive-024",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-024",
-        "releaseYear": 1966,
-        "catalogNumber": "IMP-2026-024",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Lorin Maazel / Radio-Symphonie-Orchester Berlin",
+    "catalogNumber": "IMP-2026-024",
     "genre": "Baroque Orchestral",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-024",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-024",
+        "id": "press-webarchive-024",
+        "country": "US / Japan",
+        "releaseYear": 1966,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Philips 12\" LP",
+        "catalogNumber": "IMP-2026-024"
+      }
+    ],
     "title": "Bach: Orchestral Suites Nos. 2 & 3",
     "releaseYear": 1966,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_25.jpg",
-    "spinsCount": 12,
-    "id": "rec-webarchive-024",
-    "catalogNumber": "IMP-2026-024",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
-    "country": "Japan",
-    "catalogNumber": "OF-7112-ND",
-    "pressings": [
-      {
-        "label": "Denon",
-        "id": "press-temp-1785492061478",
-        "catalogNumber": "OF-7112-ND",
-        "recordId": "temp-1785492061478",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "Denon",
-    "title": "Hugo Wolf: Goethe-Lieder",
-    "releaseYear": 1982,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b7e6756b.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b7e6756b.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-1d07ba09",
-    "artist": "Peter Schreier & Wolfgang Sawallisch",
-    "createdAt": "2026-07-31T10:01:01.747957Z",
-    "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "catalogNumber": "FC 36384",
-    "pressings": [
-      {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-029",
-        "catalogNumber": "IMP-2026-029",
-        "recordId": "rec-webarchive-029",
-        "releaseYear": 1980,
-        "country": "US / Japan",
-        "label": "Columbia Records"
-      }
-    ],
     "createdAt": "2026-07-14T07:30:00Z",
-    "lastSpunAt": "2026-08-01T01:27:30.141624Z",
-    "title": "Glass Houses",
-    "releaseYear": 1980,
+    "spinsCount": 12,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_25.jpg"
+  },
+  {
+    "artist": "Peter Schreier & Wolfgang Sawallisch",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b7e6756b.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b7e6756b.jpg",
+    "country": "Japan",
+    "label": "Denon",
+    "genre": "Classical",
+    "createdAt": "2026-07-31T10:01:01.747957Z",
+    "title": "Hugo Wolf: Goethe-Lieder",
+    "pressings": [
+      {
+        "recordId": "temp-1785492061478",
+        "id": "press-temp-1785492061478",
+        "label": "Denon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "OF-7112-ND"
+      }
+    ],
+    "id": "rec-user-1d07ba09",
+    "releaseYear": 1982,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "OF-7112-ND"
+  },
+  {
+    "artist": "Billy Joel",
+    "id": "rec-webarchive-029",
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_30.jpg",
     "spinsCount": 13,
+    "label": "Columbia",
     "genre": "Pop Rock",
-    "id": "rec-webarchive-029",
-    "artist": "Billy Joel",
+    "lastSpunAt": "2026-08-01T01:27:30.141624Z",
+    "title": "Glass Houses",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-029",
+        "id": "press-webarchive-029",
+        "country": "US / Japan",
+        "label": "Columbia Records",
+        "formatDetails": "12\" Mastered LP",
+        "releaseYear": 1980,
+        "catalogNumber": "IMP-2026-029"
+      }
+    ],
     "listeningGuide": {
       "vinylTip": "Check the runout dead wax for the stamped 'STERLING' mark and Ted Jensen's initials ('TJ'). These Sterling pressings feature incredible dynamic punch and punchy low-end definition, particularly on Liberty DeVitto's drum kit.",
       "albumBackground": "Released in March 1980, 'Glass Houses' is Billy Joel's seventh studio album and marked a deliberate departure toward a harder, more immediate pop-rock and new-wave-influenced sound. Produced by Phil Ramone and recorded at A&R Recording Studios in New York City, the album served as Joel's response to the rising tide of punk and post-punk music that threatened to categorize his sound as overly smooth adult contemporary.\n\nThe iconic cover photo depicts Joel standing in front of his contemporary glass house in Cove Neck, Long Island, preparing to throw a stone through his own window—a literal play on the phrase 'people who live in glass houses shouldn't throw stones.' The album yielded huge commercial success, topping the Billboard 200 chart and delivering his first single to hit #1 on the Billboard Hot 100, 'It's Still Rock and Roll to Me'. 'Glass Houses' went on to win the Grammy Award for Best Male Rock Vocal Performance in 1981.\n\nOriginal vinyl pressings were mastered at Sterling Sound by legendary audio engineer Ted Jensen. The production emphasizes crisp guitar transients, dry drum snare snaps, and forward vocal presence, making it a classic example of late-70s / early-80s analog recording clarity.",
+      "recommendedMood": "An energetic 1980s classic rock spin ideal for road trips or a high-energy evening listening session.",
       "tracklist": [
         {
-          "duration": "4:07",
-          "highlight": true,
           "position": "A1",
           "title": "You May Be Right",
+          "highlight": true,
+          "duration": "4:07",
           "whatToListenFor": "Opening with the sound of breaking glass recorded live in the studio, followed by driving rhythm guitars and energetic, punchy rock vocals."
         },
         {
-          "duration": "3:39",
-          "highlight": false,
           "position": "A2",
           "title": "Sometimes a Fantasy",
+          "highlight": false,
+          "duration": "3:39",
           "whatToListenFor": "Edgy synthesizer bassline and fast-paced tempo showcasing Joel's nod to contemporary new wave."
         },
         {
-          "duration": "2:56",
-          "highlight": true,
           "position": "A3",
           "title": "Don't Ask Me Why",
+          "highlight": true,
+          "duration": "2:56",
           "whatToListenFor": "Acoustic nylon-string guitar riffs set against a lively Latin acoustic percussion groove."
         },
         {
-          "duration": "2:55",
-          "highlight": true,
           "position": "A4",
           "title": "It's Still Rock and Roll to Me",
+          "highlight": true,
+          "duration": "2:55",
           "whatToListenFor": "Snappy rhythm handclaps, Richie Cannata's sharp saxophone solo, and dry vintage rockabilly drum tuning."
         },
         {
-          "duration": "4:10",
-          "highlight": true,
           "position": "A5",
           "title": "All for Leyna",
+          "highlight": true,
+          "duration": "4:10",
           "whatToListenFor": "Urgent synthesizer hooks and aggressive drum work from Liberty DeVitto driving Joel's passionate performance."
         },
         {
-          "duration": "3:34",
-          "highlight": false,
           "position": "B1",
           "title": "I Don't Want to Be Alone",
+          "highlight": false,
+          "duration": "3:34",
           "whatToListenFor": "Tight rhythm section interaction between bassist Doug Stegmeyer and guitarist Russell Javors."
         },
         {
-          "duration": "2:59",
-          "highlight": true,
           "position": "B2",
           "title": "Sleeping with the Television On",
+          "highlight": true,
+          "duration": "2:59",
           "whatToListenFor": "Soaring power-pop guitar riffs and melodic vocal harmonies."
         },
         {
-          "duration": "3:45",
-          "highlight": false,
           "position": "B3",
           "title": "C'était Toi (You Were the One)",
+          "highlight": false,
+          "duration": "3:45",
           "whatToListenFor": "Subtle accordion touches and French lyric phrases over a gentle mid-tempo pop arrangement."
         },
         {
-          "duration": "3:45",
-          "highlight": false,
           "position": "B4",
           "title": "Close to the Borderline",
+          "highlight": false,
+          "duration": "3:45",
           "whatToListenFor": "Gritty, distorted electric guitar lines and raw vocal delivery."
         },
         {
-          "duration": "2:45",
-          "highlight": false,
           "position": "B5",
           "title": "Through the Long Night",
+          "highlight": false,
+          "duration": "2:45",
           "whatToListenFor": "Gentle Beatles-inspired vocal harmonies and delicate acoustic guitar fingerpicking."
         }
-      ],
-      "recommendedMood": "An energetic 1980s classic rock spin ideal for road trips or a high-energy evening listening session."
+      ]
     },
-    "country": "US",
-    "label": "Columbia"
-  },
-  {
-    "country": "Japan",
-    "catalogNumber": "L35C 5006/7",
-    "pressings": [
-      {
-        "label": "London Records",
-        "id": "press-temp-1785492670667",
-        "catalogNumber": "L35C 5006/7",
-        "recordId": "temp-1785492670667",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "London Records",
-    "title": "Beethoven: Symphonies Nos. 8 & 9 - Choral",
     "releaseYear": 1980,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_d5fa01d5.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_d5fa01d5.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-f04c7c69",
-    "artist": "Sir Georg Solti / Chicago Symphony Orchestra",
-    "createdAt": "2026-07-31T10:11:42.172488Z",
-    "genre": "Classical Orchestral",
-    "formatDetails": "Standard Vinyl LP"
+    "country": "US",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "FC 36384"
   },
   {
+    "catalogNumber": "2530 059",
+    "originalScannedCoverUrl": null,
+    "label": "Deutsche Grammophon",
+    "id": "rec-user-21cdef52",
+    "title": "Chopin: 9 Polonaises",
+    "spinsCount": 1,
+    "country": "Germany",
+    "formatDetails": "Standard Black Vinyl",
+    "artist": "Frédéric Chopin",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T12:06:48.316817Z",
     "pressings": [
       {
-        "label": "Decca Japan Pressing",
-        "id": "press-webarchive-025",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-025",
-        "releaseYear": 1957,
-        "catalogNumber": "IMP-2026-025",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "rec-user-21cdef52",
+        "id": "press-rec-user-21cdef52",
+        "label": "Deutsche Grammophon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "2530 059"
       }
     ],
+    "releaseYear": 1971,
+    "createdAt": "2026-08-01T12:04:24.693859Z",
+    "coverUrl": "https://i.discogs.com/yfdxGStiUMtt7F68YGo5t30yM2c5WvuHmJ9mjQXLg1c/rs:fit/g:sm/q:90/h:600/w:595/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyNjI4/MzIyLTE2MjQwMjU0/ODEtNTg3OS5qcGVn.jpeg"
+  },
+  {
+    "artist": "Sir Georg Solti / Chicago Symphony Orchestra",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_d5fa01d5.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_d5fa01d5.jpg",
+    "country": "Japan",
+    "label": "London Records",
+    "genre": "Classical Orchestral",
+    "createdAt": "2026-07-31T10:11:42.172488Z",
+    "title": "Beethoven: Symphonies Nos. 8 & 9 - Choral",
+    "pressings": [
+      {
+        "recordId": "temp-1785492670667",
+        "id": "press-temp-1785492670667",
+        "label": "London Records",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "L35C 5006/7"
+      }
+    ],
+    "id": "rec-user-f04c7c69",
+    "releaseYear": 1980,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "L35C 5006/7"
+  },
+  {
     "artist": "Clifford Curzon & Hans Knappertsbusch",
+    "catalogNumber": "IMP-2026-025",
     "genre": "Piano Concerto",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-025",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-025",
+        "id": "press-webarchive-025",
+        "country": "US / Japan",
+        "releaseYear": 1957,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Decca Japan Pressing",
+        "catalogNumber": "IMP-2026-025"
+      }
+    ],
     "title": "Beethoven: Piano Concerto No. 5 'Emperor' (Vienna Phil)",
     "releaseYear": 1957,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_26.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 0,
-    "id": "rec-webarchive-025",
-    "catalogNumber": "IMP-2026-025",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_26.jpg"
   },
   {
-    "country": "Japan",
-    "genre": "Classical",
     "artist": "Vladimir Horowitz",
-    "lastSpunAt": "2026-07-31T09:35:59.427619Z",
-    "title": "Liszt: Sonata in B Minor, Funérailles / Schumann: Toccata, Arabesque, Traumes-Wirren, Presto Passionato",
-    "releaseYear": 1958,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_22.jpg",
+    "catalogNumber": "GR-2041",
+    "id": "rec-webarchive-021",
     "spinsCount": 4,
     "label": "Angel Records",
-    "id": "rec-webarchive-021",
-    "catalogNumber": "GR-2041",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T09:35:59.427619Z",
+    "title": "Liszt: Sonata in B Minor, Funérailles / Schumann: Toccata, Arabesque, Traumes-Wirren, Presto Passionato",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-021",
+        "id": "press-webarchive-021",
+        "formatDetails": "12\" Mastered LP",
+        "releaseYear": 1977,
+        "country": "US / Japan",
+        "label": "RCA Victor Red Seal",
+        "catalogNumber": "IMP-2026-021"
+      }
+    ],
     "listeningGuide": {
+      "vinylTip": "As a historical monophonic recording, play this LP with a true mono cartridge or engage your amplifier's MONO switch. The Japanese EMI silent surface allows the subtle ambient sound and micro-dynamics of Abbey Road's Studio 3 to shine through without surface noise intrusion.",
+      "albumBackground": "This historic release from the Angel Records / EMI 'Great Recordings of the Century' series (catalogue number GR-2041, corresponding to EMI's UK release COLH-72) features Vladimir Horowitz's legendary 1932 London Abbey Road recordings. Produced by the visionary Fred Gaisberg, Horowitz's November 1932 performance of Franz Liszt's Sonata in B Minor is universally acclaimed as one of the definitive recorded performances in keyboard history. Executed in a single continuous session when Horowitz was just 29 years old, the recording captures an extraordinary combination of fiery virtuosity, architectural control, and demonic intensity.\n\nSide B supplements the Liszt Sonata with Liszt's elegiac 'Funérailles' alongside a selection of Robert Schumann's virtuosic miniature masterpieces recorded between 1932 and 1934. Pressed in Japan by Toshiba-EMI on premium quiet vinyl, this transfer from original 78 RPM master lacquers preserves the stunning clarity, dynamic impulse, and coloristic nuances of young Horowitz in his early prime.",
+      "recommendedMood": "Intense classical appreciation, late-night deep listening, or exploring the pinnacle of 20th-century romantic pianism.",
       "tracklist": [
         {
-          "duration": "26:15",
-          "highlight": true,
-          "title": "Liszt: Sonata in B Minor, S. 178",
           "position": "A1",
+          "title": "Liszt: Sonata in B Minor, S. 178",
+          "highlight": true,
+          "duration": "26:15",
           "whatToListenFor": "Listen for Horowitz's thunderous octave runs, lightning-fast repeated notes, and immaculate phrasing that maintains tension across the entire single-movement structure."
         },
         {
-          "duration": "10:40",
-          "highlight": true,
-          "title": "Liszt: Harmonies Poétiques et Religieuses, S. 173 - No. 7 'Funérailles'",
           "position": "B1",
+          "title": "Liszt: Harmonies Poétiques et Religieuses, S. 173 - No. 7 'Funérailles'",
+          "highlight": true,
+          "duration": "10:40",
           "whatToListenFor": "The driving left-hand octaves in the central climax, building a staggering sense of funeral march drama and heroic tragedy."
         },
         {
-          "duration": "4:25",
-          "highlight": false,
-          "title": "Schumann: Toccata in C Major, Op. 7",
           "position": "B2",
+          "title": "Schumann: Toccata in C Major, Op. 7",
+          "highlight": false,
+          "duration": "4:25",
           "whatToListenFor": "Precision double-note technique executed with effortless speed and rhythmic buoyancy."
         },
         {
-          "duration": "3:05",
-          "highlight": false,
-          "title": "Schumann: Arabeske in C Major, Op. 18",
           "position": "B3",
+          "title": "Schumann: Arabeske in C Major, Op. 18",
+          "highlight": false,
+          "duration": "3:05",
           "whatToListenFor": "Delicate rubato and lyrical inner voices showing Horowitz's poetry and tender touch."
         },
         {
-          "duration": "2:15",
-          "highlight": false,
-          "title": "Schumann: Fantasiestücke, Op. 12 - No. 7 'Traumes-Wirren'",
           "position": "B4",
+          "title": "Schumann: Fantasiestücke, Op. 12 - No. 7 'Traumes-Wirren'",
+          "highlight": false,
+          "duration": "2:15",
           "whatToListenFor": "Whimsical, fleeting cross-rhythms and sparkling fingerwork."
         },
         {
-          "duration": "5:30",
-          "highlight": false,
-          "title": "Schumann: Presto Passionato, WoO 5 (Original Finale to Sonata No. 2, Op. 22)",
           "position": "B5",
+          "title": "Schumann: Presto Passionato, WoO 5 (Original Finale to Sonata No. 2, Op. 22)",
+          "highlight": false,
+          "duration": "5:30",
           "whatToListenFor": "Relentless velocity and manic energy that Schumann deemed almost impossible to play."
         }
-      ],
-      "albumBackground": "This historic release from the Angel Records / EMI 'Great Recordings of the Century' series (catalogue number GR-2041, corresponding to EMI's UK release COLH-72) features Vladimir Horowitz's legendary 1932 London Abbey Road recordings. Produced by the visionary Fred Gaisberg, Horowitz's November 1932 performance of Franz Liszt's Sonata in B Minor is universally acclaimed as one of the definitive recorded performances in keyboard history. Executed in a single continuous session when Horowitz was just 29 years old, the recording captures an extraordinary combination of fiery virtuosity, architectural control, and demonic intensity.\n\nSide B supplements the Liszt Sonata with Liszt's elegiac 'Funérailles' alongside a selection of Robert Schumann's virtuosic miniature masterpieces recorded between 1932 and 1934. Pressed in Japan by Toshiba-EMI on premium quiet vinyl, this transfer from original 78 RPM master lacquers preserves the stunning clarity, dynamic impulse, and coloristic nuances of young Horowitz in his early prime.",
-      "vinylTip": "As a historical monophonic recording, play this LP with a true mono cartridge or engage your amplifier's MONO switch. The Japanese EMI silent surface allows the subtle ambient sound and micro-dynamics of Abbey Road's Studio 3 to shine through without surface noise intrusion.",
-      "recommendedMood": "Intense classical appreciation, late-night deep listening, or exploring the pinnacle of 20th-century romantic pianism."
+      ]
     },
-    "pressings": [
-      {
-        "catalogNumber": "IMP-2026-021",
-        "id": "press-webarchive-021",
-        "formatDetails": "12\" Mastered LP",
-        "recordId": "rec-webarchive-021",
-        "releaseYear": 1977,
-        "country": "US / Japan",
-        "label": "RCA Victor Red Seal"
-      }
-    ],
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1958,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "country": "Japan",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_22.jpg"
   },
   {
+    "artist": "Robert Stolz / Wiener Symphoniker / Berliner Symphoniker",
+    "createdAt": "2026-07-29T09:44:33.726055Z",
+    "coverUrl": "https://i.discogs.com/v42StPn6PmAYtWfsiKx32M5e543NJsl8P_VhKZ1_v3k/rs:fit/g:sm/q:90/h:450/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTc4OTE4/NzItMTQ1MTI0MDM0/MC0zNzcyLmpwZWc.jpeg",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T07:07:27.837461Z",
+    "id": "rec-user-153",
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-153",
         "recordId": "rec-user-153",
-        "catalogNumber": "CSS-116~7-K",
-        "formatDetails": "Standard Vinyl Pressing"
+        "id": "press-rec-user-153",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "CSS-116~7-K"
       }
     ],
-    "genre": "Classical",
-    "createdAt": "2026-07-29T09:44:33.726055Z",
-    "lastSpunAt": "2026-07-31T07:07:27.837461Z",
     "title": "Der Hof Ball (宮廷舞踏会 ウィーンーわが夢の都)",
     "releaseYear": 1972,
-    "coverUrl": "https://i.discogs.com/v42StPn6PmAYtWfsiKx32M5e543NJsl8P_VhKZ1_v3k/rs:fit/g:sm/q:90/h:450/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTc4OTE4/NzItMTQ1MTI0MDM0/MC0zNzcyLmpwZWc.jpeg",
     "spinsCount": 2,
-    "artist": "Robert Stolz / Wiener Symphoniker / Berliner Symphoniker",
-    "id": "rec-user-153",
-    "catalogNumber": "CSS-116~7-K",
-    "formatDetails": "Standard Vinyl LP"
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "CSS-116~7-K"
   },
   {
+    "artist": "Reinhold Barchet & Walter Frey",
+    "catalogNumber": "IMP-2026-035",
+    "genre": "Baroque Chamber",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-035",
     "pressings": [
       {
-        "label": "Erato R-Release",
+        "recordId": "rec-webarchive-035",
         "id": "press-webarchive-035",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-035",
         "releaseYear": 1962,
-        "catalogNumber": "IMP-2026-035",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "label": "Erato R-Release",
+        "catalogNumber": "IMP-2026-035"
       }
     ],
-    "artist": "Reinhold Barchet & Walter Frey",
-    "genre": "Baroque Chamber",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
     "title": "Bach: Sonatas for Violin & Harpsichord",
     "releaseYear": 1962,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_36.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 0,
-    "id": "rec-webarchive-035",
-    "catalogNumber": "IMP-2026-035",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_36.jpg"
   },
   {
-    "catalogNumber": "20AC-1565",
+    "artist": "Rafael Kubelik / Bavarian Symphony Orchestra",
+    "coverUrl": "https://i.discogs.com/0RzgJPbuZ2R_3DECdCI-idV5WEmhLskEO8_F0Tr_R6E/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyNjU0/NDEyLTE3MzUwNjM0/MDMtNDA0OC5qcGVn.jpeg",
+    "createdAt": "2026-07-29T09:56:53.948905Z",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-30T14:11:39.070526Z",
+    "id": "rec-user-157",
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-157",
         "recordId": "rec-user-157",
-        "catalogNumber": "20AC-1565",
-        "formatDetails": "Standard Vinyl Pressing"
+        "id": "press-rec-user-157",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "20AC-1565"
       }
     ],
-    "createdAt": "2026-07-29T09:56:53.948905Z",
-    "lastSpunAt": "2026-07-30T14:11:39.070526Z",
     "title": "Mozart: Symphony No. 38 In D Major, K. 504 \"Prague\" / Symphony No. 39 In E-Flat Major, K. 543",
     "releaseYear": 1981,
-    "coverUrl": "https://i.discogs.com/0RzgJPbuZ2R_3DECdCI-idV5WEmhLskEO8_F0Tr_R6E/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyNjU0/NDEyLTE3MzUwNjM0/MDMtNDA0OC5qcGVn.jpeg",
+    "formatDetails": "Standard Vinyl LP",
     "spinsCount": 3,
-    "artist": "Rafael Kubelik / Bavarian Symphony Orchestra",
-    "id": "rec-user-157",
-    "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP"
+    "catalogNumber": "20AC-1565"
   },
   {
-    "pressings": [
-      {
-        "label": "CBS Masterworks",
-        "id": "press-webarchive-031",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-031",
-        "releaseYear": 1969,
-        "catalogNumber": "IMP-2026-031",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
-    "artist": "Isaac Stern (伊萨克·斯特恩)",
-    "genre": "Violin Concerto",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
-    "title": "Tchaikovsky & Mendelssohn: Violin Concertos",
-    "releaseYear": 1969,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_32.jpg",
-    "spinsCount": 3,
+    "artist": "Isaac Stern, Eugene Ormandy, The Philadelphia Orchestra",
     "id": "rec-webarchive-031",
-    "catalogNumber": "IMP-2026-031",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
-    "country": "US",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_32.jpg",
+    "label": "CBS/Sony",
+    "genre": "Violin Concerto",
+    "lastSpunAt": "2026-08-01T10:07:44.450647Z",
+    "title": "Mendelssohn & Tchaikovsky: Two Violin Concertos",
     "pressings": [
       {
+        "recordId": "rec-webarchive-031",
+        "id": "press-webarchive-031",
+        "label": "CBS Masterworks",
+        "releaseYear": 1969,
         "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-039",
-        "catalogNumber": "IMP-2026-039",
-        "recordId": "rec-webarchive-039",
-        "releaseYear": 1987,
         "country": "US / Japan",
-        "label": "Landmark Records 12\" LP"
+        "catalogNumber": "IMP-2026-031"
       }
     ],
-    "genre": "Jazz / Fusion",
-    "lastSpunAt": "2026-07-31T06:52:00.078567Z",
-    "title": "The Fifth Season",
-    "releaseYear": 1986,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_40.jpg",
-    "spinsCount": 13,
-    "createdAt": "2026-07-14T07:30:00Z",
-    "id": "rec-webarchive-039",
-    "artist": "Timothy Donahue",
     "listeningGuide": {
+      "vinylTip": "Japanese CBS/Sony records from the SX-68 Mark II series feature extremely low surface noise floors. Ensure your cartridge alignment and anti-skate are finely calibrated to handle the intense inner-groove high frequencies during the virtuosic finale of the Tchaikovsky concerto on Side B.",
+      "albumBackground": "This historic coupling brings together two of the ultimate Romantic violin concertos performed by the iconic virtuoso Isaac Stern alongside Eugene Ormandy and The Philadelphia Orchestra. Originally recorded in February 1958 at the Broadwood Hotel in Philadelphia for Columbia Masterworks, these performances quickly set the gold standard for mid-20th-century classical recordings. Stern's golden tone, fiery technique, and passionate phrasing are in complete alignment with Ormandy's opulent, rich orchestral backdrop.\n\nThis specific Japanese pressing (SOCL 20) was reissued by CBS/Sony in 1972 as part of their acclaimed Neumann SX-68 Mark II cutting series. Mastering工程师 harnessed Neumann’s high-precision cutting head to achieve exceptional dynamic headroom, low distortion, and pristine high-frequency extension, making it a favorite amongst classical audiophiles seeking dead-silent Japanese virgin vinyl pressings.",
+      "recommendedMood": "Majestic, dramatic, and emotionally inspiring ideal for focused late-evening classical listening.",
       "tracklist": [
         {
-          "duration": "5:40",
-          "highlight": true,
           "position": "A1",
-          "title": "As Birds Fly",
-          "whatToListenFor": "Soaring harp guitar harmonics interwoven with fluid fretless bass lines, creating a sense of weightlessness."
+          "title": "Mendelssohn: Violin Concerto in E Minor, Op. 64 - I. Allegro molto appassionato",
+          "highlight": true,
+          "whatToListenFor": "The immediate entrance of the solo violin playing the soaring opening theme over gentle orchestral murmurs, showcasing Stern's effortless vibrato and expressive tone.",
+          "duration": "12:15"
         },
         {
-          "duration": "4:45",
-          "highlight": false,
           "position": "A2",
-          "title": "What If...",
-          "whatToListenFor": "Subtle dynamic buildup with nuanced fingerstyle articulation and soft synth pads."
+          "title": "Mendelssohn: Violin Concerto in E Minor, Op. 64 - II. Andante",
+          "highlight": false,
+          "whatToListenFor": "A lyric song without words; pay attention to the seamless transition from the first movement and the delicate balance between solo violin cantabile and muted woodwinds.",
+          "duration": "7:40"
         },
         {
-          "duration": "5:08",
-          "highlight": false,
           "position": "A3",
-          "title": "Shari/Kimiko",
-          "whatToListenFor": "Eastern-influenced modal scales and delicate acoustic string interactions."
-        },
-        {
-          "duration": "5:20",
+          "title": "Mendelssohn: Violin Concerto in E Minor, Op. 64 - III. Allegretto non troppo - Allegro molto vivace",
           "highlight": true,
-          "position": "A4",
-          "title": "Toyo No Caze (Eastern Winds)",
-          "whatToListenFor": "Evocative Japanese-inspired melodies paired with reverberant open-string harp resonances."
+          "whatToListenFor": "Sparkling, fairy-like staccato bow work by Stern in the final coda, delivered with crisp clarity and rhythmic propulsion.",
+          "duration": "6:20"
         },
         {
-          "duration": "4:35",
-          "highlight": false,
           "position": "B1",
-          "title": "Reflections Off An Ocean",
-          "whatToListenFor": "Sparkling high-frequency guitar picking evoking sunlight shimmering on water."
-        },
-        {
-          "duration": "3:54",
-          "highlight": false,
-          "position": "B2",
-          "title": "The Coming Of Winter",
-          "whatToListenFor": "Minor-key melancholic themes with rich lower-register string sustain."
-        },
-        {
-          "duration": "3:45",
-          "highlight": false,
-          "position": "B3",
-          "title": "Image Music",
-          "whatToListenFor": "Rhythmic string tapping and intricate counterpoint between multiple guitar tracks."
-        },
-        {
-          "duration": "7:52",
+          "title": "Tchaikovsky: Violin Concerto in D Major, Op. 35 - I. Allegro moderato",
           "highlight": true,
+          "whatToListenFor": "Sweeping orchestral tuttis featuring the legendary 'Philadelphia Sound' string section, followed by Stern's powerful cadenza.",
+          "duration": "18:05"
+        },
+        {
+          "position": "B2",
+          "title": "Tchaikovsky: Violin Concerto in D Major, Op. 35 - II. Canzonetta: Andante",
+          "highlight": false,
+          "whatToListenFor": "Muted, melancholic woodwind sonorities opening into a deeply introspective solo passage played with warm, woody violin timbre.",
+          "duration": "6:15"
+        },
+        {
+          "position": "B3",
+          "title": "Tchaikovsky: Violin Concerto in D Major, Op. 35 - III. Finale: Allegro vivacissimo",
+          "highlight": true,
+          "whatToListenFor": "A fiery Russian dance full of virtuosic spiccato, double-stops, and thrilling orchestral crescendos leading to a triumphant finish.",
+          "duration": "8:50"
+        }
+      ]
+    },
+    "releaseYear": 1972,
+    "spinsCount": 6,
+    "country": "Japan",
+    "catalogNumber": "SOCL 20"
+  },
+  {
+    "artist": "Timothy Donahue",
+    "title": "The Fifth Season",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_40.jpg",
+    "label": "Avalon Records",
+    "genre": "Jazz / Fusion",
+    "lastSpunAt": "2026-07-31T06:52:00.078567Z",
+    "id": "rec-webarchive-039",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-039",
+        "id": "press-webarchive-039",
+        "releaseYear": 1987,
+        "label": "Landmark Records 12\" LP",
+        "country": "US / Japan",
+        "formatDetails": "12\" Mastered LP",
+        "catalogNumber": "IMP-2026-039"
+      }
+    ],
+    "listeningGuide": {
+      "vinylTip": "This pressing features wide dynamic headroom to preserve the decay of open harp strings and subtle room reflections; play on a clean microline or Shibata stylus to fully capture the upper-register air.",
+      "tracklist": [
+        {
+          "position": "A1",
+          "highlight": true,
+          "title": "As Birds Fly",
+          "whatToListenFor": "Soaring harp guitar harmonics interwoven with fluid fretless bass lines, creating a sense of weightlessness.",
+          "duration": "5:40"
+        },
+        {
+          "position": "A2",
+          "highlight": false,
+          "title": "What If...",
+          "whatToListenFor": "Subtle dynamic buildup with nuanced fingerstyle articulation and soft synth pads.",
+          "duration": "4:45"
+        },
+        {
+          "position": "A3",
+          "highlight": false,
+          "title": "Shari/Kimiko",
+          "whatToListenFor": "Eastern-influenced modal scales and delicate acoustic string interactions.",
+          "duration": "5:08"
+        },
+        {
+          "position": "A4",
+          "highlight": true,
+          "title": "Toyo No Caze (Eastern Winds)",
+          "whatToListenFor": "Evocative Japanese-inspired melodies paired with reverberant open-string harp resonances.",
+          "duration": "5:20"
+        },
+        {
+          "position": "B1",
+          "highlight": false,
+          "title": "Reflections Off An Ocean",
+          "whatToListenFor": "Sparkling high-frequency guitar picking evoking sunlight shimmering on water.",
+          "duration": "4:35"
+        },
+        {
+          "position": "B2",
+          "highlight": false,
+          "title": "The Coming Of Winter",
+          "whatToListenFor": "Minor-key melancholic themes with rich lower-register string sustain.",
+          "duration": "3:54"
+        },
+        {
+          "position": "B3",
+          "highlight": false,
+          "title": "Image Music",
+          "whatToListenFor": "Rhythmic string tapping and intricate counterpoint between multiple guitar tracks.",
+          "duration": "3:45"
+        },
+        {
           "position": "B4",
+          "highlight": true,
           "title": "The Fifth Season",
-          "whatToListenFor": "The expansive title track epic featuring full dynamic range, complex polyrhythms, and masterful fretless guitar solos."
+          "whatToListenFor": "The expansive title track epic featuring full dynamic range, complex polyrhythms, and masterful fretless guitar solos.",
+          "duration": "7:52"
         }
       ],
-      "albumBackground": "Released in 1986 on Avalon Records, *The Fifth Season* is a tour de force debut from virtuoso guitarist and composer Timothy Donahue. Known for his pioneering mastery of custom electric and acoustic harp guitars as well as fretless instruments, Donahue bridges jazz fusion, contemporary classical, and ambient world music into a deeply evocative soundscape.\n\nRecorded during a pivotal period of 1980s indie instrumental innovation, the album showcases rich, multi-layered string work paired with contemplative melodies. Donahue’s singular technique gives the album a shimmer and resonance that feel both organic and ahead of its time, capturing atmospheric shifts across seasonal themes.",
-      "vinylTip": "This pressing features wide dynamic headroom to preserve the decay of open harp strings and subtle room reflections; play on a clean microline or Shibata stylus to fully capture the upper-register air.",
-      "recommendedMood": "Quiet evening reflection, focused instrumental listening, or rainy afternoon contemplation."
+      "recommendedMood": "Quiet evening reflection, focused instrumental listening, or rainy afternoon contemplation.",
+      "albumBackground": "Released in 1986 on Avalon Records, *The Fifth Season* is a tour de force debut from virtuoso guitarist and composer Timothy Donahue. Known for his pioneering mastery of custom electric and acoustic harp guitars as well as fretless instruments, Donahue bridges jazz fusion, contemporary classical, and ambient world music into a deeply evocative soundscape.\n\nRecorded during a pivotal period of 1980s indie instrumental innovation, the album showcases rich, multi-layered string work paired with contemplative melodies. Donahue’s singular technique gives the album a shimmer and resonance that feel both organic and ahead of its time, capturing atmospheric shifts across seasonal themes."
     },
-    "catalogNumber": "AVLN TD 0100",
-    "label": "Avalon Records"
+    "releaseYear": 1986,
+    "spinsCount": 13,
+    "country": "US",
+    "catalogNumber": "AVLN TD 0100"
   },
   {
-    "pressings": [
-      {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-015",
-        "catalogNumber": "IMP-2026-015",
-        "recordId": "rec-webarchive-015",
-        "releaseYear": 1963,
-        "country": "US / Japan",
-        "label": "Decca / London Japan Pressing"
-      }
-    ],
-    "genre": "Symphony",
     "artist": "István Kertész / London Symphony Orchestra",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_16.jpg",
+    "genre": "Symphony",
     "lastSpunAt": "2026-08-01T01:15:11.272270Z",
     "title": "Dvořák: Symphony No. 8 in G major",
-    "releaseYear": 1963,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_16.jpg",
-    "spinsCount": 2,
-    "id": "rec-webarchive-015",
-    "catalogNumber": "IMP-2026-015",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
     "pressings": [
       {
-        "label": "Columbia Red Label Monophonic LP",
+        "recordId": "rec-webarchive-015",
+        "id": "press-webarchive-015",
+        "country": "US / Japan",
+        "label": "Decca / London Japan Pressing",
+        "formatDetails": "12\" Mastered LP",
+        "releaseYear": 1963,
+        "catalogNumber": "IMP-2026-015"
+      }
+    ],
+    "id": "rec-webarchive-015",
+    "releaseYear": 1963,
+    "spinsCount": 2,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "IMP-2026-015"
+  },
+  {
+    "artist": "Dinu Lipatti (迪努·李帕蒂)",
+    "catalogNumber": "IMP-2026-048",
+    "genre": "Piano Instrumental",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-048",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-048",
         "id": "press-webarchive-048",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-048",
         "releaseYear": 1950,
-        "catalogNumber": "IMP-2026-048",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "label": "Columbia Red Label Monophonic LP",
+        "catalogNumber": "IMP-2026-048"
       }
     ],
-    "artist": "Dinu Lipatti (迪努·李帕蒂)",
-    "genre": "Piano Instrumental",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
     "title": "Chopin: 14 Waltzes (14 首钢琴圆舞曲)",
     "releaseYear": 1950,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_49.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-048",
-    "catalogNumber": "IMP-2026-048",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_49.jpg"
   },
   {
+    "artist": "Lazar Berman (拉扎尔·贝尔曼)",
+    "catalogNumber": "IMP-2026-011",
+    "genre": "Piano Instrumental",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-011",
     "pressings": [
       {
-        "label": "Melodiya / Deutsche Grammophon",
+        "recordId": "rec-webarchive-011",
         "id": "press-webarchive-011",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-011",
         "releaseYear": 1977,
-        "catalogNumber": "IMP-2026-011",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "label": "Melodiya / Deutsche Grammophon",
+        "catalogNumber": "IMP-2026-011"
       }
     ],
-    "artist": "Lazar Berman (拉扎尔·贝尔曼)",
-    "genre": "Piano Instrumental",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
     "title": "Scriabin: Piano Sonatas & Preludes",
     "releaseYear": 1977,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_12.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 3,
-    "id": "rec-webarchive-011",
-    "catalogNumber": "IMP-2026-011",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_12.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Columbia Masterworks R-Release",
-        "id": "press-webarchive-019",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-019",
-        "releaseYear": 1969,
-        "catalogNumber": "IMP-2026-019",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Glenn Gould (格伦·古尔德)",
+    "catalogNumber": "IMP-2026-019",
     "genre": "Piano Instrumental",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-019",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-019",
+        "id": "press-webarchive-019",
+        "country": "US / Japan",
+        "releaseYear": 1969,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Columbia Masterworks R-Release",
+        "catalogNumber": "IMP-2026-019"
+      }
+    ],
     "title": "Mozart: Piano Sonatas Nos. 8 & 9 (K. 310 & K. 311)",
     "releaseYear": 1969,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_20.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 12,
-    "id": "rec-webarchive-019",
-    "catalogNumber": "IMP-2026-019",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_20.jpg"
   },
   {
-    "createdAt": "2026-07-14T07:30:00Z",
+    "artist": "Tom Jones",
+    "coverUrl": "https://i.discogs.com/lX2mqb0I969xd9R7vWDBxcZGh2IDTwJmemRaHIYqQbs/rs:fit/g:sm/q:90/h:600/w:587/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyMDI0/MDU2LTE1MjY3NjU1/NzItOTMwMC5qcGVn.jpeg",
     "genre": "Pop / Vocal",
+    "lastSpunAt": "2026-07-30T12:45:29.607440Z",
+    "id": "rec-webarchive-044",
     "pressings": [
       {
-        "label": "Decca / Paragon 12\" LP",
+        "recordId": "rec-webarchive-044",
         "id": "press-webarchive-044",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-044",
         "releaseYear": 1971,
-        "catalogNumber": "IMP-2026-044",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "label": "Decca / Paragon 12\" LP",
+        "catalogNumber": "IMP-2026-044"
       }
     ],
-    "lastSpunAt": "2026-07-30T12:45:29.607440Z",
     "title": "The Tom Jones Story",
     "releaseYear": 1971,
-    "coverUrl": "https://i.discogs.com/lX2mqb0I969xd9R7vWDBxcZGh2IDTwJmemRaHIYqQbs/rs:fit/g:sm/q:90/h:600/w:587/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyMDI0/MDU2LTE1MjY3NjU1/NzItOTMwMC5qcGVn.jpeg",
     "spinsCount": 13,
-    "id": "rec-webarchive-044",
-    "catalogNumber": "IMP-2026-044",
-    "artist": "Tom Jones"
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "IMP-2026-044"
   },
   {
-    "pressings": [
-      {
-        "label": "EMI / Angel Records",
-        "id": "press-webarchive-040",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-040",
-        "releaseYear": 1969,
-        "catalogNumber": "IMP-2026-040",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "György Cziffra (齐夫拉)",
+    "catalogNumber": "IMP-2026-040",
     "genre": "Piano Concerto",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-040",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-040",
+        "id": "press-webarchive-040",
+        "country": "US / Japan",
+        "releaseYear": 1969,
+        "formatDetails": "12\" Mastered LP",
+        "label": "EMI / Angel Records",
+        "catalogNumber": "IMP-2026-040"
+      }
+    ],
     "title": "Liszt: Piano Concerto No. 1 & Hungarian Fantasy",
     "releaseYear": 1969,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_41.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 0,
-    "id": "rec-webarchive-040",
-    "catalogNumber": "IMP-2026-040",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_41.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Supraphon Pressing",
-        "id": "press-webarchive-009",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-009",
-        "releaseYear": 1965,
-        "catalogNumber": "IMP-2026-009",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Jan Panenka (扬·帕年卡)",
+    "catalogNumber": "IMP-2026-009",
     "genre": "Chamber Music",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-009",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-009",
+        "id": "press-webarchive-009",
+        "country": "US / Japan",
+        "releaseYear": 1965,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Supraphon Pressing",
+        "catalogNumber": "IMP-2026-009"
+      }
+    ],
     "title": "Schubert: Piano Quintet 'Trout' & Beethoven Piano Trio",
     "releaseYear": 1965,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_10.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 12,
-    "id": "rec-webarchive-009",
-    "catalogNumber": "IMP-2026-009",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_10.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-163",
-        "recordId": "rec-user-163",
-        "catalogNumber": "13AC 134",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
     "artist": "Eugene Ormandy / The Philadelphia Orchestra",
-    "createdAt": "2026-07-30T08:23:06.117923Z",
-    "catalogNumber": "13AC 134",
-    "title": "Prokofiev: Classical Symphony, Op. 25 / Suite from \"The Love for Three Oranges\" / Shostakovich: Symphony No. 1 in F Major, Op. 10",
-    "releaseYear": 1976,
     "coverUrl": "https://i.discogs.com/URsjuFA1ZPeupiEnXAUp-RSaKBGLyUgwoOukIkNwtQA/rs:fit/g:sm/q:90/h:587/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTc2NjU0/NTgtMTQ4NzUxMzM3/MS03NjcyLmpwZWc.jpeg",
-    "spinsCount": 0,
-    "id": "rec-user-163",
+    "formatDetails": "Standard Vinyl LP",
     "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "catalogNumber": "IMP-2026-005",
+    "lastSpunAt": "2026-08-01T09:33:44.837896Z",
+    "title": "Prokofiev: Classical Symphony, Op. 25 / Suite from \"The Love for Three Oranges\" / Shostakovich: Symphony No. 1 in F Major, Op. 10",
     "pressings": [
       {
-        "label": "Telefunken / Japan Pressing",
-        "id": "press-webarchive-005",
-        "catalogNumber": "IMP-2026-005",
-        "recordId": "rec-webarchive-005",
-        "releaseYear": 1973,
-        "country": "US / Japan",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "rec-user-163",
+        "id": "press-rec-user-163",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "13AC 134"
       }
     ],
+    "id": "rec-user-163",
+    "releaseYear": 1976,
+    "spinsCount": 1,
+    "createdAt": "2026-07-30T08:23:06.117923Z",
+    "catalogNumber": "13AC 134"
+  },
+  {
     "artist": "Frans Brüggen (弗朗斯·布鲁根)",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_6.jpg",
+    "genre": "Baroque Chamber",
     "lastSpunAt": "2026-07-30T15:22:38.254316Z",
+    "id": "rec-webarchive-005",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-005",
+        "id": "press-webarchive-005",
+        "label": "Telefunken / Japan Pressing",
+        "releaseYear": 1973,
+        "formatDetails": "12\" Mastered LP",
+        "country": "US / Japan",
+        "catalogNumber": "IMP-2026-005"
+      }
+    ],
     "title": "Baroque Recorder & Flute Works (Telemann / van Eyck)",
     "releaseYear": 1973,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_6.jpg",
     "spinsCount": 1,
-    "id": "rec-webarchive-005",
-    "genre": "Baroque Chamber",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "IMP-2026-005"
   },
   {
+    "catalogNumber": "EAC-80359",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fc89c61f.jpg",
+    "label": "Angel Records",
+    "title": "Beecham / Delius (Vol. 1) - Summer Night On The River",
+    "id": "rec-user-167",
+    "spinsCount": 2,
+    "formatDetails": "Standard Vinyl LP",
     "country": "Japan",
     "artist": "Sir Thomas Beecham, Royal Philharmonic Orchestra",
     "genre": "Classical",
     "lastSpunAt": "2026-07-31T06:12:09.451845Z",
-    "catalogNumber": "EAC-80359",
-    "releaseYear": 2024,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fc89c61f.jpg",
-    "formatDetails": "Standard Vinyl LP",
-    "createdAt": "2026-07-31T03:36:54.485542Z",
-    "title": "Beecham / Delius (Vol. 1) - Summer Night On The River",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fc89c61f.jpg",
-    "spinsCount": 2,
-    "id": "rec-user-167",
     "pressings": [
       {
-        "catalogNumber": "EAC-80359",
-        "id": "press-temp-1785469014268",
-        "formatDetails": "Standard Vinyl Pressing",
         "recordId": "temp-1785469014268",
+        "id": "press-temp-1785469014268",
+        "label": "Angel Records",
         "country": "Japan",
-        "label": "Angel Records"
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "EAC-80359"
       }
     ],
-    "label": "Angel Records"
+    "releaseYear": 2024,
+    "createdAt": "2026-07-31T03:36:54.485542Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_fc89c61f.jpg"
   },
   {
+    "artist": "Ingrid Haebler (英格丽德·海布勒)",
+    "catalogNumber": "IMP-2026-042",
+    "genre": "Piano Instrumental",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-042",
     "pressings": [
       {
-        "label": "Philips 12\" LP",
+        "recordId": "rec-webarchive-042",
         "id": "press-webarchive-042",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-042",
         "releaseYear": 1967,
-        "catalogNumber": "IMP-2026-042",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "label": "Philips 12\" LP",
+        "catalogNumber": "IMP-2026-042"
       }
     ],
-    "artist": "Ingrid Haebler (英格丽德·海布勒)",
-    "genre": "Piano Instrumental",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
     "title": "Schubert: Complete Impromptus Op. 90 & Op. 142",
     "releaseYear": 1967,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_43.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-042",
-    "catalogNumber": "IMP-2026-042",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_43.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Philadelphia International",
-        "id": "press-webarchive-046",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-046",
-        "releaseYear": 1975,
-        "catalogNumber": "IMP-2026-046",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "The Three Degrees",
+    "catalogNumber": "IMP-2026-046",
     "genre": "Soul / Funk / Disco",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-046",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-046",
+        "id": "press-webarchive-046",
+        "country": "US / Japan",
+        "releaseYear": 1975,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Philadelphia International",
+        "catalogNumber": "IMP-2026-046"
+      }
+    ],
     "title": "International (Soul / Disco)",
     "releaseYear": 1975,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_47.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 3,
-    "id": "rec-webarchive-046",
-    "catalogNumber": "IMP-2026-046",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_47.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "Philips 12\" LP",
-        "id": "press-webarchive-013",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-013",
-        "releaseYear": 1971,
-        "catalogNumber": "IMP-2026-013",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Claudio Arrau (克劳迪奥·阿劳)",
+    "catalogNumber": "IMP-2026-013",
     "genre": "Piano Instrumental",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-013",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-013",
+        "id": "press-webarchive-013",
+        "country": "US / Japan",
+        "releaseYear": 1971,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Philips 12\" LP",
+        "catalogNumber": "IMP-2026-013"
+      }
+    ],
     "title": "Liszt: Concert Paraphrases on Verdi Operas",
     "releaseYear": 1971,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_14.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-013",
-    "catalogNumber": "IMP-2026-013",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_14.jpg"
   },
   {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_cccf41a9.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_cccf41a9.jpg",
+    "label": "Cetra",
+    "title": "Beethoven | Mozart | Richard Strauss (1954, Lugano)",
+    "id": "rec-user-dfe6dd04",
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 1,
+    "country": "Italy",
+    "artist": "Wilhelm Furtwängler, Berlin Philharmonic Orchestra, Yvonne Lefébure",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T12:11:17.629240Z",
     "pressings": [
       {
-        "label": "EMI Electrola",
-        "id": "press-webarchive-017",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-017",
-        "releaseYear": 1975,
-        "catalogNumber": "IMP-2026-017",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785586247186",
+        "id": "press-temp-1785586247186",
+        "label": "Cetra",
+        "country": "Italy",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "LO 529"
       }
     ],
+    "releaseYear": 1979,
+    "createdAt": "2026-08-01T12:11:10.017767Z",
+    "catalogNumber": "LO 529"
+  },
+  {
     "artist": "Alban Berg Quartett",
+    "catalogNumber": "IMP-2026-017",
     "genre": "Chamber Music",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-017",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-017",
+        "id": "press-webarchive-017",
+        "country": "US / Japan",
+        "releaseYear": 1975,
+        "formatDetails": "12\" Mastered LP",
+        "label": "EMI Electrola",
+        "catalogNumber": "IMP-2026-017"
+      }
+    ],
     "title": "Schubert: String Quartets No. 13 'Rosamunde' & No. 14",
     "releaseYear": 1975,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_18.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-017",
-    "catalogNumber": "IMP-2026-017",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_18.jpg"
   },
   {
-    "catalogNumber": "RD15-S",
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-165",
-        "recordId": "rec-user-165",
-        "catalogNumber": "RD15-S",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
     "artist": "Earl Wild / Anatole Fistoulari / Royal Philharmonic Orchestra",
-    "lastSpunAt": "2026-07-30T14:22:15.590854Z",
-    "title": "Tchaikovsky: Piano Concerto No. 1 in B-Flat Minor",
-    "releaseYear": 1964,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_d1fd7c95.jpg",
     "spinsCount": 2,
-    "formatDetails": "Standard Vinyl LP",
-    "id": "rec-user-165",
     "genre": "Classical",
-    "createdAt": "2026-07-30T08:25:10.330259Z"
-  },
-  {
+    "lastSpunAt": "2026-07-30T14:22:15.590854Z",
+    "id": "rec-user-165",
     "pressings": [
       {
-        "label": "EMI / Angel Records (2LP)",
-        "id": "press-webarchive-003",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-003",
-        "releaseYear": 1961,
-        "catalogNumber": "IMP-2026-003",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "rec-user-165",
+        "id": "press-rec-user-165",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "RD15-S"
       }
     ],
-    "artist": "Otto Klemperer / Philharmonia Orchestra",
-    "genre": "Symphony",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
-    "title": "Beethoven: Symphony No. 7 in A major, Op. 92",
-    "releaseYear": 1961,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_4.jpg",
-    "spinsCount": 9,
-    "id": "rec-webarchive-003",
-    "catalogNumber": "IMP-2026-003",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "title": "Tchaikovsky: Piano Concerto No. 1 in B-Flat Minor",
+    "releaseYear": 1964,
+    "createdAt": "2026-07-30T08:25:10.330259Z",
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "RD15-S"
   },
   {
-    "formatDetails": "Standard Vinyl LP",
+    "artist": "Otto Klemperer / Philharmonia Orchestra",
+    "catalogNumber": "IMP-2026-003",
+    "genre": "Symphony",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-003",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-003",
+        "id": "press-webarchive-003",
+        "country": "US / Japan",
+        "releaseYear": 1961,
+        "formatDetails": "12\" Mastered LP",
+        "label": "EMI / Angel Records (2LP)",
+        "catalogNumber": "IMP-2026-003"
+      }
+    ],
+    "title": "Beethoven: Symphony No. 7 in A major, Op. 92",
+    "releaseYear": 1961,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "spinsCount": 9,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_4.jpg"
+  },
+  {
+    "artist": "Hans Kann / Heribert Beissel / Hamburg Symphony",
     "createdAt": "2026-07-29T10:25:38.829129Z",
+    "coverUrl": "https://i.discogs.com/46GYcRl5rnahbwnMHqYTgmM3ETIg1GD7KDNOz-Nskco/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM1MTYw/Njg1LTE3NTg0NTY1/MTItNDYyNi5qcGVn.jpeg",
     "genre": "Classical",
     "lastSpunAt": "2026-07-30T12:46:54.711131Z",
     "title": "Kalkbrenner: Piano Concerto No. 1 / Hummel: Piano Concerto in E Major, Op. 110 \"Les Adieux\"",
-    "releaseYear": 2024,
-    "coverUrl": "https://i.discogs.com/46GYcRl5rnahbwnMHqYTgmM3ETIg1GD7KDNOz-Nskco/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM1MTYw/Njg1LTE3NTg0NTY1/MTItNDYyNi5qcGVn.jpeg",
-    "spinsCount": 1,
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-161",
         "recordId": "rec-user-161",
-        "catalogNumber": "H-6002V",
-        "formatDetails": "Standard Vinyl Pressing"
+        "id": "press-rec-user-161",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "H-6002V"
       }
     ],
     "id": "rec-user-161",
-    "catalogNumber": "H-6002V",
-    "artist": "Hans Kann / Heribert Beissel / Hamburg Symphony"
-  },
-  {
-    "pressings": [
-      {
-        "label": "Audiophile 12\" LP",
-        "id": "press-webarchive-007",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-007",
-        "releaseYear": 1970,
-        "catalogNumber": "IMP-2026-007",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
-    "artist": "Piano Masterworks",
-    "genre": "Piano Instrumental",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
-    "title": "Beethoven & Liszt: Piano Sonatas",
-    "releaseYear": 1970,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_8.jpg",
-    "spinsCount": 6,
-    "id": "rec-webarchive-007",
-    "catalogNumber": "IMP-2026-007",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
-    "catalogNumber": "SLC 8096",
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-169",
-        "recordId": "rec-user-169",
-        "catalogNumber": "SLC 8096",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "artist": "Václav Neumann / Czech Philharmonic Orchestra",
-    "lastSpunAt": "2026-07-30T14:23:14.661198Z",
-    "title": "Dvořák: Slavonic Dances, Op. 46, 72",
-    "releaseYear": 1979,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f3778466.jpg",
+    "releaseYear": 2024,
     "spinsCount": 1,
     "formatDetails": "Standard Vinyl LP",
-    "id": "rec-user-169",
-    "genre": "Classical",
-    "createdAt": "2026-07-30T08:43:44.015389Z"
+    "catalogNumber": "H-6002V"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "H-5069",
+    "artist": "Piano Masterworks",
+    "catalogNumber": "IMP-2026-007",
+    "genre": "Piano Instrumental",
+    "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-007",
     "pressings": [
       {
-        "label": "Pioneer",
-        "id": "press-temp-1785494670120",
-        "catalogNumber": "H-5069",
-        "recordId": "temp-1785494670120",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "Pioneer",
-    "title": "Georg Friedrich Händel: Organ Concertos, Op.4, Vol. II",
-    "releaseYear": 1961,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_1074177a.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_1074177a.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-919a9852",
-    "artist": "Walter Kraft, Pro Musica Chamber Orchestra, Stuttgart, Rolf Reinhardt",
-    "createdAt": "2026-07-31T10:44:31.198319Z",
-    "genre": "Baroque",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "country": "Japan",
-    "catalogNumber": "SLC 1160",
-    "pressings": [
-      {
-        "label": "London Records",
-        "id": "press-temp-1785491976684",
-        "catalogNumber": "SLC 1160",
-        "recordId": "temp-1785491976684",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "London Records",
-    "title": "Songs of Italy",
-    "releaseYear": 1963,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f9c2278a.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f9c2278a.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-c779cc32",
-    "artist": "Mario Del Monaco",
-    "createdAt": "2026-07-31T09:59:44.078992Z",
-    "genre": "Classical / Canzone Napoletana / Vocal",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "pressings": [
-      {
-        "label": "Columbia Masterworks",
-        "id": "press-webarchive-023",
+        "recordId": "rec-webarchive-007",
+        "id": "press-webarchive-007",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-023",
-        "releaseYear": 1966,
-        "catalogNumber": "IMP-2026-023",
-        "formatDetails": "12\" Mastered LP"
+        "releaseYear": 1970,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Audiophile 12\" LP",
+        "catalogNumber": "IMP-2026-007"
       }
     ],
+    "title": "Beethoven & Liszt: Piano Sonatas",
+    "releaseYear": 1970,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "spinsCount": 6,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_8.jpg"
+  },
+  {
+    "artist": "Václav Neumann / Czech Philharmonic Orchestra",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f3778466.jpg",
+    "spinsCount": 1,
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-30T14:23:14.661198Z",
+    "id": "rec-user-169",
+    "pressings": [
+      {
+        "recordId": "rec-user-169",
+        "id": "press-rec-user-169",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "SLC 8096"
+      }
+    ],
+    "title": "Dvořák: Slavonic Dances, Op. 46, 72",
+    "releaseYear": 1979,
+    "createdAt": "2026-07-30T08:43:44.015389Z",
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "SLC 8096"
+  },
+  {
+    "artist": "Walter Kraft, Pro Musica Chamber Orchestra, Stuttgart, Rolf Reinhardt",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_1074177a.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_1074177a.jpg",
+    "country": "Japan",
+    "label": "Pioneer",
+    "genre": "Baroque",
+    "createdAt": "2026-07-31T10:44:31.198319Z",
+    "title": "Georg Friedrich Händel: Organ Concertos, Op.4, Vol. II",
+    "pressings": [
+      {
+        "recordId": "temp-1785494670120",
+        "id": "press-temp-1785494670120",
+        "label": "Pioneer",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "H-5069"
+      }
+    ],
+    "id": "rec-user-919a9852",
+    "releaseYear": 1961,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "H-5069"
+  },
+  {
+    "artist": "Mario Del Monaco",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f9c2278a.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f9c2278a.jpg",
+    "country": "Japan",
+    "label": "London Records",
+    "genre": "Classical / Canzone Napoletana / Vocal",
+    "createdAt": "2026-07-31T09:59:44.078992Z",
+    "title": "Songs of Italy",
+    "pressings": [
+      {
+        "recordId": "temp-1785491976684",
+        "id": "press-temp-1785491976684",
+        "label": "London Records",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "SLC 1160"
+      }
+    ],
+    "id": "rec-user-c779cc32",
+    "releaseYear": 1963,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "SLC 1160"
+  },
+  {
     "artist": "Leonard Bernstein / New York Philharmonic",
+    "catalogNumber": "IMP-2026-023",
     "genre": "Symphony",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-023",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-023",
+        "id": "press-webarchive-023",
+        "country": "US / Japan",
+        "releaseYear": 1966,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Columbia Masterworks",
+        "catalogNumber": "IMP-2026-023"
+      }
+    ],
     "title": "Mahler: Symphony No. 1 'Titan'",
     "releaseYear": 1966,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_24.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-023",
-    "catalogNumber": "IMP-2026-023",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_24.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "12\" LP Compilation",
-        "id": "press-webarchive-027",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-027",
-        "releaseYear": 1979,
-        "catalogNumber": "IMP-2026-027",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Various Jazz Artists",
+    "catalogNumber": "IMP-2026-027",
     "genre": "Jazz / Crossover",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-027",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-027",
+        "id": "press-webarchive-027",
+        "country": "US / Japan",
+        "releaseYear": 1979,
+        "formatDetails": "12\" Mastered LP",
+        "label": "12\" LP Compilation",
+        "catalogNumber": "IMP-2026-027"
+      }
+    ],
     "title": "Jazz Crossover Hits Vol. 1",
     "releaseYear": 1979,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_28.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-027",
-    "catalogNumber": "IMP-2026-027",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_28.jpg"
   },
   {
-    "pressings": [
-      {
-        "catalogNumber": "EAC-60074",
-        "id": "press-temp-1785475176994",
-        "label": "Angel Records",
-        "recordId": "temp-1785475176994",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
     "artist": "Jean Martinon, Orchestre National de l'O.R.T.F.",
-    "catalogNumber": "EAC-60074",
-    "label": "Angel Records",
-    "title": "Debussy: La Plus Que Lente / Khamma / Danses Pour Harpe Et Orchestre A Cordes / Petite Suite",
-    "releaseYear": 2024,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_857a2866.jpg",
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_857a2866.jpg",
     "spinsCount": 0,
-    "id": "rec-user-149",
+    "catalogNumber": "EAC-60074",
+    "label": "Angel Records",
     "genre": "Classical",
     "createdAt": "2026-07-31T05:19:59.648032Z",
-    "country": "Japan",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "country": "Japan",
-    "catalogNumber": "MGX7029",
+    "id": "rec-user-149",
     "pressings": [
       {
-        "label": "Deutsche Grammophon",
-        "id": "press-temp-1785493066418",
-        "catalogNumber": "MGX7029",
-        "recordId": "temp-1785493066418",
+        "recordId": "temp-1785475176994",
+        "id": "press-temp-1785475176994",
+        "label": "Angel Records",
         "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "EAC-60074"
       }
     ],
-    "label": "Deutsche Grammophon",
-    "title": "Bach: Johannes-Passion – Chöre und Arien",
-    "releaseYear": 1979,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_027d6f06.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_027d6f06.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-9bad5f2f",
-    "artist": "Karl Richter, Münchener Bach-Chor und Orchester",
-    "createdAt": "2026-07-31T10:17:46.600048Z",
-    "genre": "Baroque",
-    "formatDetails": "Standard Vinyl LP"
+    "title": "Debussy: La Plus Que Lente / Khamma / Danses Pour Harpe Et Orchestre A Cordes / Petite Suite",
+    "releaseYear": 2024,
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_857a2866.jpg"
   },
   {
+    "artist": "Karl Richter, Münchener Bach-Chor und Orchester",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_027d6f06.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_027d6f06.jpg",
+    "country": "Japan",
+    "label": "Deutsche Grammophon",
+    "genre": "Baroque",
+    "createdAt": "2026-07-31T10:17:46.600048Z",
+    "title": "Bach: Johannes-Passion – Chöre und Arien",
+    "pressings": [
+      {
+        "recordId": "temp-1785493066418",
+        "id": "press-temp-1785493066418",
+        "label": "Deutsche Grammophon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "MGX7029"
+      }
+    ],
+    "id": "rec-user-9bad5f2f",
+    "releaseYear": 1979,
+    "spinsCount": 0,
     "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "MGX7029"
+  },
+  {
+    "artist": "Lily Laskine / Jean-Pierre Rampal / Pierre Pierlot / Jean-François Paillard / Orchestre de Chambre Jean-François Paillard",
+    "coverUrl": "https://i.discogs.com/zx97bCty2VBsCDH-J6DI31aZP-vxgcF0x4-5tP2buU0/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyNTM0/MzUyLTE1MzcxMzM2/NzItNzA1MS5qcGVn.jpeg",
     "createdAt": "2026-07-29T09:59:21.238086Z",
     "genre": "Classical",
     "lastSpunAt": "2026-07-30T12:51:39.852187Z",
+    "id": "rec-user-159",
+    "pressings": [
+      {
+        "recordId": "rec-user-159",
+        "id": "press-rec-user-159",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "ERA 2092"
+      }
+    ],
     "title": "Haendel: Concerto pour harpe et orchestre",
     "releaseYear": 1975,
-    "coverUrl": "https://i.discogs.com/zx97bCty2VBsCDH-J6DI31aZP-vxgcF0x4-5tP2buU0/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyNTM0/MzUyLTE1MzcxMzM2/NzItNzA1MS5qcGVn.jpeg",
+    "formatDetails": "Standard Vinyl LP",
     "spinsCount": 1,
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-159",
-        "recordId": "rec-user-159",
-        "catalogNumber": "ERA 2092",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "id": "rec-user-159",
-    "catalogNumber": "ERA 2092",
-    "artist": "Lily Laskine / Jean-Pierre Rampal / Pierre Pierlot / Jean-François Paillard / Orchestre de Chambre Jean-François Paillard"
+    "catalogNumber": "ERA 2092"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "SONC 10357",
-    "pressings": [
-      {
-        "label": "CBS/Sony",
-        "id": "press-temp-1785492761496",
-        "catalogNumber": "SONC 10357",
-        "recordId": "temp-1785492761496",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "CBS/Sony",
-    "title": "Boulez Conducts Beethoven: Symphony No. 5 / Cantata 'Calm Sea and Prosperous Voyage'",
-    "releaseYear": 1970,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5efb13d0.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5efb13d0.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-4f98cd24",
     "artist": "Pierre Boulez, New Philharmonia Orchestra, John Alldis Choir",
-    "createdAt": "2026-07-31T10:12:41.675645Z",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5efb13d0.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5efb13d0.jpg",
+    "country": "Japan",
+    "label": "CBS/Sony",
     "genre": "Classical Orchestral",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
+    "createdAt": "2026-07-31T10:12:41.675645Z",
+    "title": "Boulez Conducts Beethoven: Symphony No. 5 / Cantata 'Calm Sea and Prosperous Voyage'",
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-155",
-        "recordId": "rec-user-155",
-        "catalogNumber": "GS-27",
-        "formatDetails": "Standard Vinyl Pressing"
+        "recordId": "temp-1785492761496",
+        "id": "press-temp-1785492761496",
+        "label": "CBS/Sony",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "SONC 10357"
       }
     ],
+    "id": "rec-user-4f98cd24",
+    "releaseYear": 1970,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "SONC 10357"
+  },
+  {
     "artist": "Roberto Benzi / Orchestre des Concerts Lamoureux",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dcae2934.jpg",
+    "createdAt": "2026-07-29T09:50:04.883188Z",
     "genre": "Classical",
     "lastSpunAt": "2026-07-30T14:50:04.183259Z",
     "title": "「ウィリアム・テル」〜楽しい序曲集 (\"William Tell\" Overture Favorites)",
-    "releaseYear": 2024,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dcae2934.jpg",
-    "spinsCount": 2,
-    "createdAt": "2026-07-29T09:50:04.883188Z",
-    "id": "rec-user-155",
-    "catalogNumber": "GS-27",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
     "pressings": [
       {
-        "label": "Deutsche Grammophon",
-        "id": "press-webarchive-033",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-033",
-        "releaseYear": 1968,
-        "catalogNumber": "IMP-2026-033",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "rec-user-155",
+        "id": "press-rec-user-155",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "GS-27"
       }
     ],
+    "id": "rec-user-155",
+    "releaseYear": 2024,
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 2,
+    "catalogNumber": "GS-27"
+  },
+  {
     "artist": "Amadeus Quartet",
+    "catalogNumber": "IMP-2026-033",
     "genre": "Chamber Music",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-033",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-033",
+        "id": "press-webarchive-033",
+        "country": "US / Japan",
+        "releaseYear": 1968,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Deutsche Grammophon",
+        "catalogNumber": "IMP-2026-033"
+      }
+    ],
     "title": "Brahms: String Sextet No. 1 in B-flat major",
     "releaseYear": 1968,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_34.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-033",
-    "catalogNumber": "IMP-2026-033",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_34.jpg"
   },
   {
-    "formatDetails": "Standard Vinyl LP",
-    "pressings": [
-      {
-        "country": "Japan",
-        "id": "press-temp-1785471542874",
-        "formatDetails": "Standard Vinyl Pressing",
-        "recordId": "temp-1785471542874",
-        "catalogNumber": "ERA2092",
-        "label": "Erato"
-      }
-    ],
-    "catalogNumber": "ERA2092",
-    "genre": "Classical",
-    "title": "Concerto pour harpe et orchestre",
-    "releaseYear": 1975,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_c65288f2.jpg",
-    "spinsCount": 0,
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_c65288f2.jpg",
-    "id": "rec-user-151",
     "label": "Erato",
-    "artist": "G.F. Haendel / Lily Laskine, Jean-Pierre Rampal, Pierre Pierlot, Orchestre de Chambre Jean-François Paillard, Jean-François Paillard",
+    "title": "Concerto pour harpe et orchestre",
+    "id": "rec-user-151",
     "country": "Japan",
-    "createdAt": "2026-07-31T04:19:32.545455Z"
-  },
-  {
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 1,
+    "artist": "G.F. Haendel / Lily Laskine, Jean-Pierre Rampal, Pierre Pierlot, Orchestre de Chambre Jean-François Paillard, Jean-François Paillard",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T09:53:59.978422Z",
     "pressings": [
       {
-        "label": "Decca / London Japan Pressing",
-        "id": "press-webarchive-037",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-037",
-        "releaseYear": 1964,
-        "catalogNumber": "IMP-2026-037",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785471542874",
+        "id": "press-temp-1785471542874",
+        "label": "Erato",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "ERA2092"
       }
     ],
-    "artist": "Herbert von Karajan / Vienna Philharmonic",
-    "genre": "Symphony",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
-    "title": "Haydn: Symphonies No. 103 'Drumroll' & No. 104 'London'",
-    "releaseYear": 1964,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_38.jpg",
-    "spinsCount": 6,
+    "releaseYear": 1975,
+    "createdAt": "2026-07-31T04:19:32.545455Z",
+    "catalogNumber": "ERA2092"
+  },
+  {
+    "artist": "Herbert von Karajan, Vienna Philharmonic Orchestra",
+    "catalogNumber": "L16C-1615",
+    "createdAt": "2026-07-14T07:30:00Z",
+    "spinsCount": 11,
+    "label": "London Records",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T04:12:27.224075Z",
     "id": "rec-webarchive-037",
-    "catalogNumber": "IMP-2026-037",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-037",
+        "id": "press-webarchive-037",
+        "formatDetails": "12\" Mastered LP",
+        "releaseYear": 1964,
+        "country": "US / Japan",
+        "label": "Decca / London Japan Pressing",
+        "catalogNumber": "IMP-2026-037"
+      }
+    ],
+    "listeningGuide": {
+      "vinylTip": "Because this Japanese pressing uses UK Decca master metalwork, expect wide dynamic range, rich low-end timpani resonance, and brilliant brass extension with virtually zero surface noise.",
+      "tracklist": [
+        {
+          "position": "A1",
+          "title": "Symphony No. 103 in E-flat major \"Drum Roll\": I. Adagio - Allegro con spirito",
+          "highlight": true,
+          "whatToListenFor": "The solo opening timpani roll that gives the symphony its famous nickname, followed by a mysterious slow introduction before breaking into a lively Allegro.",
+          "duration": "9:45"
+        },
+        {
+          "position": "A2",
+          "title": "Symphony No. 103 in E-flat major \"Drum Roll\": II. Andante più tosto allegretto",
+          "highlight": false,
+          "whatToListenFor": "Alternating double-variations in C minor and C major highlighting delicate Vienna woodwind solos and a solo violin passage.",
+          "duration": "9:10"
+        },
+        {
+          "position": "A3",
+          "title": "Symphony No. 103 in E-flat major \"Drum Roll\": III. Menuet - Trio",
+          "highlight": false,
+          "whatToListenFor": "Stately Viennese court dance rhythms crafted with Karajan's signature precision and orchestral weight.",
+          "duration": "5:25"
+        },
+        {
+          "position": "A4",
+          "title": "Symphony No. 103 in E-flat major \"Drum Roll\": IV. Finale: Allegro con spirito",
+          "highlight": true,
+          "whatToListenFor": "Constructed around a single horn call theme that expands into a thrilling display of contrapuntal energy and brass fanfare.",
+          "duration": "5:10"
+        },
+        {
+          "position": "B1",
+          "title": "Symphony No. 104 in D major \"London\": I. Adagio - Allegro",
+          "highlight": true,
+          "whatToListenFor": "A grave D minor introductory fanfare that gives way to a sunny, majestic D major sonata movement.",
+          "duration": "8:40"
+        },
+        {
+          "position": "B2",
+          "title": "Symphony No. 104 in D major \"London\": II. Andante",
+          "highlight": false,
+          "whatToListenFor": "Warm string tone characteristic of the Vienna Philharmonic playing lyric G major themes.",
+          "duration": "8:09"
+        },
+        {
+          "position": "B3",
+          "title": "Symphony No. 104 in D major \"London\": III. Menuetto: Allegro",
+          "highlight": false,
+          "whatToListenFor": "Robust, rhythmic minuet contrasts with a pastoral, delicate Trio in B-flat major.",
+          "duration": "4:19"
+        },
+        {
+          "position": "B4",
+          "title": "Symphony No. 104 in D major \"London\": IV. Finale: Allegro spiritoso",
+          "highlight": true,
+          "whatToListenFor": "Folk-inspired theme based on a London street vendor song over a bagpipe-like drone bass, driving to an exuberant finale.",
+          "duration": "4:42"
+        }
+      ],
+      "recommendedMood": "An elegant, intellectually stimulating classical evening session suited for fine audio listening.",
+      "albumBackground": "Recorded in Vienna's famed Sofiensaal, these legendary Decca performances feature Herbert von Karajan leading the Vienna Philharmonic Orchestra in two of Joseph Haydn's ultimate masterpieces: Symphony No. 103 in E-flat major (\"Drum Roll\") and Symphony No. 104 in D major (\"London\"). These works represent the peak of Haydn's orchestral genius, written during his second trip to England in the 1790s.\n\nThis specific Japanese issue (L16C-1615) belongs to London/Polydor's celebrated mid-1980s series \"London Immortal Masterpieces 1600\" (ロンドン不朽の名盤1600). A defining audiophile highlight noted on the blue obi strip is \"直輸入メタル原盤使用\" (Direct imported UK metal stampers used), providing the coveted master-tape clarity and punch of original Decca metalwork paired with quiet Japanese vinyl pressings."
+    },
+    "releaseYear": 1983,
+    "country": "Japan",
+    "title": "Haydn: Symphony No. 103 \"Drum Roll\" & Symphony No. 104 \"London\"",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_38.jpg"
   },
   {
     "catalogNumber": "DL 1050",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_0fa7ca2c.jpg",
+    "label": "Vox",
+    "id": "rec-user-8ea0988f",
+    "title": "Franz Peter Schubert: Piano Music Vol. 17 - 4-Hand Works II · Supplement",
     "country": "Japan",
     "formatDetails": "Standard Vinyl LP",
-    "lastSpunAt": "2026-07-31T09:36:51.716006Z",
-    "genre": "Classical",
-    "releaseYear": 1964,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_0fa7ca2c.jpg",
-    "artist": "Alfred Brendel, Evelyne Crochet, Orchestra of the Vienna Volksoper, Michael Gielen",
-    "createdAt": "2026-07-31T09:34:35.126852Z",
-    "title": "Franz Peter Schubert: Piano Music Vol. 17 - 4-Hand Works II · Supplement",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_0fa7ca2c.jpg",
     "spinsCount": 1,
-    "id": "rec-user-8ea0988f",
+    "artist": "Alfred Brendel, Evelyne Crochet, Orchestra of the Vienna Volksoper, Michael Gielen",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T09:36:51.716006Z",
     "pressings": [
       {
-        "catalogNumber": "DL 1050",
-        "id": "press-temp-1785490447867",
-        "formatDetails": "Standard Vinyl Pressing",
         "recordId": "temp-1785490447867",
+        "id": "press-temp-1785490447867",
+        "label": "Vox",
         "country": "Japan",
-        "label": "Vox"
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "DL 1050"
       }
     ],
-    "label": "Vox"
+    "releaseYear": 1964,
+    "createdAt": "2026-07-31T09:34:35.126852Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_0fa7ca2c.jpg"
   },
   {
-    "formatDetails": "Standard Vinyl LP",
+    "artist": "The Budapest String Quartet",
     "createdAt": "2026-07-29T09:58:21.344634Z",
     "catalogNumber": "FCCA 484",
+    "genre": "Classical",
+    "id": "rec-user-158",
     "pressings": [
       {
-        "label": "Standard Release",
-        "id": "press-rec-user-158",
         "recordId": "rec-user-158",
-        "catalogNumber": "FCCA 484",
-        "formatDetails": "Standard Vinyl Pressing"
+        "id": "press-rec-user-158",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "FCCA 484"
       }
     ],
     "title": "Beethoven: Quartet No. 9 in C Major, Op. 59, No. 3 \"Rasumovsky\" / Quartet No. 11 in F Minor, Op. 95 \"Serioso\"",
     "releaseYear": 2024,
-    "coverUrl": "https://i.discogs.com/MiPMB_GaQ9ZPjHjMRvIAhXlmW1PIBhFjrcNmpQJ6AFk/rs:fit/g:sm/q:90/h:600/w:586/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE5MDkz/MDY2LTE2MjMzNTMy/MzktNzM4NC5qcGVn.jpeg",
+    "formatDetails": "Standard Vinyl LP",
     "spinsCount": 0,
-    "id": "rec-user-158",
-    "genre": "Classical",
-    "artist": "The Budapest String Quartet"
+    "coverUrl": "https://i.discogs.com/MiPMB_GaQ9ZPjHjMRvIAhXlmW1PIBhFjrcNmpQJ6AFk/rs:fit/g:sm/q:90/h:600/w:586/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE5MDkz/MDY2LTE2MjMzNTMy/MzktNzM4NC5qcGVn.jpeg"
   },
   {
+    "artist": "Josef Hofmann",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_70338976.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_70338976.jpg",
     "country": "Japan",
-    "catalogNumber": "25AC 241",
+    "label": "CBS/Sony",
+    "genre": "Classical",
+    "createdAt": "2026-07-31T10:40:34.245432Z",
+    "title": "The Great Pianists of the Century Vol.1",
     "pressings": [
       {
-        "label": "CBS/Sony",
-        "id": "press-temp-1785494414476",
-        "catalogNumber": "25AC 241",
         "recordId": "temp-1785494414476",
+        "id": "press-temp-1785494414476",
+        "label": "CBS/Sony",
+        "formatDetails": "Standard Vinyl Pressing",
         "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
+        "catalogNumber": "25AC 241"
       }
     ],
-    "label": "CBS/Sony",
-    "title": "The Great Pianists of the Century Vol.1",
-    "releaseYear": 1977,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_70338976.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_70338976.jpg",
-    "spinsCount": 0,
     "id": "rec-user-f3ff2278",
-    "artist": "Josef Hofmann",
-    "createdAt": "2026-07-31T10:40:34.245432Z",
-    "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP"
+    "releaseYear": 1977,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "25AC 241"
   },
   {
     "catalogNumber": "XS-146-K",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f48cd24a.jpg",
+    "label": "Columbia",
+    "id": "rec-user-150",
+    "title": "Continental Waltzes In Golden Age",
     "country": "Japan",
     "formatDetails": "Standard Vinyl LP",
-    "lastSpunAt": "2026-07-31T09:22:28.765346Z",
-    "genre": "Classical",
-    "releaseYear": 1972,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f48cd24a.jpg",
-    "artist": "Robert Stolz, Berlin Symphony Orchestra, Sylvia Geszty",
-    "createdAt": "2026-07-31T04:16:53.915383Z",
-    "title": "Continental Waltzes In Golden Age",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f48cd24a.jpg",
     "spinsCount": 1,
-    "id": "rec-user-150",
+    "artist": "Robert Stolz, Berlin Symphony Orchestra, Sylvia Geszty",
+    "genre": "Classical",
+    "lastSpunAt": "2026-07-31T09:22:28.765346Z",
     "pressings": [
       {
-        "catalogNumber": "XS-146-K",
-        "id": "press-temp-1785471413401",
-        "formatDetails": "Standard Vinyl Pressing",
         "recordId": "temp-1785471413401",
+        "id": "press-temp-1785471413401",
+        "label": "Columbia",
         "country": "Japan",
-        "label": "Columbia"
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "XS-146-K"
       }
     ],
-    "label": "Columbia"
+    "releaseYear": 1972,
+    "createdAt": "2026-07-31T04:16:53.915383Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_f48cd24a.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "RCA Red Seal R-Release",
-        "id": "press-webarchive-036",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-036",
-        "releaseYear": 1965,
-        "catalogNumber": "IMP-2026-036",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Arthur Rubinstein",
+    "catalogNumber": "IMP-2026-036",
     "genre": "Piano Instrumental",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-036",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-036",
+        "id": "press-webarchive-036",
+        "country": "US / Japan",
+        "releaseYear": 1965,
+        "formatDetails": "12\" Mastered LP",
+        "label": "RCA Red Seal R-Release",
+        "catalogNumber": "IMP-2026-036"
+      }
+    ],
     "title": "Schumann: Fantasie in C major & Carnaval",
     "releaseYear": 1965,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_37.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 3,
-    "id": "rec-webarchive-036",
-    "catalogNumber": "IMP-2026-036",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_37.jpg"
   },
   {
-    "pressings": [
-      {
-        "formatDetails": "12\" Mastered LP",
-        "id": "press-webarchive-032",
-        "catalogNumber": "IMP-2026-032",
-        "recordId": "rec-webarchive-032",
-        "releaseYear": 1958,
-        "country": "US / Japan",
-        "label": "Pye Golden Guinea R-Release"
-      }
-    ],
-    "genre": "Symphony",
     "artist": "John Barbirolli / Hallé Orchestra",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_33.jpg",
+    "genre": "Symphony",
     "lastSpunAt": "2026-08-01T01:15:22.860016Z",
     "title": "Dvořák: Symphony No. 8 in G major",
-    "releaseYear": 1958,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_33.jpg",
-    "spinsCount": 7,
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-032",
+        "id": "press-webarchive-032",
+        "country": "US / Japan",
+        "label": "Pye Golden Guinea R-Release",
+        "formatDetails": "12\" Mastered LP",
+        "releaseYear": 1958,
+        "catalogNumber": "IMP-2026-032"
+      }
+    ],
     "id": "rec-webarchive-032",
-    "catalogNumber": "IMP-2026-032",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1958,
+    "spinsCount": 7,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "catalogNumber": "IMP-2026-032"
   },
   {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5ff770c0.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_5ff770c0.jpg",
+    "label": "Vox",
+    "title": "Mendelssohn: Piano Music (Complete) Vol. 8 - Songs Without Words Ops. 85 & 102, Albumblatt, Gondellied, Perpetuum Mobile",
+    "id": "rec-user-0765cb25",
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 1,
+    "artist": "Rena Kyriakou",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T10:12:38.416676Z",
     "pressings": [
       {
-        "label": "RCA Japan Pressing",
-        "id": "press-webarchive-026",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-026",
-        "releaseYear": 1977,
-        "catalogNumber": "IMP-2026-026",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785578820306",
+        "id": "press-temp-1785578820306",
+        "label": "Vox",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "STPL 512.800"
       }
     ],
-    "artist": "Eugene Ormandy / Philadelphia Orchestra",
-    "genre": "Symphony",
-    "lastSpunAt": "2026-07-14T07:00:00Z",
-    "title": "Dvořák: Symphony No. 9 'From the New World'",
-    "releaseYear": 1977,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_27.jpg",
-    "spinsCount": 3,
+    "releaseYear": 1973,
+    "createdAt": "2026-08-01T10:07:11.322980Z",
+    "catalogNumber": "STPL 512.800"
+  },
+  {
+    "artist": "Eugene Ormandy, The Philadelphia Orchestra",
+    "country": "Japan",
+    "catalogNumber": "RX-2329",
+    "title": "Dvořák: \"New World\" Symphony (Symphony No. 9 in E Minor, Op. 95)",
+    "label": "RCA Red Seal",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T09:22:58.233909Z",
     "id": "rec-webarchive-026",
-    "catalogNumber": "IMP-2026-026",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
     "pressings": [
       {
-        "label": "Columbia Masterworks",
-        "id": "press-webarchive-022",
+        "recordId": "rec-webarchive-026",
+        "id": "press-webarchive-026",
+        "releaseYear": 1977,
+        "label": "RCA Japan Pressing",
         "country": "US / Japan",
-        "recordId": "rec-webarchive-022",
-        "releaseYear": 1968,
-        "catalogNumber": "IMP-2026-022",
-        "formatDetails": "12\" Mastered LP"
+        "formatDetails": "12\" Mastered LP",
+        "catalogNumber": "IMP-2026-026"
       }
     ],
+    "listeningGuide": {
+      "vinylTip": "Japanese RCA Red Seal pressings benefit immensely from a clean micro-groove stylus setup. Ensure tracking force is set accurately to capture the extreme dynamic swings between the quiet English horn solo in the Largo and the sudden orchestral blasts of the finale without distortion.",
+      "albumBackground": "Antonín Dvořák composed his Symphony No. 9 in E Minor, Op. 95, 'From the New World,' during his tenure as Director of the National Conservatory of Music of America in New York City from 1892 to 1895. Inspired by Native American melodies and African American spirituals, Dvořák crafted a symphonic masterpiece that synthesized traditional European late-Romantic forms with a distinctly American spirit.\n\nConductor Eugene Ormandy led the Philadelphia Orchestra for more than four decades, developing their signature rich, warm, and lush tone—famously termed 'The Philadelphia Sound.' Ormandy's interpretative style for Dvořák brings out both the dramatic grandeur and deeply tender lyricism of the score, backed by the unmatched virtuosity of the Philadelphia woodwinds and string section.\n\nThis Japanese RCA Red Seal release (RX-2329) presents RCA's late-1970s stereo recording pressed on pristine Japanese vinyl. Renowned among audiophiles, Japanese pressings from this era feature silent surface backgrounds, razor-sharp detail, and exceptional dynamic range.",
+      "recommendedMood": "Majestic, introspective, and heroic; ideal for immersive evening listening in a quiet room.",
+      "tracklist": [
+        {
+          "position": "A1",
+          "highlight": true,
+          "title": "Symphony No. 9 in E Minor, Op. 95 \"From the New World\": I. Adagio - Allegro molto",
+          "whatToListenFor": "Listen for the ominous low brass and string opening that shifts into the dramatic, syncopated main theme, punctuated by crisp brass fanfares.",
+          "duration": "10:15"
+        },
+        {
+          "position": "A2",
+          "highlight": true,
+          "title": "Symphony No. 9 in E Minor, Op. 95 \"From the New World\": II. Largo",
+          "whatToListenFor": "Features the iconic English horn solo ('Goin' Home') played with sublime tone, set against lush, muted strings and poignant woodwind harmonies.",
+          "duration": "12:45"
+        },
+        {
+          "position": "B1",
+          "highlight": false,
+          "title": "Symphony No. 9 in E Minor, Op. 95 \"From the New World\": III. Molto vivace",
+          "whatToListenFor": "Rhythmic, scherzo-driven energy inspired by the Feast of Hiawatha, featuring crisp timpani strikes and playful woodwind interplay.",
+          "duration": "8:10"
+        },
+        {
+          "position": "B2",
+          "highlight": true,
+          "title": "Symphony No. 9 in E Minor, Op. 95 \"From the New World\": IV. Allegro con fuoco",
+          "whatToListenFor": "A triumphant finale weaving themes from all preceding movements into a fiery crescendo, showcasing the full power of the Philadelphia brass section.",
+          "duration": "11:20"
+        }
+      ]
+    },
+    "releaseYear": 1979,
+    "spinsCount": 8,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_27.jpg"
+  },
+  {
     "artist": "Eugene Ormandy / Philadelphia Orchestra",
+    "catalogNumber": "IMP-2026-022",
     "genre": "Piano Concerto",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-022",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-022",
+        "id": "press-webarchive-022",
+        "country": "US / Japan",
+        "releaseYear": 1968,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Columbia Masterworks",
+        "catalogNumber": "IMP-2026-022"
+      }
+    ],
     "title": "Grieg & Liszt: Piano Concertos",
     "releaseYear": 1968,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_23.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-022",
-    "catalogNumber": "IMP-2026-022",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_23.jpg"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "AA-8655",
-    "pressings": [
-      {
-        "label": "Angel Records",
-        "id": "press-temp-1785492273084",
-        "catalogNumber": "AA-8655",
-        "recordId": "temp-1785492273084",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "Angel Records",
-    "title": "Franck: Symphony in D minor",
-    "releaseYear": 1970,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_86836ac3.jpg",
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_86836ac3.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-171bf2e7",
-    "artist": "Herbert von Karajan, Orchestre de Paris",
-    "createdAt": "2026-07-31T10:04:54.317309Z",
-    "genre": "Classical",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "country": "Japan",
-    "catalogNumber": "HA 5100",
-    "pressings": [
-      {
-        "label": "Angel Records",
-        "id": "press-temp-1785492407932",
-        "catalogNumber": "HA 5100",
-        "recordId": "temp-1785492407932",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
     "label": "Angel Records",
-    "title": "Beethoven: Symphony No. 5 / Schubert: Symphony No. 8 \"Unfinished\"",
-    "releaseYear": 1962,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_594452f0.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_594452f0.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-cc9b9ab8",
-    "artist": "Vienna Philharmonic Orchestra, Wilhelm Furtwängler",
-    "createdAt": "2026-07-31T10:07:14.310934Z",
-    "genre": "Classical Orchestral",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
+    "title": "Franck: Symphony in D minor",
+    "id": "rec-user-171bf2e7",
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "spinsCount": 2,
+    "artist": "Herbert von Karajan, Orchestre de Paris",
+    "genre": "Classical",
+    "lastSpunAt": "2026-08-01T10:24:25.418651Z",
     "pressings": [
       {
-        "catalogNumber": "SRA-2972",
-        "id": "press-temp-1785475007130",
-        "label": "RCA Red Seal",
-        "recordId": "temp-1785475007130",
+        "recordId": "temp-1785492273084",
+        "id": "press-temp-1785492273084",
+        "label": "Angel Records",
+        "formatDetails": "Standard Vinyl Pressing",
         "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
+        "catalogNumber": "AA-8655"
       }
     ],
+    "releaseYear": 1970,
+    "createdAt": "2026-07-31T10:04:54.317309Z",
+    "catalogNumber": "AA-8655"
+  },
+  {
+    "artist": "Vienna Philharmonic Orchestra, Wilhelm Furtwängler",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_594452f0.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_594452f0.jpg",
+    "country": "Japan",
+    "label": "Angel Records",
+    "genre": "Classical Orchestral",
+    "createdAt": "2026-07-31T10:07:14.310934Z",
+    "title": "Beethoven: Symphony No. 5 / Schubert: Symphony No. 8 \"Unfinished\"",
+    "pressings": [
+      {
+        "recordId": "temp-1785492407932",
+        "id": "press-temp-1785492407932",
+        "label": "Angel Records",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "HA 5100"
+      }
+    ],
+    "id": "rec-user-cc9b9ab8",
+    "releaseYear": 1962,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "HA 5100"
+  },
+  {
+    "artist": "Leonard Bernstein, New York Philharmonic",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7eb4de0b.jpg",
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "label": "CBS/Sony",
+    "genre": "Classical Orchestral",
+    "catalogNumber": "23AC 508",
+    "id": "rec-user-ee7142b1",
+    "pressings": [
+      {
+        "recordId": "temp-1785580791945",
+        "id": "press-temp-1785580791945",
+        "label": "CBS/Sony",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "23AC 508"
+      }
+    ],
+    "title": "Tchaikovsky: Symphony No. 4 in F Minor, Op. 36",
+    "releaseYear": 1978,
+    "createdAt": "2026-08-01T10:40:18.835874Z",
+    "spinsCount": 0,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7eb4de0b.jpg"
+  },
+  {
     "artist": "Isao Tomita",
-    "catalogNumber": "SRA-2972",
-    "label": "RCA Red Seal",
-    "title": "Pictures at an Exhibition",
-    "releaseYear": 1975,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_ad54f4fc.jpg",
     "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_ad54f4fc.jpg",
     "spinsCount": 0,
-    "id": "rec-user-148",
+    "catalogNumber": "SRA-2972",
+    "label": "RCA Red Seal",
     "genre": "Electronic",
     "createdAt": "2026-07-31T05:17:06.650938Z",
-    "country": "Japan",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
+    "id": "rec-user-148",
     "pressings": [
       {
-        "label": "Decca / Concert Classics",
-        "id": "press-webarchive-006",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-006",
-        "releaseYear": 1966,
-        "catalogNumber": "IMP-2026-006",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785475007130",
+        "id": "press-temp-1785475007130",
+        "label": "RCA Red Seal",
+        "country": "Japan",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "SRA-2972"
       }
     ],
+    "title": "Pictures at an Exhibition",
+    "releaseYear": 1975,
+    "country": "Japan",
+    "formatDetails": "Standard Vinyl LP",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_ad54f4fc.jpg"
+  },
+  {
     "artist": "Willi Boskovsky / Vienna Philharmonic",
+    "catalogNumber": "IMP-2026-006",
     "genre": "Classical Orchestral",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-006",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-006",
+        "id": "press-webarchive-006",
+        "country": "US / Japan",
+        "releaseYear": 1966,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Decca / Concert Classics",
+        "catalogNumber": "IMP-2026-006"
+      }
+    ],
     "title": "Strauss: Waltzes & Ballet Music",
     "releaseYear": 1966,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_7.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 3,
-    "id": "rec-webarchive-006",
-    "catalogNumber": "IMP-2026-006",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_7.jpg"
   },
   {
-    "catalogNumber": null,
-    "pressings": [
-      {
-        "label": "Standard Release",
-        "id": "press-rec-user-164",
-        "recordId": "rec-user-164",
-        "catalogNumber": null,
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
     "artist": "Fritz Reiner / Royal Philharmonic Orchestra",
-    "lastSpunAt": "2026-07-30T14:28:01.953364Z",
-    "title": "Brahms: Symphony No. 4 in E Minor",
-    "releaseYear": 1963,
     "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_da3fd59f.jpg",
     "spinsCount": 1,
-    "formatDetails": "Standard Vinyl LP",
-    "id": "rec-user-164",
     "genre": "Classical",
-    "createdAt": "2026-07-30T08:24:11.551880Z"
-  },
-  {
+    "lastSpunAt": "2026-07-30T14:28:01.953364Z",
+    "id": "rec-user-164",
     "pressings": [
       {
-        "label": "RCA / CBS Masterworks",
-        "id": "press-webarchive-002",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-002",
-        "releaseYear": 1972,
-        "catalogNumber": "IMP-2026-002",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "rec-user-164",
+        "id": "press-rec-user-164",
+        "label": "Standard Release",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": null
       }
     ],
+    "title": "Brahms: Symphony No. 4 in E Minor",
+    "releaseYear": 1963,
+    "createdAt": "2026-07-30T08:24:11.551880Z",
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": null
+  },
+  {
     "artist": "Isaac Stern (伊萨克·斯特恩)",
+    "catalogNumber": "IMP-2026-002",
     "genre": "Violin Concerto",
     "lastSpunAt": "2026-07-29T04:17:40.330845Z",
-    "title": "Sibelius & Bruch: Violin Concertos",
-    "releaseYear": 1972,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_3.jpg",
-    "spinsCount": 7,
     "id": "rec-webarchive-002",
-    "catalogNumber": "IMP-2026-002",
-    "createdAt": "2026-07-14T07:30:00Z"
-  },
-  {
     "pressings": [
       {
-        "catalogNumber": "LH-33",
-        "id": "press-temp-1785469296463",
-        "formatDetails": "Standard Vinyl Pressing",
-        "recordId": "temp-1785469296463",
-        "country": "Japan",
-        "label": "Victor"
+        "recordId": "rec-webarchive-002",
+        "id": "press-webarchive-002",
+        "country": "US / Japan",
+        "releaseYear": 1972,
+        "formatDetails": "12\" Mastered LP",
+        "label": "RCA / CBS Masterworks",
+        "catalogNumber": "IMP-2026-002"
       }
     ],
+    "title": "Sibelius & Bruch: Violin Concertos",
+    "releaseYear": 1972,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "spinsCount": 7,
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_3.jpg"
+  },
+  {
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dfea9a20.jpg",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dfea9a20.jpg",
+    "label": "Victor",
+    "title": "Italian Classical Symphonists, Volume 2",
+    "id": "rec-user-168",
+    "country": "Japan",
+    "spinsCount": 2,
+    "formatDetails": "Standard Vinyl LP",
     "artist": "Soloists and The Italian Chamber Orchestra, Newell Jenkins (Conductor)",
     "genre": "Classical Orchestral",
     "lastSpunAt": "2026-07-31T06:08:09.729444Z",
-    "catalogNumber": "LH-33",
-    "releaseYear": 1956,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dfea9a20.jpg",
-    "formatDetails": "Standard Vinyl LP",
-    "createdAt": "2026-07-31T03:41:37.676586Z",
-    "title": "Italian Classical Symphonists, Volume 2",
-    "spinsCount": 2,
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_dfea9a20.jpg",
-    "id": "rec-user-168",
+    "pressings": [
+      {
+        "recordId": "temp-1785469296463",
+        "id": "press-temp-1785469296463",
+        "label": "Victor",
+        "country": "Japan",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "LH-33"
+      }
+    ],
     "listeningGuide": {
       "vinylTip": "This 1950s Victor Japan pressing was cut using the 'New Orthophonic' curve (RIAA compatible). Use a true true mono cartridge or engage the mono switch on your phono stage to maximize signal-to-noise ratio, eliminating surface noise from this vintage microgroove record.",
       "albumBackground": "This historic LP is part of the famed 'Haydn Society Series' licensed and pressed in Japan by Victor Company of Japan (Nippon Victor) under the 'New Orthophonic High Fidelity Recording' banner. Conductor Newell Jenkins was a pioneering American musicologist and conductor who spent years in Italy unearthing forgotten 18th-century orchestral masterworks from library archives. His recordings with The Italian Chamber Orchestra (Orchestra da Camera Italiana) for the Haydn Society introduced mid-century listeners to rare pre-Classical and late Baroque Italian repertoire.\n\nVolume 2 of the 'Italian Classical Symphonists' series compiles an exceptional cross-section of Italian concertos and orchestral compositions spanning Giovanni Battista Viotti, Giovanni Battista Sammartini, Tomaso Albinoni, Corelli-Geminiani, and Giuseppe Sarti. The Japanese Victor LH-series pressing is highly regarded by collectors for its sturdy heavy-grade vinyl, meticulous mastering, and distinct decorative sleeve art.",
+      "recommendedMood": "Elegant, refined, and intellectually stimulating—perfect for relaxed afternoon reading, academic study, or classical music appreciation.",
       "tracklist": [
         {
-          "duration": "18:15",
-          "highlight": true,
-          "title": "Concerto for Piano and Violin in E-flat Major",
           "position": "A1",
-          "whatToListenFor": "Interplay between the double soloists (keyboard and violin), showcasing Viotti's transition from late Galant charm to early Classical concertante virtuosity."
+          "title": "Concerto for Piano and Violin in E-flat Major",
+          "highlight": true,
+          "whatToListenFor": "Interplay between the double soloists (keyboard and violin), showcasing Viotti's transition from late Galant charm to early Classical concertante virtuosity.",
+          "duration": "18:15"
         },
         {
-          "duration": "11:40",
-          "highlight": false,
-          "title": "Concerto in F Major for Oboe",
           "position": "A2",
-          "whatToListenFor": "Sammartini's expressive oboe lines against light string accompaniment, highlighting the instrument's vocal timbre."
-        },
-        {
-          "duration": "09:30",
-          "highlight": true,
-          "title": "Concerto in D Minor for Orchestra, Op. 5, No. 7",
-          "position": "B1",
-          "whatToListenFor": "Albinoni's dark, dramatic contrapuntal textures and crisp, rhythmic outer movements."
-        },
-        {
-          "duration": "08:50",
+          "title": "Concerto in F Major for Oboe",
           "highlight": false,
-          "title": "Concerto Grosso No. 2 in C Minor",
-          "position": "B2",
-          "whatToListenFor": "Geminiani's elaborate, expanded elaboration on Arcangelo Corelli's iconic Op. 5 violin sonata themes."
+          "whatToListenFor": "Sammartini's expressive oboe lines against light string accompaniment, highlighting the instrument's vocal timbre.",
+          "duration": "11:40"
         },
         {
-          "duration": "12:10",
+          "position": "B1",
+          "title": "Concerto in D Minor for Orchestra, Op. 5, No. 7",
           "highlight": true,
-          "title": "Concertone per più Strumenti Obbligati",
+          "whatToListenFor": "Albinoni's dark, dramatic contrapuntal textures and crisp, rhythmic outer movements.",
+          "duration": "09:30"
+        },
+        {
+          "position": "B2",
+          "title": "Concerto Grosso No. 2 in C Minor",
+          "highlight": false,
+          "whatToListenFor": "Geminiani's elaborate, expanded elaboration on Arcangelo Corelli's iconic Op. 5 violin sonata themes.",
+          "duration": "08:50"
+        },
+        {
           "position": "B3",
-          "whatToListenFor": "Rich, multi-soloist textures in Sarti's rare ensemble work, demonstrating inventive woodwind and string obbligato dialogues."
+          "title": "Concertone per più Strumenti Obbligati",
+          "highlight": true,
+          "whatToListenFor": "Rich, multi-soloist textures in Sarti's rare ensemble work, demonstrating inventive woodwind and string obbligato dialogues.",
+          "duration": "12:10"
         }
-      ],
-      "recommendedMood": "Elegant, refined, and intellectually stimulating—perfect for relaxed afternoon reading, academic study, or classical music appreciation."
+      ]
     },
-    "country": "Japan",
-    "label": "Victor"
+    "releaseYear": 1956,
+    "createdAt": "2026-07-31T03:41:37.676586Z",
+    "catalogNumber": "LH-33"
   },
   {
-    "pressings": [
-      {
-        "label": "Kicking Mule Records",
-        "id": "press-webarchive-047",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-047",
-        "releaseYear": 1978,
-        "catalogNumber": "IMP-2026-047",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Acoustic Folk Blues Masters",
+    "catalogNumber": "IMP-2026-047",
     "genre": "Folk / Blues",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-047",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-047",
+        "id": "press-webarchive-047",
+        "country": "US / Japan",
+        "releaseYear": 1978,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Kicking Mule Records",
+        "catalogNumber": "IMP-2026-047"
+      }
+    ],
     "title": "How To Play Blues Guitar (Folk Blues Instruction)",
     "releaseYear": 1978,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_48.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-047",
-    "catalogNumber": "IMP-2026-047",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_48.jpg"
   },
   {
-    "pressings": [
-      {
-        "label": "RCA Victor LP",
-        "id": "press-webarchive-043",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-043",
-        "releaseYear": 1965,
-        "catalogNumber": "IMP-2026-043",
-        "formatDetails": "12\" Mastered LP"
-      }
-    ],
     "artist": "Los Tres Diamantes",
+    "catalogNumber": "IMP-2026-043",
     "genre": "Latin / Bolero",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-043",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-043",
+        "id": "press-webarchive-043",
+        "country": "US / Japan",
+        "releaseYear": 1965,
+        "formatDetails": "12\" Mastered LP",
+        "label": "RCA Victor LP",
+        "catalogNumber": "IMP-2026-043"
+      }
+    ],
     "title": "Adios Diamantes Adios (Latin Romantics)",
     "releaseYear": 1965,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_44.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 9,
-    "id": "rec-webarchive-043",
-    "catalogNumber": "IMP-2026-043",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_44.jpg"
   },
   {
-    "country": "Japan",
-    "catalogNumber": "20MG 0322",
-    "pressings": [
-      {
-        "label": "Deutsche Grammophon",
-        "id": "press-temp-1785492981331",
-        "catalogNumber": "20MG 0322",
-        "recordId": "temp-1785492981331",
-        "country": "Japan",
-        "formatDetails": "Standard Vinyl Pressing"
-      }
-    ],
-    "label": "Deutsche Grammophon",
-    "title": "Organ Works Vol. 1",
-    "releaseYear": 1982,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7fb280cb.jpg",
-    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7fb280cb.jpg",
-    "spinsCount": 0,
-    "id": "rec-user-17d04959",
     "artist": "Karl Richter",
-    "createdAt": "2026-07-31T10:16:41.894028Z",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7fb280cb.jpg",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_7fb280cb.jpg",
+    "country": "Japan",
+    "label": "Deutsche Grammophon",
     "genre": "Baroque",
-    "formatDetails": "Standard Vinyl LP"
-  },
-  {
-    "genre": "Classical Orchestral",
+    "createdAt": "2026-07-31T10:16:41.894028Z",
+    "title": "Organ Works Vol. 1",
     "pressings": [
       {
-        "label": "London Japan Pressing",
-        "id": "press-webarchive-016",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-016",
-        "releaseYear": 1959,
-        "catalogNumber": "IMP-2026-016",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785492981331",
+        "id": "press-temp-1785492981331",
+        "label": "Deutsche Grammophon",
+        "formatDetails": "Standard Vinyl Pressing",
+        "country": "Japan",
+        "catalogNumber": "20MG 0322"
       }
     ],
-    "label": "London Records",
-    "lastSpunAt": "2026-08-01T02:21:48.878738Z",
-    "title": "Martinon Conducts Berlioz",
-    "releaseYear": 1980,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_17.jpg",
-    "spinsCount": 5,
+    "id": "rec-user-17d04959",
+    "releaseYear": 1982,
+    "spinsCount": 0,
+    "formatDetails": "Standard Vinyl LP",
+    "catalogNumber": "20MG 0322"
+  },
+  {
     "artist": "Jean Martinon, Paris Conservatoire Orchestra",
-    "id": "rec-webarchive-016",
     "country": "Japan",
+    "catalogNumber": "K15C-8063",
+    "spinsCount": 5,
+    "label": "London Records",
+    "genre": "Classical Orchestral",
+    "lastSpunAt": "2026-08-01T02:21:48.878738Z",
+    "id": "rec-webarchive-016",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-016",
+        "id": "press-webarchive-016",
+        "releaseYear": 1959,
+        "label": "London Japan Pressing",
+        "formatDetails": "12\" Mastered LP",
+        "country": "US / Japan",
+        "catalogNumber": "IMP-2026-016"
+      }
+    ],
     "listeningGuide": {
+      "vinylTip": "Captured with Decca's famous FFSS (Full Frequency Stereophonic Sound) technique, this Japanese pressing delivers ultra-quiet surfaces and wide stereo separation. Ensure proper anti-skating calibration to track the intense brass transients towards the end of Side B without inner-groove distortion.",
       "tracklist": [
         {
-          "duration": "9:20",
-          "highlight": true,
           "position": "A1",
           "title": "Overture: Le Carnaval Romain, Op. 9",
+          "highlight": true,
+          "duration": "9:20",
           "whatToListenFor": "Exhilarating opening saltarello figures followed by a soul-stirring English horn solo, culminating in a whirlwind orchestral carnival celebration."
         },
         {
-          "duration": "10:20",
-          "highlight": false,
           "position": "A2",
           "title": "Overture: Benvenuto Cellini, Op. 23",
+          "highlight": false,
+          "duration": "10:20",
           "whatToListenFor": "Dramatic brass fanfare motif intertwined with elegant, flowing string cantabiles."
         },
         {
-          "duration": "4:50",
-          "highlight": true,
           "position": "B1",
           "title": "Hungarian March (Rákóczy March) from 'La Damnation de Faust', Op. 24",
+          "highlight": true,
+          "duration": "4:50",
           "whatToListenFor": "Precise snare drum rhythmic articulation building into a majestic, full-orchestra brass showcase with exceptional dynamic headroom."
         },
         {
-          "duration": "8:50",
-          "highlight": false,
           "position": "B2",
           "title": "Overture: Béatrice et Bénédict",
+          "highlight": false,
+          "duration": "8:50",
           "whatToListenFor": "Light, playful woodwind chatter and rapid violin runs reflecting Berlioz's theatrical humor."
         },
         {
-          "duration": "8:15",
-          "highlight": true,
           "position": "B3",
           "title": "Overture: Le Corsaire, Op. 21",
+          "highlight": true,
+          "duration": "8:15",
           "whatToListenFor": "Stormy, surging string flourishes and sudden explosive orchestral swells portraying dramatic oceanic tides."
         }
       ],
-      "albumBackground": "This Japanese edition released under London Records' 'Classical Library 1500' series (pressed by King Record Co., Ltd.) captures master French conductor Jean Martinon leading the Orchestre de la Société des Concerts du Conservatoire in a fiery program of Hector Berlioz's orchestral overtures.\n\nOriginally recorded in 1958/1959 by Decca's pioneering sound team led by legend Kenneth Wilkinson at the Maison de la Mutualité in Paris, this collection highlights the vibrant timbre, soaring string textures, and bold French brass style that defined Martinon's celebrated interpretations of 19th-century French repertoire.",
-      "vinylTip": "Captured with Decca's famous FFSS (Full Frequency Stereophonic Sound) technique, this Japanese pressing delivers ultra-quiet surfaces and wide stereo separation. Ensure proper anti-skating calibration to track the intense brass transients towards the end of Side B without inner-groove distortion.",
-      "recommendedMood": "High-energy, heroic, and dramatic — an ideal showcase for testing dynamic range and soundstage depth."
+      "recommendedMood": "High-energy, heroic, and dramatic — an ideal showcase for testing dynamic range and soundstage depth.",
+      "albumBackground": "This Japanese edition released under London Records' 'Classical Library 1500' series (pressed by King Record Co., Ltd.) captures master French conductor Jean Martinon leading the Orchestre de la Société des Concerts du Conservatoire in a fiery program of Hector Berlioz's orchestral overtures.\n\nOriginally recorded in 1958/1959 by Decca's pioneering sound team led by legend Kenneth Wilkinson at the Maison de la Mutualité in Paris, this collection highlights the vibrant timbre, soaring string textures, and bold French brass style that defined Martinon's celebrated interpretations of 19th-century French repertoire."
     },
-    "catalogNumber": "K15C-8063",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "releaseYear": 1980,
+    "createdAt": "2026-07-14T07:30:00Z",
+    "title": "Martinon Conducts Berlioz",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_17.jpg"
   },
   {
+    "artist": "Wilhelm Furtwängler, Berliner Philharmoniker, Yvonne Lefébure",
+    "originalScannedCoverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b49426f8.jpg",
+    "catalogNumber": "LO 529",
+    "spinsCount": 0,
+    "label": "Cetra",
+    "genre": "Classical Orchestral",
+    "formatDetails": "Standard Vinyl LP",
+    "id": "rec-user-431cc5da",
     "pressings": [
       {
-        "label": "Philips Pressing",
-        "id": "press-webarchive-012",
-        "country": "US / Japan",
-        "recordId": "rec-webarchive-012",
-        "releaseYear": 1964,
-        "catalogNumber": "IMP-2026-012",
-        "formatDetails": "12\" Mastered LP"
+        "recordId": "temp-1785583098119",
+        "id": "press-temp-1785583098119",
+        "label": "Cetra",
+        "country": "Italy",
+        "formatDetails": "Standard Vinyl Pressing",
+        "catalogNumber": "LO 529"
       }
     ],
+    "title": "Furtwängler A Lugano (1954) – Beethoven: Symphony No. 6 'Pastorale' / Mozart: Piano Concerto No. 20 / Strauss: Till Eulenspiegel",
+    "releaseYear": 1979,
+    "country": "Italy",
+    "createdAt": "2026-08-01T11:18:46.132105Z",
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/manual_scan_b49426f8.jpg"
+  },
+  {
     "artist": "Claudio Arrau (克劳迪奥·阿劳)",
+    "catalogNumber": "IMP-2026-012",
     "genre": "Piano Concerto",
     "lastSpunAt": "2026-07-14T07:00:00Z",
+    "id": "rec-webarchive-012",
+    "pressings": [
+      {
+        "recordId": "rec-webarchive-012",
+        "id": "press-webarchive-012",
+        "country": "US / Japan",
+        "releaseYear": 1964,
+        "formatDetails": "12\" Mastered LP",
+        "label": "Philips Pressing",
+        "catalogNumber": "IMP-2026-012"
+      }
+    ],
     "title": "Beethoven: Piano Concerto No. 5 'Emperor'",
     "releaseYear": 1964,
-    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_13.jpg",
+    "createdAt": "2026-07-14T07:30:00Z",
     "spinsCount": 6,
-    "id": "rec-webarchive-012",
-    "catalogNumber": "IMP-2026-012",
-    "createdAt": "2026-07-14T07:30:00Z"
+    "coverUrl": "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_13.jpg"
   }
 ]
