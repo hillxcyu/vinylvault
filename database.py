@@ -1587,7 +1587,37 @@ class VinylDatabase:
         self.records.insert(0, record_data)
         self.save_records()
         self.firestore.save_record(record_data)
+        self.clear_chronicle()
         return record_data
+
+    def update_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Updates an existing record in memory, saves to local JSON, and persists to Firestore.
+        Also invalidates cached chronicle so changes are reflected in AI insights immediately.
+        """
+        rec_id = record_data.get("id")
+        if not rec_id:
+            return record_data
+
+        for i, r in enumerate(self.records):
+            if r.get("id") == rec_id:
+                self.records[i] = record_data
+                break
+        else:
+            self.records.insert(0, record_data)
+
+        self.save_records()
+
+        try:
+            if self.firestore.db:
+                success = self.firestore.save_record(record_data)
+                print(f"Persisted record update '{rec_id}' to Firestore: {success}")
+        except Exception as e:
+            print(f"Error persisting record update '{rec_id}' to Firestore: {e}")
+
+        self.clear_chronicle()
+        return record_data
+
 
     def log_spin(self, record_id: str, notes: str = "") -> Dict[str, Any]:
         rec = self.get_record_by_id(record_id)

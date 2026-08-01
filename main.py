@@ -188,15 +188,14 @@ async def rescan_record_cover_endpoint(record_id: str):
         if info.get("country") and not rec.get("country"):
             rec["country"] = info.get("country")
 
-        db.save_records()
-        if db.firestore.db:
-            db.firestore.save_record(rec)
+        db.update_record(rec)
         return {
             "status": "success",
             "message": f"Successfully fetched official cover art & metadata for '{title}'",
             "coverUrl": official_art,
             "record": rec
         }
+
     else:
         raise HTTPException(status_code=404, detail="No official cover art found for this record")
 
@@ -281,9 +280,8 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     if discogs_info.get("coverUrl") and "shopping_cover_2.jpg" not in discogs_info["coverUrl"]:
         rec["coverUrl"] = discogs_info["coverUrl"]
 
-    db.save_records()
-    if db.firestore.db:
-        db.firestore.save_record(rec)
+    db.update_record(rec)
+
 
     return {
         "status": "success",
@@ -301,11 +299,10 @@ async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPaylo
         raise HTTPException(status_code=404, detail="Record not found")
 
     rec["coverUrl"] = payload.coverUrl
-    db.save_records()
-    if db.firestore.db:
-        db.firestore.save_record(rec)
+    db.update_record(rec)
 
     return {
+
         "status": "success",
         "message": f"Cover art updated for '{rec.get('title')}'",
         "coverUrl": payload.coverUrl,
