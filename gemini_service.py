@@ -335,14 +335,23 @@ class GeminiVisionService:
 
             simplified_records = []
             for r in records:
-                simplified_records.append({
+                entry = {
                     "id": r.get("id"),
                     "title": r.get("title"),
                     "artist": r.get("artist"),
+                    "label": r.get("label"),
+                    "catalogNumber": r.get("catalogNumber"),
                     "releaseYear": r.get("releaseYear"),
+                    "country": r.get("country"),
                     "genre": r.get("genre"),
+                    "formatDetails": r.get("formatDetails"),
                     "coverUrl": r.get("coverUrl")
-                })
+                }
+                if r.get("listeningGuide"):
+                    entry["tracksSummary"] = [
+                        t.get("title") for t in r["listeningGuide"].get("tracks", []) if isinstance(t, dict) and t.get("title")
+                    ][:5]
+                simplified_records.append(entry)
 
             prompt = (
                 "You are an expert musicologist and classical music archivist.\n"
@@ -350,7 +359,7 @@ class GeminiVisionService:
                 "(e.g., Baroque Era [1600-1750], Classical Era [1750-1820], Romantic Era [1820-1910], Modern & 20th Century [1910-1980], Contemporary Classical [1980-Present]).\n\n"
                 f"User Collection Records:\n{json.dumps(simplified_records, indent=2, ensure_ascii=False)}\n\n"
                 "INSTRUCTIONS:\n"
-                "1. Include ONLY classical music records (exclude non-classical genres like Rock, Pop, Jazz, Disco, Bolero unless cross-over).\n"
+                "1. Carefully examine all metadata fields (title, artist, label, catalogNumber, genre). Include ONLY classical music recordings (e.g., Deutsche Grammophon, Decca, Philips, EMI, Erato, symphonies, concertos, sonatas, classical composers). Exclude non-classical genres like Rock, Pop, Jazz, Disco, Bolero unless classical Crossover.\n"
                 "2. Group records into chronological eras. For each era that contains classical records from the collection, produce:\n"
                 "   - \"id\": string (one of \"baroque\", \"classical\", \"romantic\", \"modern_20th\", \"contemporary\")\n"
                 "   - \"name\": string (e.g. \"Romantic Era\")\n"
@@ -362,6 +371,8 @@ class GeminiVisionService:
                 "       - \"id\": record ID matching input record ID\n"
                 "       - \"title\": album title\n"
                 "       - \"artist\": performer/artist\n"
+                "       - \"label\": label name\n"
+                "       - \"catalogNumber\": catalog number\n"
                 "       - \"releaseYear\": number or string\n"
                 "       - \"genre\": string\n"
                 "       - \"coverUrl\": cover URL matching input\n"
@@ -375,6 +386,7 @@ class GeminiVisionService:
                 '  "eras": [ ... ]\n'
                 "}"
             )
+
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json"

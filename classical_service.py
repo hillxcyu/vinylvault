@@ -322,11 +322,22 @@ class ClassicalService:
         title = (record.get("title") or "").lower()
         artist = (record.get("artist") or "").lower()
         genre = (record.get("genre") or "").lower()
-        text_block = f"{title} {artist} {genre}"
+        label = (record.get("label") or "").lower()
+        catno = (record.get("catalogNumber") or "").lower()
+        text_block = f"{title} {artist} {genre} {label} {catno}"
 
         for excl in NON_CLASSICAL_EXCLUSIONS:
             if excl in text_block and "classical" not in genre:
                 return False
+
+        classical_labels = [
+            "deutsche grammophon", "dg", "decca", "emi", "philips", "erato", "harmonia mundi",
+            "telefunken", "archiv", "cbs masterworks", "melodiya", "chandos", "naxos", "hungaroton",
+            "supraphon", "rca victor red seal", "columbia masterworks"
+        ]
+        for l in classical_labels:
+            if l in label:
+                return True
 
         for kw in CLASSICAL_GENRE_KEYWORDS:
             if kw in text_block:
@@ -386,7 +397,8 @@ class ClassicalService:
 
     def _compute_composer_stats(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         composer_counter = {}
-        for r in records:
+        classical_recs = [r for r in records if self.is_classical_record(r)]
+        for r in classical_recs:
             text_corpus = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
             for key, info in COMPOSER_DATABASE.items():
                 if key in text_corpus:
@@ -413,6 +425,9 @@ class ClassicalService:
         classical_count = 0
 
         for r in records:
+            if not self.is_classical_record(r):
+                continue
+
             composer = (r.get("artist") or r.get("title") or "").strip()
             text_corpus = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
 
@@ -456,9 +471,20 @@ class ClassicalService:
             ai_chronicle = gemini_service.generate_chronicle_ai(records)
             if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
                 ai_chronicle["source"] = "gemini_3.6_flash"
+
+                # Recalculate unique classical record count and total crate count
+                unique_classical_ids = set()
+                for era in ai_chronicle.get("eras", []):
+                    for rec in era.get("records", []):
+                        if rec.get("id"):
+                            unique_classical_ids.add(rec["id"])
+                    era["count"] = len(era.get("records", []))
+
+                ai_chronicle["totalClassicalRecords"] = len(unique_classical_ids)
+                ai_chronicle["totalRecordsInCrate"] = len(records)
                 ai_chronicle["composerStats"] = self._compute_composer_stats(records)
                 db.save_chronicle(ai_chronicle)
-                logger.info("Saved fresh Gemini 3.6 Flash AI Chronicle to Database/Disk in background.")
+                logger.info(f"Saved fresh Gemini 3.6 Flash AI Chronicle ({len(unique_classical_ids)} classical / {len(records)} total records) to Database/Disk in background.")
         except Exception as e:
             logger.error(f"Background AI chronicle rebuild error: {e}")
         finally:
@@ -478,6 +504,7 @@ class ClassicalService:
         if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0 and not force_ai_refresh:
             logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
             cached["isRebuilding"] = self.is_rebuilding
+            cached["totalRecordsInCrate"] = len(records)
             cached["composerStats"] = self._compute_composer_stats(records)
             return cached
 
@@ -486,6 +513,7 @@ class ClassicalService:
 
         if cached and isinstance(cached, dict) and "eras" in cached:
             cached["isRebuilding"] = True
+            cached["totalRecordsInCrate"] = len(records)
             cached["composerStats"] = self._compute_composer_stats(records)
             return cached
 
@@ -493,5 +521,6 @@ class ClassicalService:
         db.save_chronicle(fallback)
         fallback["isRebuilding"] = True
         return fallback
+
 
 classical_service = ClassicalService()
