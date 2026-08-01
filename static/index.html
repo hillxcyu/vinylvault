@@ -103,7 +103,7 @@
       <section id="nowSpinningHeroWidget" class="relative overflow-hidden rounded-2xl p-6 md:p-8 border border-stone-800/80 shadow-2xl bg-stone-950">
         <!-- Front Matter Style Atmospheric Cover Background -->
         <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <img id="nowSpinningBgCover" src="/static/extracted_covers/shopping_cover_2.jpg" class="w-full h-full object-cover scale-110 blur-xl opacity-70 brightness-95 saturate-125 transition-all duration-1000 transform-gpu" />
+          <img id="nowSpinningBgCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" class="w-full h-full object-cover scale-110 blur-xl opacity-40 brightness-95 saturate-125 transition-all duration-1000 transform-gpu" />
           <div class="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/50 to-stone-950/75"></div>
           <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-stone-950/30"></div>
         </div>
@@ -113,7 +113,8 @@
 
           <!-- Interactive Spinning Vinyl Record - Click to Launch Camera Scan -->
           <div onclick="openScannerModal()" class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center cursor-pointer group" title="Click to snap photo of currently playing vinyl record!">
-            <img id="spinningCover" src="/static/extracted_covers/shopping_cover_2.jpg" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
+            <img id="spinningCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
+
             <div class="absolute inset-0 rounded-full bg-stone-900 border-8 border-stone-800 shadow-inner flex items-center justify-center">
               <div class="w-14 h-14 rounded-full bg-amber-500 border-4 border-stone-900 z-20"></div>
             </div>
@@ -1423,13 +1424,14 @@
         // Standby / Idle Mode
         const bgImg = document.getElementById('nowSpinningBgCover');
         if (bgImg) {
-          bgImg.src = '/static/extracted_covers/shopping_cover_2.jpg';
+          bgImg.src = SVG_PLACEHOLDER;
           bgImg.classList.remove('opacity-70');
           bgImg.classList.add('opacity-40');
         }
 
 
         document.getElementById('spinningCover').src = SVG_PLACEHOLDER;
+
         document.getElementById('spinningTitle').innerText = 'No Record Spinning';
         document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
         document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
