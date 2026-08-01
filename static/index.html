@@ -2813,84 +2813,92 @@
       if (!lastScannedMetadata || isProcessingScan) return;
       isProcessingScan = true;
       toggleScannerButtons(false);
+
+      if (btnElement) {
+        btnElement.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-base"></i> Saving to Database & Firestore...`;
+        btnElement.disabled = true;
+      }
+
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
       const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
+      const label = lastScannedMetadata.label || 'Standard Release';
+      const catalogNumber = lastScannedMetadata.catalogNumber || null;
+      const country = lastScannedMetadata.country || 'Japan';
+      const genre = lastScannedMetadata.genre || 'Vinyl';
+      const releaseYear = lastScannedMetadata.releaseYear || 2024;
+      const coverUrl = lastScannedMetadata.coverUrl || SVG_PLACEHOLDER;
+      const originalScannedCoverUrl = lastScannedMetadata.coverUrl || SVG_PLACEHOLDER;
+      const formatDetails = lastScannedMetadata.formatDetails || 'Standard Vinyl LP';
 
-
-      // 1. Instantly close scanner modal (0ms UI latency!)
-      closeScannerModal();
-
-      // 2. Create optimistic temporary record with full scanned label & catalog metadata
-      const tempId = 'temp-' + Date.now();
-      const tempRecord = {
-        id: tempId,
-        artist,
-        title,
-        label: lastScannedMetadata.label || 'Standard Release',
-        catalogNumber: lastScannedMetadata.catalogNumber || null,
-        country: lastScannedMetadata.country || 'Japan',
-        genre: lastScannedMetadata.genre || 'Vinyl',
-        releaseYear: lastScannedMetadata.releaseYear || 2024,
-        coverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
-        originalScannedCoverUrl: lastScannedMetadata.coverUrl || SVG_PLACEHOLDER,
-        formatDetails: lastScannedMetadata.formatDetails || 'Standard Vinyl LP',
-        pressings: [{
-          id: `press-${tempId}`,
-          recordId: tempId,
-          label: lastScannedMetadata.label || 'Standard Release',
-          catalogNumber: lastScannedMetadata.catalogNumber || '',
-          country: lastScannedMetadata.country || 'Japan',
-          formatDetails: 'Standard Vinyl Pressing'
-        }],
-        spinsCount: 0,
-        createdAt: new Date().toISOString()
-      };
-
-      // 3. Immediately update UI state & render
-      allRecords.unshift(tempRecord);
-      document.getElementById('recordCountBadge').innerText = allRecords.length;
-      document.getElementById('statTotalRecords').innerText = allRecords.length;
-      renderRecordsGrid(allRecords);
-      updateNowSpinningUI(tempRecord);
-      switchTab('nowSpinning');
-
-      // 4. Show instant toast notification
-      showToast(`Added "${title}" to your crate!`, 'fa-circle-check');
-
-      // 5. Sync with backend quietly in background (Non-Blocking!)
       try {
+        // Enforce synchronous database & Firestore saving BEFORE taking user to next screen
         const res = await fetch('/api/records', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             artist,
             title,
-            label: tempRecord.label,
-            catalogNumber: tempRecord.catalogNumber,
-            country: tempRecord.country,
-            genre: tempRecord.genre,
-            releaseYear: tempRecord.releaseYear,
-            coverUrl: tempRecord.coverUrl,
-            originalScannedCoverUrl: tempRecord.originalScannedCoverUrl,
-            formatDetails: tempRecord.formatDetails,
-            pressings: tempRecord.pressings
+            label,
+            catalogNumber,
+            country,
+            genre,
+            releaseYear,
+            coverUrl,
+            originalScannedCoverUrl,
+            formatDetails,
+            pressings: [{
+              label,
+              catalogNumber,
+              country,
+              formatDetails: 'Standard Vinyl Pressing'
+            }]
           })
         });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.status === 'success' && data.record) {
-            tempRecord.id = data.record.id;
-            if (data.record.coverUrl) tempRecord.coverUrl = data.record.coverUrl;
-            if (data.record.label) tempRecord.label = data.record.label;
+
+        const data = await res.json();
+
+        if (res.ok && data.status === 'success' && data.record) {
+          const newRecord = data.record;
+
+          // Update local collection state with confirmed persisted record from backend
+          const existingIdx = allRecords.findIndex(r => r.id === newRecord.id);
+          if (existingIdx >= 0) {
+            allRecords[existingIdx] = newRecord;
+          } else {
+            allRecords.unshift(newRecord);
           }
+
+          document.getElementById('recordCountBadge').innerText = allRecords.length;
+          document.getElementById('statTotalRecords').innerText = allRecords.length;
+          renderRecordsGrid(allRecords);
+
+          // Close modal only AFTER database saving succeeds
+          closeScannerModal();
+
+          // Spin newly saved record and switch tab
+          await spinRecord(newRecord.id);
+          switchTab('nowSpinning');
+
+          showToast(`Saved & spinning "${newRecord.title}"!`, 'fa-circle-check');
+        } else {
+          const errDetail = (data && data.detail) || 'Failed to save record to database';
+          alert(`Error saving record to database: ${errDetail}`);
+          showToast(`Error saving record: ${errDetail}`, 'fa-circle-xmark');
         }
       } catch (err) {
-        console.error('Background save error:', err);
+        console.error('Error adding record to database:', err);
+        alert('Network error while saving record to database. Please try again.');
+        showToast('Network error saving record to database', 'fa-circle-xmark');
       } finally {
         isProcessingScan = false;
         toggleScannerButtons(true);
+        if (btnElement) {
+          btnElement.innerHTML = `<i class="fa-solid fa-plus text-base"></i> Add New Record to Crate & Spin`;
+          btnElement.disabled = false;
+        }
       }
     }
+
 
 
     // Initial load

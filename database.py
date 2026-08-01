@@ -1485,6 +1485,16 @@ class VinylDatabase:
             self.chronicle = self._load_chronicle()
         return self.chronicle
 
+    def clear_chronicle(self):
+        self.chronicle = None
+        self._save_json(CHRONICLE_FILE, {})
+        if self.firestore.db:
+            try:
+                self.firestore.db.collection("metadata").document("chronicle").delete()
+            except Exception as e:
+                print(f"Firestore clear_chronicle error: {e}")
+
+
     def get_now_spinning(self) -> Optional[Dict[str, Any]]:
         return self.now_spinning
 
@@ -1550,9 +1560,18 @@ class VinylDatabase:
             }]
         self.records.insert(0, record_data)
         self.save_records()
-        self.firestore.save_record(record_data)
+
+        fs_saved = False
+        try:
+            if self.firestore.db:
+                fs_saved = self.firestore.save_record(record_data)
+                print(f"Saved new record '{new_id}' ({record_data.get('title')}) to Firestore: {fs_saved}")
+        except Exception as e:
+            print(f"Error saving new record '{new_id}' to Firestore: {e}")
+
         self.clear_chronicle()
         return record_data
+
 
     def update_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
         """
