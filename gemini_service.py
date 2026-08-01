@@ -240,8 +240,10 @@ class GeminiVisionService:
                     context_lines.append(f"- Audiophile Pro-Tip: {guide.get('vinylTip')}")
 
             if crate:
-                context_lines.append(f"- Total Albums in User's Crate: {crate.get('totalRecordsInCrate', 0)}")
-                context_lines.append(f"- User's Crate Inventory Sample: {', '.join(crate.get('ownedAlbums', [])[:20])}")
+                catalog = crate.get("crateCatalog", [])
+                context_lines.append(f"\nUSER'S COMPLETE VINYL VAULT CRATE CATALOG ({len(catalog)} Total Records):")
+                for idx, entry in enumerate(catalog, 1):
+                    context_lines.append(f"  {idx}. {entry}")
 
             context_str = "\n".join(context_lines)
 
@@ -250,14 +252,15 @@ class GeminiVisionService:
                 from google.genai import types
 
                 prompt = (
-                    f"You are an expert vinyl archivist, musicologist, and audiophile companion.\n"
-                    f"The user is currently listening to the vinyl record '{title}' by {artist}.\n\n"
+                    f"You are Vinyl Vault AI — an expert classical musicologist, vinyl archivist, and audiophile companion.\n"
+                    f"The user is currently playing/viewing '{title}' by {artist}.\n\n"
                     f"{context_str}\n\n"
                     f"INSTRUCTIONS:\n"
-                    f"1. Use the VERIFIED LOCAL COLLECTION DATABASE FACTS above to accurately answer questions regarding track numbers, track titles, audiophile highlights, spin counts, catalog numbers, pressing info, or other albums owned in their crate.\n"
-                    f"2. Use Google Search grounding to supplement with external historical, band, or production details.\n"
-                    f"3. User Question: {message}\n\n"
-                    f"Keep your response warm, informative, concise (2-4 paragraphs max), and directly address their question using local database facts whenever relevant."
+                    f"1. You have full visibility into the user's currently spinning record AND their entire Vinyl Vault crate catalog listed above.\n"
+                    f"2. When asked about other albums in their collection, comparative recordings (e.g. comparing performances of the same work by different conductors/pianists/labels in their crate), or pressing variations, reference their specific crate inventory.\n"
+                    f"3. Use Google Search grounding to supplement with external historical, performance comparison, or discographical details.\n"
+                    f"4. User Question: {message}\n\n"
+                    f"Keep your response warm, musicologically insightful, concise (2-4 paragraphs max), and directly reference local database facts whenever relevant."
                 )
 
                 config = types.GenerateContentConfig(
@@ -277,27 +280,44 @@ class GeminiVisionService:
 
         return f"Regarding '{title}' by {artist}: This record is renowned for its distinct vinyl pressing dynamics and musical production. '{message}' touches on great details for audiophiles enjoying this album!"
 
-    def stream_chat_response(self, message: str, record_context: Optional[Dict[str, Any]] = None):
+    def stream_chat_response(
+        self,
+        message: str,
+        record_context: Optional[Dict[str, Any]] = None,
+        crate_catalog: Optional[List[str]] = None
+    ):
         """
-        Streams Gemini 3.6 Flash chat response tokens in real time (reducing TTFT to < 200ms).
-        Yields text chunks as Server-Sent Events (SSE).
+        Streams Gemini 3.6 Flash chat response tokens in real time with Google Search Grounding
+        and complete Vinyl Vault Crate awareness.
         """
         title = record_context.get("title", "Vinyl Record") if record_context else "Vinyl Record"
         artist = record_context.get("artist", "Collection Item") if record_context else "Collection Item"
 
         context_lines = []
         if record_context:
+            context_lines.append("CURRENTLY SPINNING ON TURNTABLE:")
             for k, v in record_context.items():
-                if v and k not in ["coverUrl"]:
-                    context_lines.append(f"- {k}: {v}")
+                if v and k not in ["coverUrl", "originalScannedCoverUrl"]:
+                    context_lines.append(f"  - {k}: {v}")
+        else:
+            context_lines.append("CURRENT TURNTABLE STATE: Standby Mode (No record currently spinning)")
+
+        if crate_catalog and isinstance(crate_catalog, list):
+            context_lines.append(f"\nUSER'S COMPLETE VINYL VAULT CRATE ({len(crate_catalog)} Total Records):")
+            for idx, entry in enumerate(crate_catalog, 1):
+                context_lines.append(f"  {idx}. {entry}")
+
         context_str = "\n".join(context_lines)
 
         prompt = (
-            f"You are an expert vinyl archivist, musicologist, and audiophile companion.\n"
-            f"The user is currently listening to '{title}' by {artist}.\n\n"
+            f"You are Vinyl Vault AI — an expert classical musicologist, vinyl archivist, and audiophile companion.\n"
+            f"You have complete visibility into the user's currently spinning record AND their entire Vinyl Vault crate catalog.\n\n"
             f"{context_str}\n\n"
-            f"INSTRUCTIONS:\n"
-            f"Provide warm, musicological, concise responses (2-4 paragraphs) to their question: {message}\n"
+            f"INSTRUCTIONS FOR YOUR RESPONSE:\n"
+            f"1. You have full access to the user's Crate database facts above. When asked about other albums in their collection, comparative recordings (e.g. comparing performances of the same piece by different performers/pianists/conductors/labels in their crate), or pressing variations, cross-reference their specific crate inventory.\n"
+            f"2. Use Google Search grounding to enrich your response with external musicological, historical, or performance comparison details when helpful.\n"
+            f"3. User Question: {message}\n\n"
+            f"Provide a warm, musicologically insightful, and engaging response (2-4 paragraphs max)."
         )
 
         if self.client:
@@ -322,6 +342,7 @@ class GeminiVisionService:
         fallback_msg = f"Regarding '{title}' by {artist}: '{message}' touches on great audiophile aspects of this album!"
         yield f"data: {json.dumps({'text': fallback_msg})}\n\n"
         yield "data: [DONE]\n\n"
+
 
     def generate_chronicle_ai(self, records: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """

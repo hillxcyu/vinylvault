@@ -887,15 +887,31 @@ def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
         except Exception:
             pass
 
-    crate_summary = {
-        "totalRecordsInCrate": len(all_records),
-        "ownedAlbums": [f"{r.get('artist', 'Unknown')} - {r.get('title', 'Unknown')}" for r in all_records[:30]]
-    }
+    # Build complete crate catalog with full metadata for AI collection awareness
+    crate_catalog = []
+    for r in all_records:
+        r_artist = r.get("artist", "Unknown Artist")
+        r_title = r.get("title", "Unknown Title")
+        label = r.get("label") or (r.get("pressings", [{}])[0].get("label") if r.get("pressings") else None)
+        cat_no = r.get("catalogNumber") or (r.get("pressings", [{}])[0].get("catalogNumber") if r.get("pressings") else None)
+        year = r.get("releaseYear")
+        country = r.get("country")
+        
+        info = f"{r_artist} - {r_title}"
+        details = []
+        if label: details.append(f"Label: {label}")
+        if cat_no: details.append(f"Cat#: {cat_no}")
+        if year: details.append(f"Year: {year}")
+        if country: details.append(f"Country: {country}")
+        
+        if details:
+            info += f" [{', '.join(details)}]"
+        crate_catalog.append(info)
 
     return {
         "recordDetails": target_record or {},
         "guideMetadata": guide_data or {},
-        "crateSummary": crate_summary
+        "crateCatalog": crate_catalog
     }
 
 class ChatAlbumRequest(BaseModel):
@@ -920,10 +936,16 @@ async def chat_album_endpoint(req: ChatAlbumRequest):
 async def chat_stream_endpoint(req: ChatAlbumRequest):
     grounding_ctx = get_local_grounding_context(req.artist, req.albumTitle)
     record_ctx = grounding_ctx.get("recordDetails") if isinstance(grounding_ctx, dict) else None
+    crate_cat = grounding_ctx.get("crateCatalog") if isinstance(grounding_ctx, dict) else None
     return StreamingResponse(
-        gemini_service.stream_chat_response(req.message, record_ctx),
+        gemini_service.stream_chat_response(
+            message=req.message,
+            record_context=record_ctx,
+            crate_catalog=crate_cat
+        ),
         media_type="text/event-stream"
     )
+
 
 @app.post("/api/admin/seed-firestore")
 async def seed_firestore_endpoint():
