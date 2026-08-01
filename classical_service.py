@@ -398,14 +398,45 @@ class ClassicalService:
     def _compute_composer_stats(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         composer_counter = {}
         classical_recs = [r for r in records if self.is_classical_record(r)]
+        
+        composer_patterns = [
+            ("Hector Berlioz", r"\b(berlioz|symphonie fantastique)\b", "1803 – 1869", "France", "🇫🇷", "Romantic"),
+            ("Johann Sebastian Bach", r"\b(bach|bwv)\b", "1685 – 1750", "Germany", "🇩🇪", "Baroque"),
+            ("Wolfgang Amadeus Mozart", r"\b(mozart|k\.\s*\d+)\b", "1756 – 1791", "Austria", "🇦🇹", "Classical"),
+            ("Ludwig van Beethoven", r"\bbeethoven\b", "1770 – 1827", "Germany", "🇩🇪", "Classical / Romantic"),
+            ("Antonín Dvořák", r"\b(dvořák|dvorak)\b", "1841 – 1904", "Czechia", "🇨🇿", "Romantic"),
+            ("Pyotr Ilyich Tchaikovsky", r"\btchaikovsky\b", "1840 – 1893", "Russia", "🇷🇺", "Romantic"),
+            ("Johannes Brahms", r"\bbrahms\b", "1833 – 1897", "Germany", "🇩🇪", "Romantic"),
+            ("Franz Schubert", r"\bschubert\b", "1797 – 1828", "Austria", "🇦🇹", "Romantic"),
+            ("Frédéric Chopin", r"\bchopin\b", "1810 – 1849", "Poland / France", "🇵🇱", "Romantic"),
+            ("Joseph Haydn", r"\bhaydn\b", "1732 – 1809", "Austria", "🇦🇹", "Classical"),
+            ("Claude Debussy", r"\bdebussy\b", "1862 – 1918", "France", "🇫🇷", "Impressionist"),
+            ("Maurice Ravel", r"\bravel\b", "1875 – 1937", "France", "🇫🇷", "Impressionist"),
+            ("Igor Stravinsky", r"\bstravinsky\b", "1882 – 1971", "Russia", "🇷🇺", "Modern"),
+            ("Dmitri Shostakovich", r"\bshostakovich\b", "1906 – 1975", "Russia", "🇷🇺", "Modern"),
+            ("Sergei Prokofiev", r"\bprokofiev\b", "1891 – 1953", "Russia", "🇷🇺", "Modern"),
+            ("Béla Bartók", r"\b(bartók|bartok)\b", "1881 – 1945", "Hungary", "🇭🇺", "Modern"),
+            ("Jean Sibelius", r"\bsibelius\b", "1865 – 1957", "Finland", "🇫🇮", "Romantic"),
+            ("Felix Mendelssohn", r"\bmendelssohn\b", "1809 – 1847", "Germany", "🇩🇪", "Romantic"),
+            ("Robert Schumann", r"\bschumann\b", "1810 – 1856", "Germany", "🇩🇪", "Romantic"),
+            ("Franz Liszt", r"\bliszt\b", "1811 – 1886", "Hungary", "🇭🇺", "Romantic"),
+            ("Giuseppe Verdi", r"\bverdi\b", "1813 – 1901", "Italy", "🇮🇹", "Romantic"),
+            ("Gustav Mahler", r"\bmahler\b", "1860 – 1911", "Austria", "🇦🇹", "Romantic"),
+            ("Max Bruch", r"\bbruch\b", "1838 – 1920", "Germany", "🇩🇪", "Romantic")
+        ]
+
         for r in classical_recs:
             text_corpus = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
-            for key, info in COMPOSER_DATABASE.items():
-                if key in text_corpus:
-                    cname = info["name"]
+            for cname, pattern, lifespan, country, flag, era in composer_patterns:
+                if re.search(pattern, text_corpus):
                     if cname not in composer_counter:
                         composer_counter[cname] = {
-                            **info,
+                            "name": cname,
+                            "lifespan": lifespan,
+                            "country": country,
+                            "flag": flag,
+                            "era": era,
+                            "highlights": f"Master of {era} classical compositions.",
                             "count": 0,
                             "albums": []
                         }
@@ -414,9 +445,9 @@ class ClassicalService:
                         composer_counter[cname]["albums"].append(r.get("title"))
 
         composer_list = list(composer_counter.values())
-        # Sort chronologically by composer birth year, then by album count
         composer_list.sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
         return composer_list
+
 
 
     def _rule_based_chronicle_data(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -512,7 +543,8 @@ class ClassicalService:
             logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
             cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
-            cached["composerStats"] = self._compute_composer_stats(records)
+            if not cached.get("composerStats") or len(cached.get("composerStats", [])) == 0:
+                cached["composerStats"] = self._compute_composer_stats(records)
             return cached
 
         if not self.is_rebuilding:
@@ -521,13 +553,15 @@ class ClassicalService:
         if cached and isinstance(cached, dict) and "eras" in cached:
             cached["isRebuilding"] = True
             cached["totalRecordsInCrate"] = len(records)
-            cached["composerStats"] = self._compute_composer_stats(records)
+            if not cached.get("composerStats") or len(cached.get("composerStats", [])) == 0:
+                cached["composerStats"] = self._compute_composer_stats(records)
             return cached
 
         fallback = self._rule_based_chronicle_data(records)
         db.save_chronicle(fallback)
         fallback["isRebuilding"] = True
         return fallback
+
 
 
 classical_service = ClassicalService()
