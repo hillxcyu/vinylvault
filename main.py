@@ -19,7 +19,8 @@ import logging
 import urllib.request
 from datetime import datetime
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, BackgroundTasks
+
 
 
 from fastapi.staticfiles import StaticFiles
@@ -404,13 +405,19 @@ def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
     )
 
 @app.post("/api/scan")
-async def scan_cover(file: UploadFile = File(...)):
+async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(False)):
     contents = await file.read()
     
-    # 0. Auto-deskew & perspective correct image
-    detected_corners = deskew_service.detect_corners(contents)
-    deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
-    final_bytes = deskewed_bytes if is_deskewed else contents
+    # 0. Auto-deskew & perspective correct image (unless skip_deskew is True)
+    if skip_deskew:
+        detected_corners = []
+        final_bytes = contents
+        is_deskewed = False
+    else:
+        detected_corners = deskew_service.detect_corners(contents)
+        deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
+        final_bytes = deskewed_bytes if is_deskewed else contents
+
 
     # 1. Upload scan cover image to GCS bucket (covers/)
     ext = ".jpg" if is_deskewed else (os.path.splitext(file.filename)[1] or ".jpg")
@@ -641,6 +648,22 @@ async def log_spin(req: LogSpinRequest):
 async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
     rec_dict = req.dict()
     
+    # Idempotency check: prevent duplicate insertions if user clicked 'Add' multiple times
+    norm_art = (req.artist or "").strip().lower()
+    norm_title = (req.title or "").strip().lower()
+    norm_cat = (req.catalogNumber or "").strip().lower()
+
+    if norm_art and norm_title:
+        for existing in db.get_all_records():
+            ex_art = (existing.get("artist") or "").strip().lower()
+            ex_title = (existing.get("title") or "").strip().lower()
+            ex_cat = (existing.get("catalogNumber") or "").strip().lower()
+
+            if norm_art == ex_art and norm_title == ex_title:
+                if not norm_cat or not ex_cat or norm_cat == ex_cat:
+                    logger.info(f"Idempotency catch: Record '{req.title}' by {req.artist} already exists in collection.")
+                    return {"status": "success", "record": existing, "message": "Record already in collection"}
+
     # Sanitize releaseYear to 4-digit integer if possible
     ry = rec_dict.get("releaseYear")
     if ry is not None:
@@ -667,6 +690,7 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
     background_tasks.add_task(classical_service.get_chronicle_data, db.get_all_records(), force_ai_refresh=True)
 
     return {"status": "success", "record": new_rec}
+
 
 @app.delete("/api/records/{record_id}")
 async def delete_record_endpoint(record_id: str, background_tasks: BackgroundTasks):

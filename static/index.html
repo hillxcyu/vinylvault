@@ -2138,10 +2138,13 @@
     }
 
     async function autoDetectCornersAndSnap() {
-      if (!currentRawFile) {
-        resetCornerPoints();
+      if (!currentRawFile || isProcessingScan) {
+        if (!currentRawFile) resetCornerPoints();
         return;
       }
+      isProcessingScan = true;
+      toggleScannerButtons(false);
+
       showScanLoading('Detecting album cover corners with OpenCV...');
       try {
         const formData = new FormData();
@@ -2161,10 +2164,14 @@
         }
       } catch (err) {
         console.warn('Auto detect corners fallback:', err);
+      } finally {
+        isProcessingScan = false;
+        toggleScannerButtons(true);
       }
       resetCornerPoints();
       showScanLoading('Photo ready! Drag the 4 corner handles to outline the vinyl cover, then click Apply.');
     }
+
 
     let dragOffsetPctX = 0;
     let dragOffsetPctY = 0;
@@ -2323,22 +2330,72 @@
       }
     }
 
+    let isProcessingScan = false;
+
+    function toggleScannerButtons(enabled) {
+      const btns = document.querySelectorAll('#scannerActionsBar button, #scanActionContainer button, #rescanModal button');
+      btns.forEach(btn => {
+        btn.disabled = !enabled;
+        if (!enabled) {
+          btn.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+          btn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+      });
+    }
+
     async function useOriginalPhoto() {
-      if (!currentRawFile) {
-        showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
+      if (!currentRawFile || isProcessingScan) {
+        if (!currentRawFile) showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
         return;
       }
+      isProcessingScan = true;
+      toggleScannerButtons(false);
+
+      resetZoomPan();
+      toggleCornerHandles(false);
+
       showScanLoading(`Uploading original uncropped photo & analyzing via Gemini AI...`);
-      await triggerAutoScan();
+
+      try {
+        const formData = new FormData();
+        formData.append('file', currentRawFile);
+
+        const res = await fetch('/api/scan?skip_deskew=true', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+        const data = await res.json();
+        lastScannedMetadata = data.metadata;
+
+        if (data.metadata && data.metadata.coverUrl) {
+          const previewImg = document.getElementById('scannerPreviewImg');
+          if (previewImg) previewImg.src = data.metadata.coverUrl + '?t=' + Date.now();
+          toggleCornerHandles(false);
+        }
+
+        showToast('✨ Original Photo Analyzed!', 'fa-image');
+        renderDuplicateResult(data.duplicateCheck, data.metadata);
+      } catch (err) {
+        console.error('Original scan error:', err);
+        renderScanError(`Failed to process original image: ${err.message}`);
+      } finally {
+        isProcessingScan = false;
+        toggleScannerButtons(true);
+      }
     }
 
 
     async function applyManualDeskew() {
-
-      if (!currentRawFile) {
-        showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
+      if (!currentRawFile || isProcessingScan) {
+        if (!currentRawFile) showToast('Please upload or snap a cover photo first.', 'fa-triangle-exclamation');
         return;
       }
+      isProcessingScan = true;
+      toggleScannerButtons(false);
 
       // Step 1: Hide handles & reset zoom stage
       resetZoomPan();
@@ -2419,7 +2476,6 @@
         // STEP 3 GEMINI ANALYSIS: Now send deskewed image to Gemini AI for vision analysis
         showScanLoading('Step 2/2: Parsing title, artist & pressing details via Gemini AI...');
 
-
         const analyzeRes = await fetch(`/api/analyze-deskewed?coverUrl=${encodeURIComponent(cropData.coverUrl)}`, {
           method: 'POST'
         });
@@ -2438,9 +2494,12 @@
       } catch (err) {
         console.error('Manual deskew error:', err);
         renderScanError(`Scan & analysis error: ${err.message}`);
+      } finally {
+        isProcessingScan = false;
+        toggleScannerButtons(true);
       }
-
     }
+
 
     let zoomScale = 1.0;
     let panX = 0;
@@ -2643,9 +2702,12 @@
 
 
     async function addLastScannedRecord(btnElement) {
-      if (!lastScannedMetadata) return;
+      if (!lastScannedMetadata || isProcessingScan) return;
+      isProcessingScan = true;
+      toggleScannerButtons(false);
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
       const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
+
 
       // 1. Instantly close scanner modal (0ms UI latency!)
       closeScannerModal();
@@ -2716,9 +2778,12 @@
         }
       } catch (err) {
         console.error('Background save error:', err);
+      } finally {
+        isProcessingScan = false;
+        toggleScannerButtons(true);
       }
-
     }
+
 
     // Initial load
     fetchCollection();
