@@ -1372,7 +1372,19 @@ class VinylDatabase:
                 return
 
             if len(fs_recs) > 0:
-                print(f"Firestore active with {len(fs_recs)} records. Firestore is single source of truth.")
+                print(f"Firestore active with {len(fs_recs)} records.")
+                # Merge local-only records that were saved locally but missing from Firestore
+                fs_ids = {r.get("id") for r in fs_recs if r.get("id")}
+                local_only = [r for r in self.records if r.get("id") and r.get("id") not in fs_ids]
+                if local_only:
+                    print(f"Preserving & syncing {len(local_only)} locally-created records to Cloud Firestore...")
+                    for loc_rec in local_only:
+                        try:
+                            self.firestore.save_record(loc_rec)
+                            fs_recs.insert(0, loc_rec)
+                        except Exception as err:
+                            print(f"Error syncing local record '{loc_rec.get('id')}' to Firestore: {err}")
+
                 self.records = fs_recs
                 self.save_records()
                 print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
@@ -1382,6 +1394,7 @@ class VinylDatabase:
                 self.save_records()
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
+
 
 
     def _load_records(self) -> List[Dict[str, Any]]:
