@@ -1994,8 +1994,12 @@
       }
     }
 
+    let lastSpinActionTime = 0;
+
     async function spinRecord(id) {
       const rec = allRecords.find(r => r.id === id);
+      lastSpinActionTime = Date.now();
+
       if (rec) {
         rec.spinsCount = (rec.spinsCount || 0) + 1;
         updateNowSpinningUI(rec);
@@ -2004,11 +2008,16 @@
       }
 
       try {
-        await fetch('/api/now_spinning', {
+        const res = await fetch('/api/now_spinning', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id })
         });
+        const data = await res.json();
+        if (data.status === 'success' && data.nowSpinning && data.nowSpinning.record) {
+          currentSpinning = data.nowSpinning.record;
+          updateNowSpinningUI(data.nowSpinning.record);
+        }
         fetchStats();
       } catch (err) {
         console.error('Error logging spin:', err);
@@ -2016,6 +2025,7 @@
     }
 
     async function stopSpinning() {
+      lastSpinActionTime = Date.now();
       try {
         await fetch('/api/stop_spinning', { method: 'POST' });
         updateNowSpinningUI(null);
@@ -2026,6 +2036,11 @@
     }
 
     async function fetchNowSpinning() {
+      // Ignore background polling overrides for 5s after user initiates a spin/stop action
+      if (Date.now() - lastSpinActionTime < 5000) {
+        return;
+      }
+
       try {
         const res = await fetch('/api/now_spinning');
         const data = await res.json();
@@ -2043,6 +2058,7 @@
         console.error('Error fetching now_spinning state:', err);
       }
     }
+
 
 
     async function logCurrentSpin() {
