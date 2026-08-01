@@ -1319,10 +1319,27 @@ class VinylDatabase:
         self._has_synced_firestore = False
 
         self.wishlist = list(INITIAL_WISHLIST)
-        self.records = self._load_records()
+        
+        # Connect directly to Cloud Firestore as primary database
+        fs_recs = None
+        if self.firestore.db:
+            try:
+                fs_recs = self.firestore.get_records()
+            except Exception as e:
+                print(f"Direct Firestore load error during startup: {e}")
+
+        if fs_recs is not None and len(fs_recs) > 0:
+            print(f"Directly loaded {len(fs_recs)} records from Cloud Firestore database.")
+            self.records = fs_recs
+            self._save_json(RECORDS_FILE, fs_recs)
+        else:
+            print("Fallback: loading records from local storage.")
+            self.records = self._load_records()
+
         self.spins_log = self._load_spins()
         self.chronicle = self._load_chronicle()
         self.now_spinning = None  # In-memory only state (resets to Standby on cold boot)
+
 
 
     def ensure_firestore_synced(self):
@@ -1523,9 +1540,16 @@ class VinylDatabase:
         self._save_json(SPINS_FILE, self.spins_log)
 
     def get_all_records(self, sync_if_needed: bool = False) -> List[Dict[str, Any]]:
-        if sync_if_needed:
-            self.ensure_firestore_synced()
+        if sync_if_needed and self.firestore.db:
+            try:
+                fs_recs = self.firestore.get_records()
+                if fs_recs is not None and len(fs_recs) > 0:
+                    self.records = fs_recs
+                    self._save_json(RECORDS_FILE, fs_recs)
+            except Exception as e:
+                print(f"Error fetching direct records from Firestore: {e}")
         return self.records
+
 
 
     def get_record_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
