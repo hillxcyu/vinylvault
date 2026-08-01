@@ -2084,7 +2084,9 @@
     function openScannerModal() {
       resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.remove('hidden');
+      fetchCollection();
     }
+
 
     function openScannerModalWithFile(file) {
       currentRawFile = file;
@@ -2726,20 +2728,37 @@
       `;
     }
 
-    function viewMatchingRecordSpinning(recId) {
+    async function viewMatchingRecordSpinning(recId) {
       closeScannerModal();
-      const rec = allRecords.find(r => r.id === recId);
+
+      // Refresh collection to ensure client memory is 100% up to date
+      await fetchCollection();
+
+      let rec = allRecords.find(r => r.id === recId);
+
+      // Fallback search by scanned title or catalog number if exact ID was not matched
+      if (!rec && lastScannedMetadata) {
+        const targetTitle = (lastScannedMetadata.albumTitle || lastScannedMetadata.title || '').toLowerCase();
+        const targetCat = (lastScannedMetadata.catalogNumber || '').toLowerCase();
+
+        if (targetCat) {
+          rec = allRecords.find(r => (r.catalogNumber || '').toLowerCase().includes(targetCat) || 
+            (r.pressings && r.pressings.some(p => (p.catalogNumber || '').toLowerCase().includes(targetCat))));
+        }
+        if (!rec && targetTitle) {
+          rec = allRecords.find(r => (r.title || '').toLowerCase().includes(targetTitle));
+        }
+      }
+
       if (rec) {
-        updateNowSpinningUI(rec);
+        await spinRecord(rec.id);
         switchTab('nowSpinning');
         showToast(`Now Spinning '${rec.title}'!`, 'fa-compact-disc');
-      } else if (allRecords.length > 0) {
-        updateNowSpinningUI(allRecords[0]);
-        switchTab('nowSpinning');
       } else {
-        switchTab('nowSpinning');
+        showToast(`Matched record not found in collection.`, 'fa-circle-exmark');
       }
     }
+
 
     function renderDuplicateResult(result, metadata) {
       const container = document.getElementById('scanResultContainer');
