@@ -16,7 +16,9 @@ venv/
 
 # Exclude heavy static image assets and local data stores from Docker container build context
 # (All records, spins, and cover images are hosted and served from Firestore and GCS bucket: universal-trail-492014-n5-vinyl-vault-data)
-data_store/
+data_store/*
+!data_store/records.json
+
 static/extracted_covers/*
 !static/extracted_covers/.gitkeep
 static/uploads/*
