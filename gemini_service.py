@@ -209,7 +209,16 @@ class GeminiVisionService:
                 "recommendedMood": "Relaxed spin with ambient lighting."
             }
 
-    def chat_about_album(self, artist: str, title: str, message: str, history: Optional[List[Dict[str, str]]] = None, grounding_context: Optional[Dict[str, Any]] = None) -> str:
+    def chat_about_album(
+        self,
+        artist: str,
+        title: str,
+        message: str,
+        history: Optional[List[Dict[str, str]]] = None,
+        grounding_context: Optional[Dict[str, Any]] = None,
+        images: Optional[List[str]] = None
+    ) -> str:
+
         """
         Interactive chat about the currently spinning album using Gemini 3.6 Flash grounded with local database facts and Google Search grounding.
         """
@@ -232,12 +241,9 @@ class GeminiVisionService:
                     context_lines.append(f"- Pressing Details: {json.dumps(pressings, ensure_ascii=False)}")
 
             if guide:
-                if guide.get("albumBackground"):
-                    context_lines.append(f"- Stored Album Backstory: {guide.get('albumBackground')}")
-                if guide.get("tracklist"):
-                    context_lines.append(f"- Complete Vinyl Tracklist & Audiophile Notes: {json.dumps(guide.get('tracklist'), ensure_ascii=False)}")
-                if guide.get("vinylTip"):
-                    context_lines.append(f"- Audiophile Pro-Tip: {guide.get('vinylTip')}")
+                for k, v in rec.items():
+                    if v and k not in ["coverUrl", "originalScannedCoverUrl"]:
+                        context_lines.append(f"- {k}: {v}")
 
             if crate:
                 catalog = crate.get("crateCatalog", [])
@@ -245,7 +251,7 @@ class GeminiVisionService:
                 for idx, entry in enumerate(catalog, 1):
                     context_lines.append(f"  {idx}. {entry}")
 
-            context_str = "\n".join(context_lines)
+        context_str = "\n".join(context_lines)
 
         if self.client:
             try:
@@ -257,11 +263,19 @@ class GeminiVisionService:
                     f"{context_str}\n\n"
                     f"INSTRUCTIONS:\n"
                     f"1. You have full visibility into the user's currently spinning record AND their entire Vinyl Vault crate catalog listed above.\n"
-                    f"2. When asked about other albums in their collection, comparative recordings (e.g. comparing performances of the same work by different conductors/pianists/labels in their crate), or pressing variations, reference their specific crate inventory.\n"
-                    f"3. Use Google Search grounding to supplement with external historical, performance comparison, or discographical details.\n"
-                    f"4. User Question: {message}\n\n"
+                    f"2. When asked about attached photos (e.g. album cover, inner sleeve, matrix runoff, record label, liner notes, obi strip), inspect the image(s) with extreme precision.\n"
+                    f"3. When asked about other albums in their collection, comparative recordings, or pressing variations, reference their specific crate inventory.\n"
+                    f"4. Use Google Search grounding to supplement with external historical, performance comparison, or discographical details.\n"
+                    f"5. User Question: {message}\n\n"
                     f"Keep your response warm, musicologically insightful, concise (2-4 paragraphs max), and directly reference local database facts whenever relevant."
                 )
+
+                contents = []
+                image_parts = self._prepare_image_parts(images)
+                if image_parts:
+                    contents.extend(image_parts)
+
+                contents.append(prompt)
 
                 config = types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())]
@@ -269,7 +283,7 @@ class GeminiVisionService:
 
                 response = self.client.models.generate_content(
                     model="gemini-3.6-flash",
-                    contents=prompt,
+                    contents=contents,
                     config=config
                 )
                 if response and response.text:
@@ -280,15 +294,44 @@ class GeminiVisionService:
 
         return f"Regarding '{title}' by {artist}: This record is renowned for its distinct vinyl pressing dynamics and musical production. '{message}' touches on great details for audiophiles enjoying this album!"
 
+    def _prepare_image_parts(self, images: Optional[List[str]]) -> List[Any]:
+        parts = []
+        if not images or not isinstance(images, list):
+            return parts
+
+        try:
+            from google.genai import types
+            for img_str in images:
+                if not img_str or not isinstance(img_str, str):
+                    continue
+                try:
+                    mime_type = "image/jpeg"
+                    b64_data = img_str
+                    if "," in img_str:
+                        header, b64_data = img_str.split(",", 1)
+                        if "data:" in header and ";base64" in header:
+                            mime_type = header.split("data:")[1].split(";base64")[0]
+
+                    raw_bytes = base64.b64decode(b64_data)
+                    part = types.Part.from_bytes(data=raw_bytes, mime_type=mime_type)
+                    parts.append(part)
+                except Exception as err:
+                    logger.warning(f"Error decoding chat image attachment: {err}")
+        except Exception as e:
+            logger.warning(f"Error importing genai types for image parts: {e}")
+
+        return parts
+
     def stream_chat_response(
         self,
         message: str,
         record_context: Optional[Dict[str, Any]] = None,
-        crate_catalog: Optional[List[str]] = None
+        crate_catalog: Optional[List[str]] = None,
+        images: Optional[List[str]] = None
     ):
         """
-        Streams Gemini 3.6 Flash chat response tokens in real time with Google Search Grounding
-        and complete Vinyl Vault Crate awareness.
+        Streams Gemini 3.6 Flash chat response tokens in real time with Google Search Grounding,
+        multimodal image inspection, and complete Vinyl Vault Crate awareness.
         """
         title = record_context.get("title", "Vinyl Record") if record_context else "Vinyl Record"
         artist = record_context.get("artist", "Collection Item") if record_context else "Collection Item"
@@ -314,11 +357,19 @@ class GeminiVisionService:
             f"You have complete visibility into the user's currently spinning record AND their entire Vinyl Vault crate catalog.\n\n"
             f"{context_str}\n\n"
             f"INSTRUCTIONS FOR YOUR RESPONSE:\n"
-            f"1. You have full access to the user's Crate database facts above. When asked about other albums in their collection, comparative recordings (e.g. comparing performances of the same piece by different performers/pianists/conductors/labels in their crate), or pressing variations, cross-reference their specific crate inventory.\n"
-            f"2. Use Google Search grounding to enrich your response with external musicological, historical, or performance comparison details when helpful.\n"
-            f"3. User Question: {message}\n\n"
+            f"1. You have full access to the user's Crate database facts above. When asked about attached photos (e.g. album cover, inner sleeve, matrix runoff, record label, liner notes, obi strip), inspect the image(s) with extreme precision to identify catalog numbers, matrix numbers, pressings, performer credits, or condition.\n"
+            f"2. When asked about other albums in their collection, comparative recordings, or pressing variations, cross-reference their specific crate inventory.\n"
+            f"3. Use Google Search grounding to enrich your response with external musicological, historical, or performance comparison details when helpful.\n"
+            f"4. User Question: {message}\n\n"
             f"Provide a warm, musicologically insightful, and engaging response (2-4 paragraphs max)."
         )
+
+        contents = []
+        image_parts = self._prepare_image_parts(images)
+        if image_parts:
+            contents.extend(image_parts)
+
+        contents.append(prompt)
 
         if self.client:
             try:
@@ -328,7 +379,7 @@ class GeminiVisionService:
                 )
                 response_stream = self.client.models.generate_content_stream(
                     model="gemini-3.6-flash",
-                    contents=prompt,
+                    contents=contents,
                     config=config
                 )
                 for chunk in response_stream:
@@ -342,6 +393,7 @@ class GeminiVisionService:
         fallback_msg = f"Regarding '{title}' by {artist}: '{message}' touches on great audiophile aspects of this album!"
         yield f"data: {json.dumps({'text': fallback_msg})}\n\n"
         yield "data: [DONE]\n\n"
+
 
 
     def generate_chronicle_ai(self, records: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:

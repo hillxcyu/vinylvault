@@ -915,36 +915,42 @@ def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
     }
 
 class ChatAlbumRequest(BaseModel):
-    artist: str
-    albumTitle: str
-    message: str
+    artist: Optional[str] = ""
+    albumTitle: Optional[str] = ""
+    message: Optional[str] = ""
+    images: Optional[List[str]] = []
     history: Optional[List[Dict[str, str]]] = []
 
 @app.post("/api/chat-album")
 async def chat_album_endpoint(req: ChatAlbumRequest):
-    grounding_ctx = get_local_grounding_context(req.artist, req.albumTitle)
+    grounding_ctx = get_local_grounding_context(req.artist or "", req.albumTitle or "")
+    msg = req.message or "Analyze the attached image(s) for this vinyl album."
     reply = gemini_service.chat_about_album(
-        req.artist,
-        req.albumTitle,
-        req.message,
+        req.artist or "",
+        req.albumTitle or "",
+        msg,
         req.history,
-        grounding_context=grounding_ctx
+        grounding_context=grounding_ctx,
+        images=req.images
     )
     return {"status": "success", "reply": reply}
 
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatAlbumRequest):
-    grounding_ctx = get_local_grounding_context(req.artist, req.albumTitle)
+    grounding_ctx = get_local_grounding_context(req.artist or "", req.albumTitle or "")
     record_ctx = grounding_ctx.get("recordDetails") if isinstance(grounding_ctx, dict) else None
     crate_cat = grounding_ctx.get("crateCatalog") if isinstance(grounding_ctx, dict) else None
+    msg = req.message or "Analyze the attached image(s) for this vinyl album."
     return StreamingResponse(
         gemini_service.stream_chat_response(
-            message=req.message,
+            message=msg,
             record_context=record_ctx,
-            crate_catalog=crate_cat
+            crate_catalog=crate_cat,
+            images=req.images
         ),
         media_type="text/event-stream"
     )
+
 
 
 @app.post("/api/admin/seed-firestore")

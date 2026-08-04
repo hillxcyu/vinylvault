@@ -433,13 +433,25 @@
       </div>
 
       <!-- Chat Input Form -->
-      <div class="flex items-center gap-3 pt-3 pb-6 md:pb-2 flex-shrink-0">
-        <input type="text" id="chatInput" onkeydown="if(event.key==='Enter') sendAlbumChatMessage()" placeholder="Ask AI companion about this album..." class="flex-1 bg-stone-900 border border-stone-800 rounded-xl px-4 py-3.5 text-base text-gray-200 focus:outline-none focus:border-amber-500">
-        <button onclick="sendAlbumChatMessage()" class="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl text-sm shadow-lg flex items-center gap-2 transition-all flex-shrink-0">
-          <i class="fa-solid fa-paper-plane"></i>
-          <span class="hidden sm:inline">Send</span>
-        </button>
+      <div class="flex flex-col gap-2 pt-3 pb-6 md:pb-2 flex-shrink-0">
+        <!-- Image Attachment Preview Bar -->
+        <div id="chatImagePreviewBar" class="hidden flex flex-wrap gap-2 items-center px-1"></div>
+
+        <div class="flex items-center gap-2">
+          <!-- Photo Attachment Button -->
+          <button type="button" onclick="triggerChatImageUpload()" class="p-3.5 bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-amber-400 border border-stone-800 rounded-xl text-base transition-colors flex items-center justify-center flex-shrink-0 cursor-pointer" title="Attach image / photo (album cover, inner sleeve, matrix runoff, label, liner notes)">
+            <i class="fa-solid fa-camera text-amber-400"></i>
+          </button>
+          <input type="file" id="chatImageInput" accept="image/*" multiple class="hidden" onchange="handleChatImageSelect(event)">
+
+          <input type="text" id="chatInput" onkeydown="if(event.key==='Enter') sendAlbumChatMessage()" placeholder="Ask AI companion or attach a photo..." class="flex-1 bg-stone-900 border border-stone-800 rounded-xl px-4 py-3.5 text-base text-gray-200 focus:outline-none focus:border-amber-500">
+          <button onclick="sendAlbumChatMessage()" class="px-6 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl text-sm shadow-lg flex items-center gap-2 transition-all flex-shrink-0 cursor-pointer">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span class="hidden sm:inline">Send</span>
+          </button>
+        </div>
       </div>
+
 
     </div>
   </div>
@@ -1775,27 +1787,94 @@
       sendAlbumChatMessage();
     }
 
+    let chatAttachedImages = [];
+
+    function triggerChatImageUpload() {
+      document.getElementById('chatImageInput').click();
+    }
+
+    function handleChatImageSelect(e) {
+      const files = e.target.files;
+      if (!files || !files.length) return;
+
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          chatAttachedImages.push(evt.target.result);
+          renderChatImagePreviews();
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    function removeChatImageAttachment(index) {
+      chatAttachedImages.splice(index, 1);
+      renderChatImagePreviews();
+    }
+
+    function renderChatImagePreviews() {
+      const bar = document.getElementById('chatImagePreviewBar');
+      if (!bar) return;
+
+      if (!chatAttachedImages.length) {
+        bar.classList.add('hidden');
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.classList.remove('hidden');
+      bar.innerHTML = chatAttachedImages.map((dataUrl, idx) => `
+        <div class="relative group w-14 h-14 rounded-lg overflow-hidden border border-amber-500/50 shadow-md">
+          <img src="${dataUrl}" class="w-full h-full object-cover">
+          <button onclick="removeChatImageAttachment(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 bg-black/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px] transition-colors cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
     async function sendAlbumChatMessage() {
       const input = document.getElementById('chatInput');
       const msg = input.value.trim();
-      if (!msg) return;
+      const hasImages = chatAttachedImages.length > 0;
+
+      if (!msg && !hasImages) return;
 
       const activeRec = currentSpinning || { artist: 'Classical / Vinyl', title: 'Vinyl Vault Collection' };
 
-
       const chatLog = document.getElementById('chatLog');
       
-      // Append user bubble
+      // Render user bubble with text and attached thumbnail images
+      let imgPreviewsHtml = '';
+      if (hasImages) {
+        imgPreviewsHtml = `
+          <div class="flex flex-wrap gap-2 mb-2 justify-end">
+            ${chatAttachedImages.map(img => `<img src="${img}" class="w-20 h-20 object-cover rounded-lg border border-amber-500/40 shadow-sm">`).join('')}
+          </div>
+        `;
+      }
+
+      const displayMsg = msg || 'Analyze attached photo(s) for this vinyl album.';
+
       const userBubble = document.createElement('div');
       userBubble.className = 'flex items-start justify-end gap-3';
       userBubble.innerHTML = `
         <div class="bg-amber-500/20 border border-amber-500/30 text-amber-100 p-3.5 rounded-2xl max-w-xl text-sm leading-relaxed">
-          ${msg}
+          ${imgPreviewsHtml}
+          ${displayMsg}
         </div>
         <div class="w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold text-xs flex-shrink-0">You</div>
       `;
       chatLog.appendChild(userBubble);
+
+      const payloadImages = [...chatAttachedImages];
+
+      // Clear input and attachment state
       input.value = '';
+      chatAttachedImages = [];
+      renderChatImagePreviews();
 
       // Append AI streaming bubble
       const aiBubble = document.createElement('div');
@@ -1815,9 +1894,11 @@
           body: JSON.stringify({
             artist: activeRec.artist,
             albumTitle: activeRec.title,
-            message: msg
+            message: displayMsg,
+            images: payloadImages
           })
         });
+
 
 
         const reader = res.body.getReader();
