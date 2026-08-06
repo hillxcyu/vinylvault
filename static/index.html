@@ -416,19 +416,6 @@
         </button>
       </div>
 
-      <!-- Quick Prompt Suggestion Chips -->
-      <div class="flex flex-nowrap overflow-x-auto gap-2 pb-2 mb-3 scrollbar-none flex-shrink-0">
-        <button onclick="sendQuickChip('Tell me about the recording gear & mastering for this vinyl pressing!')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
-          🎛️ Recording & Mastering
-        </button>
-        <button onclick="sendQuickChip('What is the backstory behind Track 1 on this record?')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
-          🎶 Track 1 Backstory
-        </button>
-        <button onclick="sendQuickChip('Which other classic vinyl releases sound similar to this?')" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-full text-xs font-medium border border-stone-700/60 transition-colors whitespace-nowrap flex-shrink-0">
-          📻 Similar Recommendations
-        </button>
-      </div>
-
       <!-- Chat Log Area -->
       <div id="chatLog" class="bg-stone-950/90 rounded-none md:rounded-xl p-3 md:p-4 overflow-y-auto space-y-4 border-y border-x-0 md:border md:border-stone-800/80 text-sm flex-1">
         <div class="flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60">
@@ -439,8 +426,21 @@
         </div>
       </div>
 
-      <!-- Chat Input Form -->
+      <!-- Chat Input Form & Quick Prompt Suggestion Chips -->
       <div class="flex flex-col gap-2 pt-3 pb-6 md:pb-2 flex-shrink-0">
+        <!-- Quick Prompt Suggestion Chips (Positioned directly above text input) -->
+        <div class="flex flex-nowrap overflow-x-auto gap-2 pb-1 scrollbar-none flex-shrink-0">
+          <button onclick="sendQuickChip('Tell me about the recording gear & mastering for this vinyl pressing!')" class="px-3.5 py-1.5 bg-stone-900/90 hover:bg-stone-800 text-stone-300 hover:text-amber-400 rounded-full text-xs font-medium border border-stone-800 hover:border-amber-500/40 transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer shadow-sm">
+            🎛️ Recording & Mastering
+          </button>
+          <button onclick="sendQuickChip('What is the backstory behind Track 1 on this record?')" class="px-3.5 py-1.5 bg-stone-900/90 hover:bg-stone-800 text-stone-300 hover:text-amber-400 rounded-full text-xs font-medium border border-stone-800 hover:border-amber-500/40 transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer shadow-sm">
+            🎶 Track 1 Backstory
+          </button>
+          <button onclick="sendQuickChip('Which other classic vinyl releases sound similar to this?')" class="px-3.5 py-1.5 bg-stone-900/90 hover:bg-stone-800 text-stone-300 hover:text-amber-400 rounded-full text-xs font-medium border border-stone-800 hover:border-amber-500/40 transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer shadow-sm">
+            📻 Similar Recommendations
+          </button>
+        </div>
+
         <!-- Image Attachment Preview Bar -->
         <div id="chatImagePreviewBar" class="hidden flex flex-wrap gap-2 items-center px-1"></div>
 
@@ -458,6 +458,7 @@
           </button>
         </div>
       </div>
+
 
 
     </div>
