@@ -1717,7 +1717,13 @@
         const res = await fetch('/api/listening-guide', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ artist, albumTitle: title, forceRefresh })
+          body: JSON.stringify({ 
+            artist, 
+            albumTitle: title, 
+            recordId: (currentSpinning ? currentSpinning.id : null),
+            forceRefresh 
+          })
+
         });
         const data = await res.json();
         if (data.status === 'success' && data.guide) {

@@ -165,7 +165,8 @@ class GeminiVisionService:
                 )
 
                 config = types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())]
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    response_mime_type="application/json"
                 )
 
                 response = self.client.models.generate_content(
@@ -173,7 +174,6 @@ class GeminiVisionService:
                     contents=prompt,
                     config=config
                 )
-
 
                 text = response.text.strip()
                 if text.startswith("```json"):
@@ -183,8 +183,17 @@ class GeminiVisionService:
                 if text.endswith("```"):
                     text = text[:-3]
 
-                parsed = json.loads(text.strip())
+                text = text.strip()
+                try:
+                    parsed = json.loads(text)
+                except Exception:
+                    match = re.search(r'\{.*\}', text, re.DOTALL)
+                    if match:
+                        parsed = json.loads(match.group(0))
+                    else:
+                        raise
                 return parsed
+
             except Exception as e:
                 logger.error(f"Error generating listening guide via Gemini API: {e}")
 

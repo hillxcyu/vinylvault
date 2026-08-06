@@ -108,9 +108,11 @@ class AddRecordRequest(BaseModel):
 class ListeningGuideRequest(BaseModel):
     artist: str
     albumTitle: str
+    recordId: Optional[str] = None
     forceRefresh: Optional[bool] = False
 
 class PronounceRequest(BaseModel):
+
     text: str
 
 class FetchCoverRequest(BaseModel):
@@ -817,17 +819,25 @@ async def get_listening_guide(req: ListeningGuideRequest):
     
     # 0. Check if target record in database already holds listeningGuide on the record object
     if not req.forceRefresh:
+        if req.recordId:
+            rec = db.get_record_by_id(req.recordId)
+            if rec and rec.get("listeningGuide"):
+                guide = rec.get("listeningGuide")
+                db.firestore.save_listening_guide(guide_key, guide)
+                return {"status": "success", "guide": guide, "cached": True}
+
         all_recs = db.get_all_records()
         norm_req_title = (req.albumTitle or "").strip().lower()
         norm_req_artist = (req.artist or "").strip().lower()
         for r in all_recs:
             r_t = (r.get("title") or "").strip().lower()
             r_a = (r.get("artist") or "").strip().lower()
-            if norm_req_title and (norm_req_title == r_t or norm_req_title in r_t or r_t in norm_req_title):
+            if (norm_req_title and (norm_req_title == r_t or norm_req_title in r_t or r_t in norm_req_title)) or (norm_req_artist and (norm_req_artist == r_a or norm_req_artist in r_a or r_a in norm_req_artist)):
                 if r.get("listeningGuide"):
                     guide = r.get("listeningGuide")
                     db.firestore.save_listening_guide(guide_key, guide)
                     return {"status": "success", "guide": guide, "cached": True}
+
 
     # 1. Check Firestore cache if forceRefresh is False
     if not req.forceRefresh:
