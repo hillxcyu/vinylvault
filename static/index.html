@@ -420,10 +420,20 @@
       <div id="chatLog" class="bg-stone-950/90 rounded-none md:rounded-xl p-3 md:p-4 overflow-y-auto space-y-4 border-y border-x-0 md:border md:border-stone-800/80 text-sm flex-1">
         <div class="flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60">
           <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm flex-shrink-0">AI</div>
-          <div class="text-stone-300 leading-relaxed text-sm">
-            Ask me anything about the currently spinning album! I can share liner notes, band backstory, vinyl mastering details, or track breakdowns.
+          <div class="flex-1 min-w-0">
+            <div class="chat-text text-stone-300 leading-relaxed text-sm">
+              Ask me anything about the currently spinning album! I can share liner notes, band backstory, vinyl mastering details, or track breakdowns.
+            </div>
+            <div class="mt-3 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400">
+              <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
+              <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak message via Gemini 3.1 Flash TTS">
+                <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
+                <span>Speak</span>
+              </button>
+            </div>
           </div>
         </div>
+
       </div>
 
       <!-- Chat Input Form & Quick Prompt Suggestion Chips -->
@@ -1946,11 +1956,42 @@
             }
           }
         }
+
+        if (fullText) {
+          const speakerBar = document.createElement('div');
+          speakerBar.className = 'mt-3 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400';
+          speakerBar.innerHTML = `
+            <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
+            <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak AI response via Gemini 3.1 Flash TTS">
+              <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
+              <span>Speak</span>
+            </button>
+          `;
+          aiBubble.querySelector('.chat-text')?.after(speakerBar) || aiBubble.appendChild(speakerBar);
+        }
       } catch (err) {
         textEl.innerText = 'Unable to connect to AI companion at this time.';
       }
       chatLog.scrollTop = chatLog.scrollHeight;
     }
+
+    function speakChatResponse(btnElement) {
+      const bubble = btnElement.closest('.bg-stone-900\\/60');
+      if (!bubble) return;
+
+      const textEl = bubble.querySelector('.chat-text');
+      if (!textEl) return;
+
+      let cleanText = textEl.innerText || textEl.textContent || '';
+      cleanText = cleanText.replace(/[*_#`~]/g, '').trim();
+
+      if (cleanText.length > 600) {
+        cleanText = cleanText.slice(0, 600);
+      }
+
+      pronounceText(cleanText, btnElement);
+    }
+
 
     let selectedEraHeaderFilter = 'all';
 
