@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <!-- Header Controls: Era Dropdown & Desktop Navigation Tabs -->
+      <!-- Header Controls: Era Dropdown, AI Chat & Desktop Navigation Tabs -->
       <div class="flex items-center gap-2">
         <!-- Era Dropdown Selection Menu -->
         <div class="relative flex items-center">
@@ -77,6 +77,13 @@
           </select>
           <i class="fa-solid fa-chevron-down text-[10px] text-amber-400 absolute right-2.5 pointer-events-none"></i>
         </div>
+
+        <!-- AI Chat Header Button -->
+        <button onclick="openChatModal()" class="px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95" title="Open AI Vinyl Companion Chat">
+          <i class="fa-solid fa-comments"></i>
+          <span class="hidden xs:inline">AI Chat</span>
+        </button>
+
 
         <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
         <div class="hidden sm:flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
@@ -457,31 +464,36 @@
   </div>
 
   <!-- Apple HIG Floating Navigation Pill Dock (Primary Mobile Navigation) -->
-  <div id="floatingMobileNavDock" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 ios-liquid-glass rounded-full p-1.5 flex items-center gap-1">
-    <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1.5">
-      <i class="fa-solid fa-circle-play text-sm text-amber-400"></i>
+  <div id="floatingMobileNavDock" class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 ios-liquid-glass rounded-full p-1.5 flex items-center gap-1 shadow-2xl max-w-[96vw] overflow-x-auto">
+    <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-3 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1">
+      <i class="fa-solid fa-circle-play text-xs text-amber-400"></i>
       <span>Spinning</span>
     </button>
-    <button id="mobileNavCrate" onclick="switchTab('crate')" class="px-4 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/25 active:scale-95 flex items-center gap-1.5">
-      <i class="fa-solid fa-box-archive text-sm"></i>
+    <button id="mobileNavCrate" onclick="switchTab('crate')" class="px-3 py-2 rounded-full text-xs font-bold transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/25 active:scale-95 flex items-center gap-1">
+      <i class="fa-solid fa-box-archive text-xs"></i>
       <span>Crate</span>
     </button>
-    <button id="mobileNavChronicle" onclick="switchTab('chronicle')" class="px-4 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1.5">
-      <i class="fa-solid fa-hourglass-half text-amber-400 text-sm"></i>
+    <button id="mobileNavChronicle" onclick="switchTab('chronicle')" class="px-3 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1">
+      <i class="fa-solid fa-hourglass-half text-amber-400 text-xs"></i>
       <span>Chronicle</span>
     </button>
-    <div class="h-4 w-[1px] bg-white/20 mx-1"></div>
-    <button onclick="openScannerModal()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all active:scale-95">
+    <button id="mobileNavChat" onclick="openChatModal()" class="px-3 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1">
+      <i class="fa-solid fa-comments text-amber-400 text-xs"></i>
+      <span>AI Chat</span>
+    </button>
+    <div class="h-4 w-[1px] bg-white/20 mx-0.5"></div>
+    <button onclick="openScannerModal()" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold rounded-full text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1 transition-all active:scale-95 flex-shrink-0">
       <i class="fa-solid fa-camera"></i>
       <span>Scan</span>
     </button>
   </div>
 
-  <!-- Floating Action Button (FAB) for Mobile Chat Overlay -->
-  <button id="chatToggleFab" onclick="openChatModal()" class="fixed bottom-6 right-4 sm:right-6 z-40 ios-liquid-glass text-amber-400 hover:text-amber-300 font-bold p-3.5 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">
+  <!-- Floating Action Button (FAB) for Desktop/Tablet Overlay -->
+  <button id="chatToggleFab" onclick="openChatModal()" class="hidden sm:flex fixed bottom-6 right-6 z-40 ios-liquid-glass text-amber-400 hover:text-amber-300 font-bold p-3.5 rounded-full shadow-2xl items-center gap-2 hover:scale-105 active:scale-95 transition-all">
     <i class="fa-solid fa-comments text-base text-amber-400"></i>
-    <span class="hidden md:inline text-xs font-bold text-white">AI Chat</span>
+    <span class="text-xs font-bold text-white">AI Chat</span>
   </button>
+
 
   <!-- Composer Deep-Dive Knowledge Modal -->
   <div id="composerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeComposerModal()">
