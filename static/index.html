@@ -463,8 +463,9 @@
     </div>
   </div>
 
-  <!-- Apple HIG Floating Navigation Pill Dock (Primary Mobile Navigation) -->
-  <div id="floatingMobileNavDock" class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 ios-liquid-glass rounded-full p-1.5 flex items-center gap-1 shadow-2xl max-w-[96vw] overflow-x-auto">
+  <!-- Apple HIG Floating Navigation Pill Dock (Primary Mobile Navigation Only) -->
+  <div id="floatingMobileNavDock" class="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 ios-liquid-glass rounded-full p-1.5 flex items-center gap-1 shadow-2xl max-w-[96vw] overflow-x-auto">
+
     <button id="mobileNavNowSpinning" onclick="switchTab('nowSpinning')" class="px-3 py-2 rounded-full text-xs font-bold transition-all text-stone-300 hover:text-white active:scale-95 flex items-center gap-1">
       <i class="fa-solid fa-circle-play text-xs text-amber-400"></i>
       <span>Spinning</span>
