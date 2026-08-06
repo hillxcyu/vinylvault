@@ -1905,7 +1905,9 @@
       aiBubble.className = 'flex items-start gap-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800/60';
       aiBubble.innerHTML = `
         <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>
-        <div class="chat-text text-stone-200 leading-relaxed text-sm whitespace-pre-wrap"><i class="fa-solid fa-spinner animate-spin text-amber-400 mr-2"></i>Thinking...</div>
+        <div class="flex-1 min-w-0">
+          <div class="chat-text text-stone-200 leading-relaxed text-sm whitespace-pre-wrap"><i class="fa-solid fa-spinner animate-spin text-amber-400 mr-2"></i>Thinking...</div>
+        </div>
       `;
       chatLog.appendChild(aiBubble);
       chatLog.scrollTop = chatLog.scrollHeight;
@@ -1922,8 +1924,6 @@
             images: payloadImages
           })
         });
-
-
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
@@ -1958,16 +1958,21 @@
         }
 
         if (fullText) {
+          const contentWrapper = aiBubble.querySelector('.flex-1');
           const speakerBar = document.createElement('div');
-          speakerBar.className = 'mt-3 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400';
+          speakerBar.className = 'mt-3 pt-2.5 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400 w-full';
           speakerBar.innerHTML = `
             <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
-            <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak AI response via Gemini 3.1 Flash TTS">
+            <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak full AI response via Gemini 3.1 Flash TTS">
               <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
               <span>Speak</span>
             </button>
           `;
-          aiBubble.querySelector('.chat-text')?.after(speakerBar) || aiBubble.appendChild(speakerBar);
+          if (contentWrapper) {
+            contentWrapper.appendChild(speakerBar);
+          } else {
+            aiBubble.appendChild(speakerBar);
+          }
         }
       } catch (err) {
         textEl.innerText = 'Unable to connect to AI companion at this time.';
@@ -1975,22 +1980,191 @@
       chatLog.scrollTop = chatLog.scrollHeight;
     }
 
-    function speakChatResponse(btnElement) {
+    // --- High-Fidelity Multi-Chunk Gemini TTS Engine (No Length Cutoffs) ---
+    let activeSpeech = {
+      audioObj: null,
+      btnElement: null,
+      chunks: [],
+      currentIndex: 0,
+      isSpeaking: false
+    };
+
+    function stopCurrentSpeech() {
+      if (activeSpeech.audioObj) {
+        try {
+          activeSpeech.audioObj.pause();
+          activeSpeech.audioObj.currentTime = 0;
+        } catch(e) {}
+        activeSpeech.audioObj = null;
+      }
+      if (activeSpeech.btnElement) {
+        const btnSpan = activeSpeech.btnElement.querySelector('span');
+        const btnIcon = activeSpeech.btnElement.querySelector('i');
+        if (btnSpan) btnSpan.innerText = 'Speak';
+        if (btnIcon) {
+          btnIcon.className = 'fa-solid fa-volume-high text-amber-400 text-xs';
+        }
+        activeSpeech.btnElement.classList.remove('bg-amber-500/20', 'border-amber-500/50');
+      }
+      activeSpeech.isSpeaking = false;
+      activeSpeech.chunks = [];
+      activeSpeech.currentIndex = 0;
+      activeSpeech.btnElement = null;
+    }
+
+    function splitTextIntoSpeechChunks(text, maxLen = 350) {
+      if (!text) return [];
+      let clean = text.replace(/[*_#`~]/g, '').replace(/\s+/g, ' ').trim();
+      if (!clean) return [];
+      if (clean.length <= maxLen) return [clean];
+
+      const sentences = clean.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [clean];
+      const chunks = [];
+      let currentChunk = '';
+
+      for (const s of sentences) {
+        const sentence = s.trim();
+        if (!sentence) continue;
+        if ((currentChunk + ' ' + sentence).trim().length <= maxLen) {
+          currentChunk = (currentChunk + ' ' + sentence).trim();
+        } else {
+          if (currentChunk) chunks.push(currentChunk);
+          if (sentence.length > maxLen) {
+            const words = sentence.split(' ');
+            let sub = '';
+            for (const w of words) {
+              if ((sub + ' ' + w).trim().length <= maxLen) {
+                sub = (sub + ' ' + w).trim();
+              } else {
+                if (sub) chunks.push(sub);
+                sub = w;
+              }
+            }
+            currentChunk = sub;
+          } else {
+            currentChunk = sentence;
+          }
+        }
+      }
+
+      if (currentChunk) {
+        chunks.push(currentChunk);
+      }
+
+      return chunks;
+    }
+
+    async function speakChatResponse(btnElement) {
+      if (!btnElement) return;
+
+      // If user clicks while currently speaking from this button, toggle STOP
+      if (activeSpeech.isSpeaking && activeSpeech.btnElement === btnElement) {
+        stopCurrentSpeech();
+        showToast('Speech playback stopped', 'fa-circle-stop');
+        return;
+      }
+
+      // Stop any other active speech
+      stopCurrentSpeech();
+
       const bubble = btnElement.closest('.bg-stone-900\\/60');
       if (!bubble) return;
 
       const textEl = bubble.querySelector('.chat-text');
       if (!textEl) return;
 
-      let cleanText = textEl.innerText || textEl.textContent || '';
-      cleanText = cleanText.replace(/[*_#`~]/g, '').trim();
+      let rawText = textEl.innerText || textEl.textContent || '';
+      if (!rawText.trim()) return;
 
-      if (cleanText.length > 600) {
-        cleanText = cleanText.slice(0, 600);
+      const chunks = splitTextIntoSpeechChunks(rawText, 350);
+      if (chunks.length === 0) return;
+
+      activeSpeech.btnElement = btnElement;
+      activeSpeech.chunks = chunks;
+      activeSpeech.currentIndex = 0;
+      activeSpeech.isSpeaking = true;
+
+      btnElement.classList.add('bg-amber-500/20', 'border-amber-500/50');
+      playSpeechChunkIndex(0);
+    }
+
+    async function playSpeechChunkIndex(index) {
+      if (!activeSpeech.isSpeaking || index >= activeSpeech.chunks.length) {
+        stopCurrentSpeech();
+        return;
       }
 
-      pronounceText(cleanText, btnElement);
+      activeSpeech.currentIndex = index;
+      const chunkText = activeSpeech.chunks[index];
+      const totalChunks = activeSpeech.chunks.length;
+      const btn = activeSpeech.btnElement;
+
+      const btnSpan = btn ? btn.querySelector('span') : null;
+      const btnIcon = btn ? btn.querySelector('i') : null;
+
+      if (btnSpan) {
+        btnSpan.innerText = totalChunks > 1 ? `Stop (${index + 1}/${totalChunks})` : 'Stop';
+      }
+      if (btnIcon) {
+        btnIcon.className = 'fa-solid fa-waveform text-amber-400 text-xs animate-pulse';
+      }
+
+      const cacheKey = chunkText.toLowerCase();
+
+      const handleAudioB64 = (audioB64, mimeType) => {
+        if (!activeSpeech.isSpeaking) return;
+
+        const audio = new Audio(`data:${mimeType || 'audio/wav'};base64,${audioB64}`);
+        activeSpeech.audioObj = audio;
+
+        audio.onended = () => {
+          if (activeSpeech.isSpeaking) {
+            playSpeechChunkIndex(index + 1);
+          }
+        };
+
+        audio.onerror = (e) => {
+          console.warn('Audio chunk playback error:', e);
+          if (activeSpeech.isSpeaking) {
+            playSpeechChunkIndex(index + 1);
+          }
+        };
+
+        audio.play().catch(err => {
+          console.warn('Audio play exception:', err);
+          if (activeSpeech.isSpeaking) {
+            playSpeechChunkIndex(index + 1);
+          }
+        });
+      };
+
+      if (pronunciationCache.has(cacheKey)) {
+        const cached = pronunciationCache.get(cacheKey);
+        handleAudioB64(cached.audioB64, cached.mimeType);
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/pronounce', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: chunkText })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.status === 'success' && data.audioB64) {
+          pronunciationCache.set(cacheKey, { audioB64: data.audioB64, mimeType: data.mimeType });
+          handleAudioB64(data.audioB64, data.mimeType);
+        } else {
+          console.warn('Gemini TTS chunk failed, moving to next chunk...');
+          if (activeSpeech.isSpeaking) playSpeechChunkIndex(index + 1);
+        }
+      } catch (err) {
+        console.error('Gemini TTS network error on chunk:', err);
+        if (activeSpeech.isSpeaking) playSpeechChunkIndex(index + 1);
+      }
     }
+
 
 
     let selectedEraHeaderFilter = 'all';
