@@ -114,6 +114,21 @@ class DuplicateEngine:
                             "message": f"ALREADY IN YOUR COLLECTION! Catalog Number '{p_cat}' matches '{record.get('title', '')}'."
                         }
 
+        # 2. GEMINI VISION SEMANTIC CRATE MATCH (Grounded AI Reasoning):
+        if "isAlreadyInCrate" in query and query.get("isAlreadyInCrate") is True:
+            match_id = query.get("crateMatchId")
+            match_rec = next((r for r in collection if r.get("id") == match_id), None) if match_id else None
+            if match_rec:
+                pressings = match_rec.get("pressings", [])
+                primary_p = pressings[0] if pressings else {}
+                reason = query.get("crateMatchReason") or f"ALREADY IN YOUR COLLECTION! Gemini identified '{match_rec.get('title')}' in your Crate."
+                return {
+                    "status": "EXACT_MATCH",
+                    "matchingRecord": match_rec,
+                    "matchingPressing": primary_p,
+                    "message": f"ALREADY IN YOUR COLLECTION! {reason}"
+                }
+
         if not q_artist and not q_title:
             return {
                 "status": "NOT_OWNED",
@@ -131,13 +146,14 @@ class DuplicateEngine:
         q_composers = get_composers(q_art_raw + " " + q_title_raw)
         q_instruments = get_instruments(q_art_raw + " " + q_title_raw)
 
-        # 2. STRING INCLUSION / KEYWORD OVERLAP MATCH IN COLLECTION:
+        # 3. STRING INCLUSION / KEYWORD OVERLAP MATCH IN COLLECTION:
         for record in collection:
             r_art_raw = record.get("artist", "")
             r_title_raw = record.get("title", "")
 
             r_artist = normalize_string(r_art_raw)
             r_title = normalize_string(r_title_raw)
+
 
             r_art_kw = get_keywords(r_art_raw)
             r_title_kw = get_keywords(r_title_raw)

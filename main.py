@@ -421,10 +421,15 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     filename = f"scan_{uuid.uuid4().hex[:8]}{ext}"
     uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
 
-    # 2. Extract metadata via Gemini Vision API using deskewed image
-    extracted_metadata = gemini_service.analyze_album_cover(final_bytes, filename=filename)
+    # 2. Extract metadata via Gemini Vision API grounded with user Crate inventory
+    extracted_metadata = gemini_service.analyze_album_cover(
+        final_bytes, 
+        filename=filename, 
+        crate_records=db.get_all_records()
+    )
     extracted_metadata["coverUrl"] = uploaded_cover_url
     extracted_metadata["deskewed"] = is_deskewed
+
 
     # 3. Store optional Discogs official cover suggestion using extracted catalog number and country
     artist = extracted_metadata.get("artist", "")

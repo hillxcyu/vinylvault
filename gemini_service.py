@@ -43,13 +43,36 @@ class GeminiVisionService:
             self.client = None
 
 
-    def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
+    def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
-        Analyze album cover photo using Gemini 3.5 Flash Vision model with Google Search grounding enabled
+        Analyze album cover photo using Gemini 3.6 Flash Vision model with Google Search grounding and Crate inventory duplicate checking
         """
         if self.client:
             try:
                 from google.genai import types
+
+                crate_context = ""
+                if crate_records:
+                    simplified_crate = []
+                    for r in crate_records:
+                        if isinstance(r, dict):
+                            simplified_crate.append({
+                                "id": r.get("id"),
+                                "title": r.get("title"),
+                                "artist": r.get("artist"),
+                                "label": r.get("label"),
+                                "catalogNumber": r.get("catalogNumber") or r.get("catno"),
+                                "releaseYear": r.get("releaseYear")
+                            })
+                    crate_context = (
+                        f"\n\nCRITICAL REQUIREMENT 4: CRATE INVENTORY DUPLICATE EVALUATION\n"
+                        f"Compare the scanned album cover and recognized metadata directly against the user's Crate Collection inventory below:\n"
+                        f"{json.dumps(simplified_crate[:150], ensure_ascii=False, indent=2)}\n\n"
+                        f"Evaluate whether this exact album composition or pressing is ALREADY present in the user's crate:\n"
+                        f"- 'isAlreadyInCrate': boolean (true if the user already owns this exact album, false otherwise).\n"
+                        f"- 'crateMatchId': string or null (the exact 'id' of the matching record if owned, otherwise null).\n"
+                        f"- 'crateMatchReason': string (1-2 sentence musicological note explaining whether it is already owned or not owned, referencing existing records if relevant).\n"
+                    )
 
                 prompt = (
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
@@ -57,7 +80,8 @@ class GeminiVisionService:
                     "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
                     "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
                     "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing (e.g., 'EAC-60150-51' was released in 1978, 'UCJG-9012' in 2009). Always return an accurate 4-digit 'releaseYear' integer.\n"
-                    "CRITICAL REQUIREMENT 3: Simultaneously generate a rich audiophile 'listeningGuide' for this album.\n\n"
+                    "CRITICAL REQUIREMENT 3: Simultaneously generate a rich audiophile 'listeningGuide' for this album."
+                    f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
                     "2. 'albumTitle': Full album title or composer/work title.\n"
@@ -67,12 +91,16 @@ class GeminiVisionService:
                     "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1978, 1961, 2009).\n"
                     "7. 'genre': Musical genre/style (e.g. 'Baroque', 'Classical Orchestral', 'Violin Concerto', 'Chamber Music', 'Jazz').\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
-                    "9. 'listeningGuide': Object with keys:\n"
+                    "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
+                    "10. 'crateMatchId': string or null (matching record ID if owned).\n"
+                    "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
+                    "12. 'listeningGuide': Object with keys:\n"
                     "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
                     "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
                     "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
                     "   - 'recommendedMood': (string, ideal listening atmosphere)"
                 )
+
 
 
 
