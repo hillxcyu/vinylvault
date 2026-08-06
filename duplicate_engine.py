@@ -15,6 +15,20 @@ FIRST_NAME_GIVEN_NAME_STOP_WORDS = {
     "ludwig", "johann", "pyotr", "antonin", "antonio", "sergei", "dmitri", "igor", "claude", "maurice", "fritz"
 }
 
+COMMON_CLASSICAL_COMPOSERS = {
+    "bach", "beethoven", "mozart", "brahms", "tchaikovsky", "schubert", "chopin", "liszt",
+    "haydn", "vivaldi", "handel", "mahler", "dvorak", "dvořák", "rachmaninoff", "rachmaninov",
+    "debussy", "ravel", "stravinsky", "saintsaens", "saint-saëns", "saint-saens", "saëns", "saens",
+    "mendelssohn", "schumann", "berlioz", "strauss", "wagner", "verdi", "puccini", "sibelius",
+    "bartok", "bartók", "prokofiev", "shostakovich", "elgar", "grieg", "bruckner", "fauré", "faure",
+    "teleman", "telemann", "corelli", "scarlatti", "purcell", "monteverdi", "rameau", "couperin", "paganini"
+}
+
+INSTRUMENT_KEYWORDS = {
+    "piano", "violin", "cello", "violoncello", "flute", "clarinet", "oboe", "organ",
+    "harpsichord", "guitar", "trumpet", "horn", "voice", "soprano", "tenor", "baritone"
+}
+
 WORK_FORM_KEYWORDS = {
     "symphony", "symphonies", "sonata", "sonatas", "concerto", "concertos", "quartet", "quartets",
     "quintet", "trio", "mass", "requiem", "opera", "suite", "suites", "serenade", "nocturne", "nocturnes",
@@ -50,6 +64,25 @@ def get_work_numbers(s: str) -> set:
     if not s:
         return set()
     return set(re.findall(r'\b\d+\b', s))
+
+def get_composers(s: str) -> set:
+    if not s:
+        return set()
+    words = re.findall(r'[a-zA-Z0-9\u00C0-\u024F\-]+', s.lower())
+    found = set()
+    for w in words:
+        w_norm = w.replace('-', '')
+        for comp in COMMON_CLASSICAL_COMPOSERS:
+            comp_norm = comp.replace('-', '')
+            if w_norm == comp_norm:
+                found.add(comp_norm)
+    return found
+
+def get_instruments(s: str) -> set:
+    if not s:
+        return set()
+    words = set(re.findall(r'[a-zA-Z0-9\u00C0-\u024F]+', s.lower()))
+    return words.intersection(INSTRUMENT_KEYWORDS)
 
 class DuplicateEngine:
     @staticmethod
@@ -95,6 +128,8 @@ class DuplicateEngine:
         q_surnames = get_performer_surnames(q_art_raw)
         q_forms = get_work_forms(q_title_raw)
         q_numbers = get_work_numbers(q_title_raw)
+        q_composers = get_composers(q_art_raw + " " + q_title_raw)
+        q_instruments = get_instruments(q_art_raw + " " + q_title_raw)
 
         # 2. STRING INCLUSION / KEYWORD OVERLAP MATCH IN COLLECTION:
         for record in collection:
@@ -109,8 +144,18 @@ class DuplicateEngine:
             r_surnames = get_performer_surnames(r_art_raw)
             r_forms = get_work_forms(r_title_raw)
             r_numbers = get_work_numbers(r_title_raw)
+            r_composers = get_composers(r_art_raw + " " + r_title_raw)
+            r_instruments = get_instruments(r_art_raw + " " + r_title_raw)
 
-            # Check performer surname conflicts (e.g. Kempff vs Furtwängler)
+            # Check composer conflicts (e.g., Saint-Saëns vs Mendelssohn/Tchaikovsky)
+            if q_composers and r_composers and not q_composers.intersection(r_composers):
+                continue
+
+            # Check instrument conflicts (e.g., Piano vs Violin)
+            if q_instruments and r_instruments and not q_instruments.intersection(r_instruments):
+                continue
+
+            # Check performer surname conflicts (e.g. Kempff vs Furtwängler or Entremont vs Stern)
             if q_surnames and r_surnames and not q_surnames.intersection(r_surnames):
                 continue
 
@@ -121,6 +166,7 @@ class DuplicateEngine:
             # Check work number conflicts (e.g. No. 1 vs No. 5)
             if q_numbers and r_numbers and not q_numbers.intersection(r_numbers):
                 continue
+
 
             # Direct string inclusion match
             artist_match = q_artist and (q_artist in r_artist or r_artist in q_artist)
