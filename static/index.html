@@ -3000,6 +3000,7 @@
             coverUrl,
             originalScannedCoverUrl,
             formatDetails,
+            listeningGuide: lastScannedMetadata.listeningGuide || null,
             pressings: [{
               label,
               catalogNumber,
@@ -3007,6 +3008,7 @@
               formatDetails: 'Standard Vinyl Pressing'
             }]
           })
+
         });
 
         const data = await res.json();

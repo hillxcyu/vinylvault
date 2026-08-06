@@ -87,11 +87,14 @@ def get_instruments(s: str) -> set:
 class DuplicateEngine:
     @staticmethod
     def check_duplicate(query: Dict[str, Any], collection: List[Dict[str, Any]], wishlist: List[Dict[str, Any]]) -> Dict[str, Any]:
-        q_artist = normalize_string(query.get("artist", ""))
-        q_title = normalize_string(query.get("albumTitle", "") or query.get("title", ""))
+        """
+        Grounded AI Duplicate Engine:
+        Relies on Gemini Vision's semantic collection reasoning (isAlreadyInCrate, crateMatchId, crateMatchReason)
+        and exact Catalog Number verification, eliminating brittle rule-based string overlap false positives.
+        """
         q_cat_no = normalize_string(query.get("catalogNumber", "") or query.get("catno", ""))
 
-        # 1. CATALOG NUMBER MATCH (Highest Precision):
+        # 1. CATALOG NUMBER MATCH (Exact Physical Pressing Match):
         if q_cat_no and len(q_cat_no) >= 3:
             for record in collection:
                 r_cat = normalize_string(record.get("catalogNumber", "") or record.get("catno", ""))
@@ -114,147 +117,58 @@ class DuplicateEngine:
                             "message": f"ALREADY IN YOUR COLLECTION! Catalog Number '{p_cat}' matches '{record.get('title', '')}'."
                         }
 
-        # 2. GEMINI VISION SEMANTIC CRATE MATCH (Grounded AI Reasoning):
-        if "isAlreadyInCrate" in query and query.get("isAlreadyInCrate") is True:
-            match_id = query.get("crateMatchId")
-            match_rec = next((r for r in collection if r.get("id") == match_id), None) if match_id else None
-            if match_rec:
-                pressings = match_rec.get("pressings", [])
+        # 2. GEMINI VISION SEMANTIC CRATE GROUNDING (100% AI Evaluation):
+        if "isAlreadyInCrate" in query:
+            if query.get("isAlreadyInCrate") is True:
+                match_id = query.get("crateMatchId")
+                match_rec = next((r for r in collection if r.get("id") == match_id), None) if match_id else None
+
+                # Fallback: search collection by title/artist similarity if match_id was omitted
+                if not match_rec:
+                    q_art = (query.get("artist") or "").lower()
+                    q_tit = (query.get("albumTitle") or query.get("title") or "").lower()
+                    for r in collection:
+                        r_tit = (r.get("title") or "").lower()
+                        r_art = (r.get("artist") or "").lower()
+                        if (q_tit and q_tit in r_tit) or (q_art and q_art in r_art):
+                            match_rec = r
+                            break
+
+                pressings = match_rec.get("pressings", []) if match_rec else []
                 primary_p = pressings[0] if pressings else {}
-                reason = query.get("crateMatchReason") or f"ALREADY IN YOUR COLLECTION! Gemini identified '{match_rec.get('title')}' in your Crate."
+                reason = query.get("crateMatchReason") or (f"ALREADY IN YOUR COLLECTION! Gemini identified '{match_rec.get('title')}' in your Crate." if match_rec else "ALREADY IN YOUR COLLECTION!")
+                
                 return {
                     "status": "EXACT_MATCH",
                     "matchingRecord": match_rec,
                     "matchingPressing": primary_p,
-                    "message": f"ALREADY IN YOUR COLLECTION! {reason}"
+                    "message": reason
+                }
+            else:
+                reason = query.get("crateMatchReason") or "NOT IN COLLECTION. Safe to add!"
+                return {
+                    "status": "NOT_OWNED",
+                    "message": reason
                 }
 
-        if not q_artist and not q_title:
-            return {
-                "status": "NOT_OWNED",
-                "message": "Insufficient info to check duplicate."
-            }
-
-        q_art_raw = query.get("artist", "")
-        q_title_raw = query.get("albumTitle", "") or query.get("title", "")
-
-        q_art_kw = get_keywords(q_art_raw)
-        q_title_kw = get_keywords(q_title_raw)
-        q_surnames = get_performer_surnames(q_art_raw)
-        q_forms = get_work_forms(q_title_raw)
-        q_numbers = get_work_numbers(q_title_raw)
-        q_composers = get_composers(q_art_raw + " " + q_title_raw)
-        q_instruments = get_instruments(q_art_raw + " " + q_title_raw)
-
-        # 3. STRING INCLUSION / KEYWORD OVERLAP MATCH IN COLLECTION:
-        for record in collection:
-            r_art_raw = record.get("artist", "")
-            r_title_raw = record.get("title", "")
-
-            r_artist = normalize_string(r_art_raw)
-            r_title = normalize_string(r_title_raw)
-
-
-            r_art_kw = get_keywords(r_art_raw)
-            r_title_kw = get_keywords(r_title_raw)
-            r_surnames = get_performer_surnames(r_art_raw)
-            r_forms = get_work_forms(r_title_raw)
-            r_numbers = get_work_numbers(r_title_raw)
-            r_composers = get_composers(r_art_raw + " " + r_title_raw)
-            r_instruments = get_instruments(r_art_raw + " " + r_title_raw)
-
-            # Check composer conflicts (e.g., Saint-Saëns vs Mendelssohn/Tchaikovsky)
-            if q_composers and r_composers and not q_composers.intersection(r_composers):
-                continue
-
-            # Check instrument conflicts (e.g., Piano vs Violin)
-            if q_instruments and r_instruments and not q_instruments.intersection(r_instruments):
-                continue
-
-            # Check performer surname conflicts (e.g. Kempff vs Furtwängler or Entremont vs Stern)
-            if q_surnames and r_surnames and not q_surnames.intersection(r_surnames):
-                continue
-
-            # Check musical work form conflicts (e.g. Sonatas vs Symphony)
-            if q_forms and r_forms and not q_forms.intersection(r_forms):
-                continue
-
-            # Check work number conflicts (e.g. No. 1 vs No. 5)
-            if q_numbers and r_numbers and not q_numbers.intersection(r_numbers):
-                continue
-
-
-            # Direct string inclusion match
-            artist_match = q_artist and (q_artist in r_artist or r_artist in q_artist)
-            title_match = q_title and (q_title in r_title or r_title in q_title)
-
-            art_overlap = len(q_art_kw.intersection(r_art_kw)) >= 1 if (q_art_kw and r_art_kw) else False
-            title_overlap = len(q_title_kw.intersection(r_title_kw)) >= 1 if (q_title_kw and r_title_kw) else False
-
-            if (artist_match or art_overlap) and (title_match or title_overlap):
-                combined_q = q_art_kw.union(q_title_kw)
-                combined_r = r_art_kw.union(r_title_kw)
-                shared = combined_q.intersection(combined_r)
-
-                if len(shared) >= 2 or (len(shared) >= 1 and (artist_match or title_match)):
-                    pressings = record.get("pressings", [])
-                    primary_p = pressings[0] if pressings else {}
+        # 3. WISHLIST CHECK (If needed):
+        q_artist = normalize_string(query.get("artist", ""))
+        q_title = normalize_string(query.get("albumTitle", "") or query.get("title", ""))
+        if q_artist and q_title:
+            for item in wishlist:
+                w_artist = normalize_string(item.get("artist", ""))
+                w_title = normalize_string(item.get("title", ""))
+                if (q_artist in w_artist or w_artist in q_artist) and (q_title in w_title or w_title in q_title):
                     return {
-                        "status": "EXACT_MATCH",
-                        "matchingRecord": record,
-                        "matchingPressing": primary_p,
-                        "message": f"ALREADY IN YOUR COLLECTION! You own '{record.get('title', '')}' by {record.get('artist', '')}."
+                        "status": "WISHLIST_MATCH",
+                        "message": f"ON YOUR WISHLIST! Priority: {item.get('priority', 'MEDIUM')}. Notes: {item.get('notes', 'No notes')}"
                     }
 
-        # 3. WISHLIST MATCH:
-        for item in wishlist:
-            w_art_raw = item.get("artist", "")
-            w_title_raw = item.get("title", "")
-            w_artist = normalize_string(w_art_raw)
-            w_title = normalize_string(w_title_raw)
-
-            w_art_kw = get_keywords(w_art_raw)
-            w_title_kw = get_keywords(w_title_raw)
-            w_surnames = get_performer_surnames(w_art_raw)
-            w_forms = get_work_forms(w_title_raw)
-            w_numbers = get_work_numbers(w_title_raw)
-
-            if q_surnames and w_surnames and not q_surnames.intersection(w_surnames):
-                continue
-
-            if q_forms and w_forms and not q_forms.intersection(w_forms):
-                continue
-
-            if q_numbers and w_numbers and not q_numbers.intersection(w_numbers):
-                continue
-
-            w_art_match = (q_artist in w_artist or w_artist in q_artist) or (len(q_art_kw.intersection(w_art_kw)) >= 1 if q_art_kw and w_art_kw else False)
-            w_title_match = (q_title in w_title or w_title in q_title) or (len(q_title_kw.intersection(w_title_kw)) >= 1 if q_title_kw and w_title_kw else False)
-
-            if w_art_match and w_title_match:
-                return {
-                    "status": "WISHLIST_MATCH",
-                    "message": f"ON YOUR WISHLIST! Priority: {item.get('priority', 'MEDIUM')}. Notes: {item.get('notes', 'No notes')}"
-                }
-
-        # 4. SIMILAR ARTIST MATCH:
-        artist_records = []
-        for r in collection:
-            r_surnames = get_performer_surnames(r.get("artist", ""))
-            if q_surnames and r_surnames and len(q_surnames.intersection(r_surnames)) >= 1:
-                artist_records.append(r)
-
-        if artist_records:
-            titles_str = ", ".join([f"'{r.get('title', '')}'" for r in artist_records[:3]])
-            return {
-                "status": "SIMILAR_ALBUM",
-                "message": f"NOT OWNED, but you own {len(artist_records)} other album(s) by {query.get('artist')}: {titles_str}."
-            }
-
-        # 5. NOT OWNED
+        # Default NOT OWNED
         return {
             "status": "NOT_OWNED",
-            "message": f"NOT IN COLLECTION. Safe to buy!"
+            "message": "NOT IN COLLECTION. Safe to add!"
         }
+
 
 

@@ -99,7 +99,9 @@ class AddRecordRequest(BaseModel):
     label: Optional[str] = None
     country: Optional[str] = None
     formatDetails: Optional[str] = "Standard Black Vinyl"
+    listeningGuide: Optional[Dict[str, Any]] = None
     pressings: Optional[List[Dict[str, Any]]] = None
+
 
 
 
@@ -712,7 +714,13 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
         if official_cover:
             rec_dict["coverUrl"] = official_cover
 
+    if req.listeningGuide:
+        rec_dict["listeningGuide"] = req.listeningGuide
+        guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.title)}"
+        db.firestore.save_listening_guide(guide_key, req.listeningGuide)
+
     new_rec = db.add_record(rec_dict)
+
     
     # Trigger AI Chronicle refresh asynchronously in the background so API responds instantly (< 50ms)
     background_tasks.add_task(classical_service.get_chronicle_data, db.get_all_records(), force_ai_refresh=True)
