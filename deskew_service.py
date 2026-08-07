@@ -186,9 +186,9 @@ class DeskewService:
         return image_bytes, False, []
 
 
-    def detect_corners(self, image_bytes: bytes) -> List[List[float]]:
+    def detect_corners(self, image_bytes: bytes, gemini_service: Any = None) -> List[List[float]]:
         """
-        Detects 4 physical corners of album cover in image_bytes and returns
+        Detects 4 physical corners of album cover in image_bytes via Gemini 3.6 Flash segmentation or CV contours and returns
         normalized 0.0..1.0 container coordinates [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
         ordered as [TL, TR, BR, BL] accounting for container letterboxing.
         """
@@ -223,11 +223,30 @@ class DeskewService:
                 offset_x = (1.0 - w_rendered) / 2.0
                 offset_y = 0.0
 
+            # 1. Attempt Gemini 3.6 Flash Segmentation Corner Detection
+            if gemini_service:
+                try:
+                    gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
+                    if gemini_corners and len(gemini_corners) == 4:
+                        norm_pts = []
+                        for pt in gemini_corners:
+                            # pt is [y, x] in 0-1000 scale
+                            u = pt[1] / 1000.0
+                            v = pt[0] / 1000.0
+                            canvas_x = offset_x + u * w_rendered
+                            canvas_y = offset_y + v * h_rendered
+                            norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
+                        logger.info(f"Gemini Vision detect_corners canvas points: {norm_pts}")
+                        return norm_pts
+                except Exception as e:
+                    logger.warning(f"Gemini detect_corners fallback to CV: {e}")
+
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
             # Dual edge detection: Canny + Otsu thresholding with morphological closing
             edged = cv2.Canny(blurred, 30, 150)
+
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 

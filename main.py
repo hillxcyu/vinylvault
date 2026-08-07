@@ -494,11 +494,12 @@ async def upload_cover_direct_endpoint(file: UploadFile = File(...)):
 @app.post("/api/detect-corners")
 async def detect_corners_endpoint(file: UploadFile = File(...)):
     contents = await file.read()
-    corners = deskew_service.detect_corners(contents)
+    corners = deskew_service.detect_corners(contents, gemini_service=gemini_service)
     return {
         "status": "success",
         "corners": corners
     }
+
 
 @app.post("/api/crop-deskew")
 async def crop_deskew_endpoint(
