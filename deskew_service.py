@@ -516,17 +516,8 @@ class DeskewService:
                 real_pts[i, 0] = np.clip(norm_x * w_img, 0, w_img - 1)
                 real_pts[i, 1] = np.clip(norm_y * h_img, 0, h_img - 1)
 
-            # Shrink selected 4 corners slightly inward (2% margin) to stay strictly inside album cover boundary
-            cx = np.mean(real_pts[:, 0])
-            cy = np.mean(real_pts[:, 1])
-
-            margin_factor = 0.98
-            shrunk_pts = np.zeros_like(real_pts)
-            for i in range(4):
-                shrunk_pts[i, 0] = np.clip(cx + margin_factor * (real_pts[i, 0] - cx), 0, w_img - 1)
-                shrunk_pts[i, 1] = np.clip(cy + margin_factor * (real_pts[i, 1] - cy), 0, h_img - 1)
-
-            rect = shrunk_pts
+            # Use exact user-selected 4 corner points (margin_factor = 1.0, no expansion and no shrink)
+            rect = real_pts
 
             dst = np.array([
                 [0, 0],
@@ -538,15 +529,10 @@ class DeskewService:
             M = cv2.getPerspectiveTransform(rect, dst)
             warped = cv2.warpPerspective(img, M, (target_size, target_size))
 
-            # Trim 12px (1.5% inner margin) to eliminate any residual background bleed or border gaps
-            pad = 12
-            if target_size > 2 * pad:
-                cropped = warped[pad:target_size - pad, pad:target_size - pad]
-                warped = cv2.resize(cropped, (target_size, target_size), interpolation=cv2.INTER_AREA)
-
             success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
             if success:
                 return encoded_img.tobytes(), True
+
 
 
         except Exception as e:
