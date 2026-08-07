@@ -164,9 +164,9 @@ class GeminiVisionService:
                 )
 
                 config = types.GenerateContentConfig(
-                    response_mime_type="application/json",
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
+
 
                 response = self.client.models.generate_content(
                     model="gemini-3.6-flash",
