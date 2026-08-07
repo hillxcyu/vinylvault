@@ -293,13 +293,16 @@ class DeskewService:
 
             norm_pts = []
             for pt in mask:
-                u = pt[0] / 1000.0
-                v = pt[1] / 1000.0
+                # Gemini Vision mask returns [y, x] in 0-1000 scale (matching Gemini ymin, xmin convention)
+                y_val, x_val = pt[0], pt[1]
+                u = x_val / 1000.0  # Horizontal X-axis
+                v = y_val / 1000.0  # Vertical Y-axis
                 canvas_x = offset_x + u * w_rendered
                 canvas_y = offset_y + v * h_rendered
                 norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
 
             return norm_pts
+
         except Exception as e:
             logger.warning(f"Error in detect_corners_from_mask: {e}")
 

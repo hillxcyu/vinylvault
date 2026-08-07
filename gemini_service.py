@@ -154,7 +154,8 @@ class GeminiVisionService:
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
                     "12. 'box_2d': [ymin, xmin, ymax, xmax] bounding box normalized 0-1000.\n"
-                    "13. 'mask': Array of 4 corner points [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] normalized 0-1000 in exact [x, y] coordinate order: Top-Left [x,y], Top-Right [x,y], Bottom-Right [x,y], Bottom-Left [x,y].\n"
+                    "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
+
                     "14. 'listeningGuide': Object with keys:\n"
                     "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
                     "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
