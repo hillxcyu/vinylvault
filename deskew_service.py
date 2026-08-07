@@ -264,26 +264,47 @@ class DeskewService:
 
     def detect_corners_from_mask(self, image_bytes: bytes, mask: List[List[int]]) -> List[List[float]]:
         """
-        Converts 0-1000 scale polygon mask points into image-relative normalized 0.0..1.0 coordinates [[x1, y1], [x2, y2], [x3, y3], [x4, y4]].
+        Converts 0-1000 scale polygon mask points into container normalized 0.0..1.0 coordinates [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+        taking into account aspect ratio letterboxing.
         """
         default_corners = [[0.08, 0.08], [0.92, 0.08], [0.92, 0.92], [0.08, 0.92]]
         if not mask or len(mask) != 4:
             return default_corners
 
         try:
+            image_bytes = self._fix_exif_orientation(image_bytes)
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                return default_corners
+
+            h_img, w_img = img.shape[:2]
+            img_aspect = w_img / h_img
+            if img_aspect > 1.0:
+                w_rendered = 1.0
+                h_rendered = 1.0 / img_aspect
+                offset_x = 0.0
+                offset_y = (1.0 - h_rendered) / 2.0
+            else:
+                h_rendered = 1.0
+                w_rendered = img_aspect
+                offset_x = (1.0 - w_rendered) / 2.0
+                offset_y = 0.0
+
             norm_pts = []
             for pt in mask:
-                # Gemini Vision mask returns [y, x] in 0-1000 scale (matching Gemini ymin, xmin convention)
-                y_val, x_val = pt[0], pt[1]
-                u = round(float(x_val / 1000.0), 4)  # Horizontal X-axis (0..1)
-                v = round(float(y_val / 1000.0), 4)  # Vertical Y-axis (0..1)
-                norm_pts.append([u, v])
+                u = pt[0] / 1000.0
+                v = pt[1] / 1000.0
+                canvas_x = offset_x + u * w_rendered
+                canvas_y = offset_y + v * h_rendered
+                norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
 
             return norm_pts
         except Exception as e:
             logger.warning(f"Error in detect_corners_from_mask: {e}")
 
         return default_corners
+
 
 
 

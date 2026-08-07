@@ -418,12 +418,9 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         crate_records=db.get_all_records()
     )
 
-    # 2. Extract detected corner points from mask if available
-    mask_pts = extracted_metadata.get("mask", [])
-    if mask_pts and len(mask_pts) == 4:
-        detected_corners = deskew_service.detect_corners_from_mask(contents, mask_pts)
-    else:
-        detected_corners = deskew_service.detect_corners(contents, gemini_service=None)
+    # 2. Detect 4 corners using Gemini Vision 3.6 Flash segmentation (Pydantic schema enforced)
+    detected_corners = deskew_service.detect_corners(contents, gemini_service=gemini_service)
+
 
     # 3. Perspective-warp cover image using detected corners
     deskewed_bytes = deskew_service.warp_image_from_normalized_corners(contents, detected_corners)

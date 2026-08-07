@@ -73,8 +73,6 @@ class GeminiVisionService:
                 "]"
             )
 
-
-
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumCornerSegmentation
@@ -98,6 +96,7 @@ class GeminiVisionService:
             logger.warning(f"Gemini Vision segmentation corner detection warning: {e}")
 
         return None
+
 
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
