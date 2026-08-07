@@ -64,14 +64,15 @@ class GeminiVisionService:
                 "Locate the main vinyl record album cover or box set in this photo.\n"
                 "Detect its exact 4 physical outer corners.\n"
                 "Output a 2D bounding box in key 'box_2d' as [ymin, xmin, ymax, xmax] (0-1000 scale), and 4 corner polygon mask in key 'mask'.\n"
-                "Each point in 'mask' MUST be [y, x] normalized to 0-1000 scale:\n"
+                "Each point in 'mask' MUST be [x, y] normalized to 0-1000 scale:\n"
                 "[\n"
-                "  [top_left_y, top_left_x],\n"
-                "  [top_right_y, top_right_x],\n"
-                "  [bottom_right_y, bottom_right_x],\n"
-                "  [bottom_left_y, bottom_left_x]\n"
+                "  [top_left_x, top_left_y],\n"
+                "  [top_right_x, top_right_y],\n"
+                "  [bottom_right_x, bottom_right_y],\n"
+                "  [bottom_left_x, bottom_left_y]\n"
                 "]"
             )
+
 
 
             config = types.GenerateContentConfig(
