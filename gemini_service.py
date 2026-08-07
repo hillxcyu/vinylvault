@@ -123,13 +123,15 @@ class GeminiVisionService:
                             })
                     crate_context = (
                         f"\n\nCRITICAL REQUIREMENT 4: CRATE INVENTORY DUPLICATE EVALUATION\n"
-                        f"Compare the scanned album cover and recognized metadata directly against the user's Crate Collection inventory below:\n"
-                        f"{json.dumps(simplified_crate[:150], ensure_ascii=False, indent=2)}\n\n"
-                        f"Evaluate whether this exact album composition or pressing is ALREADY present in the user's crate:\n"
-                        f"- 'isAlreadyInCrate': boolean (true if the user already owns this exact album, false otherwise).\n"
-                        f"- 'crateMatchId': string or null (the exact 'id' of the matching record if owned, otherwise null).\n"
-                        f"- 'crateMatchReason': string (1-2 sentence musicological note explaining whether it is already owned or not owned, referencing existing records if relevant).\n"
+                        f"Perform fuzzy semantic and musicological matching against the user's Crate Collection inventory below:\n"
+                        f"{json.dumps(simplified_crate[:200], ensure_ascii=False, indent=2)}\n\n"
+                        f"MANDATORY MATCHING RULES:\n"
+                        f"1. You MUST set 'isAlreadyInCrate': true if the user owns ANY pressing, reissue, or release of this album. Match by album title / main composition or main performers/artists (e.g. '24 Songs and One Guitar' by Belina & Siegfried Behrend matches '24 Songs & 1 Guitar'). Do NOT require exact catalog number or label match to mark as owned.\n"
+                        f"2. Set 'crateMatchId' to the exact 'id' string of the matching record in the crate list above.\n"
+                        f"3. Set 'crateMatchReason' to a 1-2 sentence musicological summary (e.g. 'ALREADY IN YOUR CRATE! You own this album: \"[Title]\" by [Artist] (Record ID: [id])').\n"
+                        f"4. If no album with equivalent title/performers exists in the crate list, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'.\n"
                     )
+
 
                 prompt = (
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
@@ -158,11 +160,8 @@ class GeminiVisionService:
                     "   - 'recommendedMood': (string, ideal listening atmosphere)"
                 )
 
-
-
-
-
                 config = types.GenerateContentConfig(
+                    response_mime_type="application/json",
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
 
@@ -175,10 +174,6 @@ class GeminiVisionService:
                     config=config
                 )
 
-
-
-
-
                 text = response.text.strip()
                 if text.startswith("```json"):
                     text = text[7:]
@@ -187,7 +182,15 @@ class GeminiVisionService:
                 if text.endswith("```"):
                     text = text[:-3]
                 
-                parsed = json.loads(text.strip())
+                try:
+                    parsed = json.loads(text.strip())
+                except Exception:
+                    json_match = re.search(r'\{.*\}', text, re.DOTALL)
+                    if json_match:
+                        parsed = json.loads(json_match.group(0))
+                    else:
+                        raise
+
                 return parsed
             except Exception as e:
                 logger.error(f"Error in Gemini Vision API call (gemini-3.6-flash): {e}")
