@@ -2506,6 +2506,8 @@
         }
         const data = await res.json();
         lastScannedMetadata = data.metadata;
+        lastDuplicateCheck = data.duplicateCheck;
+
 
         if (data.detectedCorners && data.detectedCorners.length === 4) {
           lastDetectedCorners = data.detectedCorners;
@@ -2565,6 +2567,8 @@
       setTimeout(updateCornerHandlesUI, 50);
     }
 
+    let lastDuplicateCheck = null;
+
     async function autoDetectCornersAndSnap() {
       if (!currentRawFile || isProcessingScan) {
         if (!currentRawFile) resetCornerPoints();
@@ -2573,7 +2577,7 @@
       isProcessingScan = true;
       toggleScannerButtons(false);
 
-      showScanLoading('Detecting album cover corners with Gemini AI...');
+      showToast('Detecting album cover corners with Gemini AI...', 'fa-object-group');
 
       try {
         const formData = new FormData();
@@ -2587,7 +2591,10 @@
           if (data.corners && data.corners.length === 4) {
             lastDetectedCorners = data.corners;
             resetCornerPoints(data.corners);
-            showScanLoading('Corners auto-detected! Drag any handle to fine-tune, then click Apply.');
+            showToast('✨ Corners auto-detected! Drag handles to fine-tune, then click Apply.', 'fa-object-group');
+            if (lastDuplicateCheck && lastScannedMetadata) {
+              renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata);
+            }
             return;
           }
         }
@@ -2598,8 +2605,8 @@
         toggleScannerButtons(true);
       }
       resetCornerPoints();
-      showScanLoading('Photo ready! Drag the 4 corner handles to outline the vinyl cover, then click Apply.');
     }
+
 
 
     let dragOffsetPctX = 0;
