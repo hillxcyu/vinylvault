@@ -139,7 +139,7 @@ class GeminiVisionService:
                     "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
                     "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
                     "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing (e.g., 'EAC-60150-51' was released in 1978, 'UCJG-9012' in 2009). Always return an accurate 4-digit 'releaseYear' integer.\n"
-                    "CRITICAL REQUIREMENT 3: Simultaneously generate a rich audiophile 'listeningGuide' for this album."
+                    "CRITICAL REQUIREMENT 5: Simultaneously perform 2D polygon segmentation to detect the 4 exact outer boundary corners of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
@@ -153,11 +153,14 @@ class GeminiVisionService:
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
-                    "12. 'listeningGuide': Object with keys:\n"
+                    "12. 'box_2d': [ymin, xmin, ymax, xmax] bounding box normalized 0-1000.\n"
+                    "13. 'mask': Array of 4 corner points [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] normalized 0-1000 in exact [x, y] coordinate order: Top-Left [x,y], Top-Right [x,y], Bottom-Right [x,y], Bottom-Left [x,y].\n"
+                    "14. 'listeningGuide': Object with keys:\n"
                     "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
                     "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
                     "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
                     "   - 'recommendedMood': (string, ideal listening atmosphere)"
+
                 )
 
                 config = types.GenerateContentConfig(

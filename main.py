@@ -408,34 +408,32 @@ def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
 @app.post("/api/scan")
 async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(False)):
     contents = await file.read()
-    
-    # 0. Auto-deskew & perspective correct image (unless skip_deskew is True)
-    if skip_deskew:
-        detected_corners = []
-        final_bytes = contents
-        is_deskewed = False
-    else:
-        deskewed_bytes, is_deskewed, detected_corners = deskew_service.auto_deskew_image(contents, gemini_service=gemini_service)
-        final_bytes = deskewed_bytes if is_deskewed else contents
+    raw_filename = f"raw_scan_{uuid.uuid4().hex[:8]}.jpg"
+    uploaded_raw_url = gcs_service.upload_cover(contents, raw_filename)
 
-
-
-    # 1. Upload scan cover image to GCS bucket (covers/)
-    ext = ".jpg" if is_deskewed else (os.path.splitext(file.filename)[1] or ".jpg")
-    filename = f"scan_{uuid.uuid4().hex[:8]}{ext}"
-    uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
-
-    # 2. Extract metadata via Gemini Vision API grounded with user Crate inventory
+    # 1. Single unified Gemini 3.6 Flash Vision Call (Metadata + Grounding + 4-Corner Segmentation)
     extracted_metadata = gemini_service.analyze_album_cover(
-        final_bytes, 
-        filename=filename, 
+        contents, 
+        filename=raw_filename, 
         crate_records=db.get_all_records()
     )
+
+    # 2. Extract detected corner points from mask if available
+    mask_pts = extracted_metadata.get("mask", [])
+    if mask_pts and len(mask_pts) == 4:
+        detected_corners = deskew_service.detect_corners_from_mask(contents, mask_pts)
+    else:
+        detected_corners = deskew_service.detect_corners(contents, gemini_service=None)
+
+    # 3. Perspective-warp cover image using detected corners
+    deskewed_bytes = deskew_service.warp_image_from_normalized_corners(contents, detected_corners)
+    uploaded_cover_url = gcs_service.upload_cover(deskewed_bytes, f"scan_{uuid.uuid4().hex[:8]}.jpg")
+
     extracted_metadata["coverUrl"] = uploaded_cover_url
-    extracted_metadata["deskewed"] = is_deskewed
+    extracted_metadata["rawCoverUrl"] = uploaded_raw_url
+    extracted_metadata["deskewed"] = True
 
-
-    # 3. Store optional Discogs official cover suggestion using extracted catalog number and country
+    # 4. Store optional Discogs official cover suggestion using extracted catalog number and country
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     catno = extracted_metadata.get("catalogNumber", "")
@@ -451,15 +449,14 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         if official_img:
             extracted_metadata["officialCoverUrl"] = official_img
 
-
-    # 4. Automatically run duplicate check on extracted metadata
+    # 5. Automatically run duplicate check on extracted metadata
     duplicate_result = DuplicateEngine.check_duplicate(
         extracted_metadata,
         db.get_all_records(),
         db.get_wishlist()
     )
 
-    # 5. Auto-fill missing cover art for existing record if scanned image exists
+    # 6. Auto-fill missing cover art for existing record if scanned image exists
     if duplicate_result.get("status") in ["EXACT_MATCH", "VARIANT_MATCH"]:
         matching_rec = duplicate_result.get("matchingRecord")
         if matching_rec and is_missing_or_placeholder_cover(matching_rec.get("coverUrl")):
@@ -474,9 +471,11 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     return {
         "metadata": extracted_metadata,
         "duplicateCheck": duplicate_result,
-        "deskewed": is_deskewed,
+        "rawCoverUrl": uploaded_raw_url,
+        "coverUrl": uploaded_cover_url,
         "detectedCorners": detected_corners
     }
+
 
 
 @app.post("/api/upload-cover")

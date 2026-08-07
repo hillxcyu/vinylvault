@@ -2510,11 +2510,15 @@
           lastDetectedCorners = data.detectedCorners;
         }
 
-        if (data.metadata && data.metadata.coverUrl) {
+        if (data.rawCoverUrl || (data.metadata && data.metadata.coverUrl)) {
           const previewImg = document.getElementById('scannerPreviewImg');
-          if (previewImg) previewImg.src = data.metadata.coverUrl;
-          toggleCornerHandles(false);
+          if (previewImg) previewImg.src = data.rawCoverUrl || data.metadata.coverUrl;
+          if (data.detectedCorners && data.detectedCorners.length === 4) {
+            resetCornerPoints(data.detectedCorners);
+            toggleCornerHandles(true);
+          }
         }
+
 
         if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
           updateNowSpinningUI(data.duplicateCheck.matchingRecord);

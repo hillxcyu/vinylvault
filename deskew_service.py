@@ -213,6 +213,100 @@ class DeskewService:
 
         return image_bytes, False, []
 
+    def warp_image_from_normalized_corners(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 800) -> bytes:
+        """
+        Warp raw image bytes using 4 normalized 0.0..1.0 corner points or 0..1000 scale points.
+        Performs EXIF orientation transpose first, maps points to pixel coordinates, and applies cv2.warpPerspective.
+        """
+        if not OPENCV_AVAILABLE or not image_bytes or not corners or len(corners) != 4:
+            return image_bytes
+
+        try:
+            image_bytes = self._fix_exif_orientation(image_bytes)
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                return image_bytes
+
+            h, w = img.shape[:2]
+
+            pts = []
+            for pt in corners:
+                pt_x = float(pt[0])
+                pt_y = float(pt[1])
+                if pt_x > 1.0 or pt_y > 1.0:
+                    px = (pt_x / 1000.0) * w
+                    py = (pt_y / 1000.0) * h
+                else:
+                    px = pt_x * w
+                    py = pt_y * h
+                pts.append([px, py])
+
+            rect = np.array(pts, dtype="float32")
+            dst = np.array([
+                [0, 0],
+                [target_size - 1, 0],
+                [target_size - 1, target_size - 1],
+                [0, target_size - 1]
+            ], dtype="float32")
+
+            M = cv2.getPerspectiveTransform(rect, dst)
+            warped = cv2.warpPerspective(img, M, (target_size, target_size))
+
+            success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
+            if success:
+                return encoded_img.tobytes()
+
+        except Exception as e:
+            logger.error(f"Error in warp_image_from_normalized_corners: {e}")
+
+        return image_bytes
+
+    def detect_corners_from_mask(self, image_bytes: bytes, mask: List[List[int]]) -> List[List[float]]:
+        """
+        Converts 0-1000 scale polygon mask points into container normalized 0.0..1.0 coordinates
+        taking into account aspect ratio letterboxing.
+        """
+        default_corners = [[0.08, 0.08], [0.92, 0.08], [0.92, 0.92], [0.08, 0.92]]
+        if not mask or len(mask) != 4:
+            return default_corners
+
+        try:
+            image_bytes = self._fix_exif_orientation(image_bytes)
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                return default_corners
+
+            h_img, w_img = img.shape[:2]
+            img_aspect = w_img / h_img
+            if img_aspect > 1.0:
+                w_rendered = 1.0
+                h_rendered = 1.0 / img_aspect
+                offset_x = 0.0
+                offset_y = (1.0 - h_rendered) / 2.0
+            else:
+                h_rendered = 1.0
+                w_rendered = img_aspect
+                offset_x = (1.0 - w_rendered) / 2.0
+                offset_y = 0.0
+
+            norm_pts = []
+            for pt in mask:
+                u = pt[0] / 1000.0
+                v = pt[1] / 1000.0
+                canvas_x = offset_x + u * w_rendered
+                canvas_y = offset_y + v * h_rendered
+                norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
+
+            return norm_pts
+        except Exception as e:
+            logger.warning(f"Error in detect_corners_from_mask: {e}")
+
+        return default_corners
+
+
+
 
     def detect_corners(self, image_bytes: bytes, gemini_service: Any = None) -> List[List[float]]:
         """
