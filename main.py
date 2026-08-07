@@ -15,9 +15,11 @@ elif os.path.exists(host_adc):
 import uuid
 import json
 import re
+import base64
 import logging
 import urllib.request
 from datetime import datetime
+
 
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, BackgroundTasks
 
@@ -408,26 +410,24 @@ def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
 @app.post("/api/scan")
 async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(False)):
     contents = await file.read()
-    raw_filename = f"raw_scan_{uuid.uuid4().hex[:8]}.jpg"
-    uploaded_raw_url = gcs_service.upload_cover(contents, raw_filename)
+    raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(contents).decode('utf-8')}"
 
     # 1. Single unified Gemini 3.6 Flash Vision Call (Metadata + Grounding + 4-Corner Segmentation)
     extracted_metadata = gemini_service.analyze_album_cover(
         contents, 
-        filename=raw_filename, 
+        filename="scan.jpg", 
         crate_records=db.get_all_records()
     )
 
-    # 2. Detect 4 corners using Gemini Vision 3.6 Flash segmentation (Pydantic schema enforced)
+    # 2. Detect 4 corners using Gemini Vision 3.6 Flash segmentation
     detected_corners = deskew_service.detect_corners(contents, gemini_service=gemini_service)
-
 
     # 3. Perspective-warp cover image using detected corners
     deskewed_bytes = deskew_service.warp_image_from_normalized_corners(contents, detected_corners)
-    uploaded_cover_url = gcs_service.upload_cover(deskewed_bytes, f"scan_{uuid.uuid4().hex[:8]}.jpg")
+    deskewed_b64 = f"data:image/jpeg;base64,{base64.b64encode(deskewed_bytes).decode('utf-8')}"
 
-    extracted_metadata["coverUrl"] = uploaded_cover_url
-    extracted_metadata["rawCoverUrl"] = uploaded_raw_url
+    extracted_metadata["coverUrl"] = deskewed_b64
+    extracted_metadata["rawCoverUrl"] = raw_b64
     extracted_metadata["deskewed"] = True
 
     # 4. Store optional Discogs official cover suggestion using extracted catalog number and country
@@ -439,7 +439,7 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         official_img = discogs_service.fetch_official_cover(
             artist,
             title,
-            cover_url=uploaded_cover_url,
+            cover_url=deskewed_b64,
             catalog_number=catno,
             country=country
         )
@@ -453,38 +453,22 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         db.get_wishlist()
     )
 
-    # 6. Auto-fill missing cover art for existing record if scanned image exists
-    if duplicate_result.get("status") in ["EXACT_MATCH", "VARIANT_MATCH"]:
-        matching_rec = duplicate_result.get("matchingRecord")
-        if matching_rec and is_missing_or_placeholder_cover(matching_rec.get("coverUrl")):
-            scanned_cover = extracted_metadata.get("coverUrl")
-            if scanned_cover and not is_missing_or_placeholder_cover(scanned_cover):
-                matching_rec["coverUrl"] = scanned_cover
-                db.save_records()
-                if db.firestore.db:
-                    db.firestore.save_record(matching_rec)
-                logger.info(f"Updated missing cover art for existing record '{matching_rec.get('title')}' with scanned image: {scanned_cover}")
-
     return {
         "metadata": extracted_metadata,
         "duplicateCheck": duplicate_result,
-        "rawCoverUrl": uploaded_raw_url,
-        "coverUrl": uploaded_cover_url,
+        "rawCoverUrl": raw_b64,
+        "coverUrl": deskewed_b64,
         "detectedCorners": detected_corners
     }
-
 
 
 @app.post("/api/upload-cover")
 async def upload_cover_direct_endpoint(file: UploadFile = File(...)):
     contents = await file.read()
-    ext = os.path.splitext(file.filename)[1] or ".jpg"
-    filename = f"user_cover_{uuid.uuid4().hex[:8]}{ext}"
-    uploaded_url = gcs_service.upload_cover(contents, filename)
+    raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(contents).decode('utf-8')}"
     return {
         "status": "success",
-        "coverUrl": uploaded_url,
-        "filename": filename
+        "coverUrl": raw_b64
     }
 
 @app.post("/api/detect-corners")
@@ -510,15 +494,13 @@ async def crop_deskew_endpoint(
 
     deskewed_bytes, is_deskewed = deskew_service.manual_deskew_image(contents, parsed_corners)
     final_bytes = deskewed_bytes if is_deskewed else contents
-
-    filename = f"manual_scan_{uuid.uuid4().hex[:8]}.jpg"
-    uploaded_cover_url = gcs_service.upload_cover(final_bytes, filename)
+    deskewed_b64 = f"data:image/jpeg;base64,{base64.b64encode(final_bytes).decode('utf-8')}"
 
     return {
         "status": "success",
-        "coverUrl": uploaded_cover_url,
-        "filename": filename
+        "coverUrl": deskewed_b64
     }
+
 
 
 
@@ -712,11 +694,19 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
         else:
             rec_dict["releaseYear"] = None
 
-    # Try fetching official release cover art asset if current URL is fallback
-    if not rec_dict.get("coverUrl") or "wikimedia" in rec_dict.get("coverUrl", ""):
-        official_cover = discogs_service.fetch_official_cover(req.artist, req.title)
-        if official_cover:
-            rec_dict["coverUrl"] = official_cover
+    # Persist base64 cover image to GCS ONLY when user clicks Add to Crate
+    cover_url = rec_dict.get("coverUrl")
+    if cover_url and cover_url.startswith("data:image/"):
+        try:
+            header, encoded = cover_url.split(",", 1)
+            img_data = base64.b64decode(encoded)
+            ext = ".png" if "png" in header else ".jpg"
+            filename = f"cover_{uuid.uuid4().hex[:8]}{ext}"
+            persistent_gcs_url = gcs_service.upload_cover(img_data, filename)
+            rec_dict["coverUrl"] = persistent_gcs_url
+            rec_dict["originalScannedCoverUrl"] = persistent_gcs_url
+        except Exception as e:
+            logger.error(f"Error persisting base64 cover art to GCS: {e}")
 
     if req.listeningGuide:
         rec_dict["listeningGuide"] = req.listeningGuide
@@ -724,6 +714,7 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
         db.firestore.save_listening_guide(guide_key, req.listeningGuide)
 
     new_rec = db.add_record(rec_dict)
+
 
     
     # Trigger AI Chronicle refresh asynchronously in the background so API responds instantly (< 50ms)
@@ -739,6 +730,33 @@ async def delete_record_endpoint(record_id: str, background_tasks: BackgroundTas
         background_tasks.add_task(classical_service.get_chronicle_data, db.get_all_records(), force_ai_refresh=True)
         return {"status": "success", "message": f"Record {record_id} deleted."}
     raise HTTPException(status_code=404, detail="Record not found.")
+
+
+@app.post("/api/records/{record_id}/update-cover")
+async def update_record_cover_endpoint(record_id: str, req: Dict[str, Any]):
+    cover_url = req.get("coverUrl")
+    rec = db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record not found.")
+
+    if cover_url and cover_url.startswith("data:image/"):
+        try:
+            header, encoded = cover_url.split(",", 1)
+            img_data = base64.b64decode(encoded)
+            ext = ".png" if "png" in header else ".jpg"
+            filename = f"cover_{record_id[:8]}_{uuid.uuid4().hex[:4]}{ext}"
+            persistent_gcs_url = gcs_service.upload_cover(img_data, filename)
+            cover_url = persistent_gcs_url
+        except Exception as e:
+            logger.error(f"Error persisting base64 cover art to GCS: {e}")
+
+    rec["coverUrl"] = cover_url
+    rec["originalScannedCoverUrl"] = cover_url
+    db.update_record(record_id, rec)
+    if db.firestore.db:
+        db.firestore.save_record(rec)
+    return {"status": "success", "record": rec}
+
 
 class FetchCoverRequest(BaseModel):
     artist: str
