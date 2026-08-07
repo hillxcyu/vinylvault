@@ -253,9 +253,16 @@ class DeskewService:
             M = cv2.getPerspectiveTransform(rect, dst)
             warped = cv2.warpPerspective(img, M, (target_size, target_size))
 
+            # Trim 8px (1% inner margin) to eliminate residual table/floor background or black border gaps
+            pad = 8
+            if target_size > 2 * pad:
+                cropped = warped[pad:target_size - pad, pad:target_size - pad]
+                warped = cv2.resize(cropped, (target_size, target_size), interpolation=cv2.INTER_AREA)
+
             success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
             if success:
                 return encoded_img.tobytes()
+
 
         except Exception as e:
             logger.error(f"Error in warp_image_from_normalized_corners: {e}")
