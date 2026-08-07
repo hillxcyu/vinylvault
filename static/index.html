@@ -2810,7 +2810,7 @@
 
         if (data.coverUrl) {
           const previewImg = document.getElementById('scannerPreviewImg');
-          if (previewImg) previewImg.src = data.coverUrl + '?t=' + Date.now();
+          if (previewImg) previewImg.src = data.coverUrl.startsWith('data:') ? data.coverUrl : (data.coverUrl + '?t=' + Date.now());
           toggleCornerHandles(false);
 
           if (rescanTargetRecordForDeskew) {
@@ -2894,8 +2894,9 @@
         // PREVIEW UPDATE: Update preview image with deskewed cover URL
         const previewImg = document.getElementById('scannerPreviewImg');
         if (previewImg) {
-          const freshDeskewedUrl = cropData.coverUrl + '?t=' + Date.now();
+          const freshDeskewedUrl = cropData.coverUrl.startsWith('data:') ? cropData.coverUrl : (cropData.coverUrl + '?t=' + Date.now());
           await new Promise((resolve) => {
+
             let resolved = false;
             const finish = () => {
               if (!resolved) {
