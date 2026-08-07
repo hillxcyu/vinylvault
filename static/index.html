@@ -2833,7 +2833,7 @@
       toggleCornerHandles(false);
 
       // Step 2: Show loading status for fast OpenCV crop & deskew
-      showScanLoading('Step 1/2: Cropping & deskewing album cover with OpenCV...');
+      showScanLoading('Cropping & deskewing album cover with OpenCV...');
 
       try {
         const formData = new FormData();
@@ -2845,7 +2845,7 @@
           [cornerPoints[3].x, cornerPoints[3].y]
         ]));
 
-        // STEP 1 FAST: Run OpenCV Crop & Deskew ONLY (< 150ms)
+        // Run fast OpenCV Crop & Deskew ONLY (< 100ms) - NO Gemini Vision API call!
         const cropRes = await fetch('/api/crop-deskew', {
           method: 'POST',
           body: formData
@@ -2856,7 +2856,7 @@
           throw new Error(cropData.detail || 'Deskew failed');
         }
 
-        // STEP 2 PREVIEW UPDATE: Force browser to load and paint deskewed image BEFORE Gemini starts!
+        // PREVIEW UPDATE: Update preview image with deskewed cover URL
         const previewImg = document.getElementById('scannerPreviewImg');
         if (previewImg) {
           const freshDeskewedUrl = cropData.coverUrl + '?t=' + Date.now();
@@ -2874,6 +2874,7 @@
             setTimeout(finish, 300);
           });
         }
+
 
         // Give browser 2 animation frames to repaint the DOM
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
