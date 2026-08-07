@@ -2793,13 +2793,13 @@
       resetZoomPan();
       toggleCornerHandles(false);
 
-      showScanLoading(`Uploading original uncropped photo & analyzing via Gemini AI...`);
+      showToast('Setting original photo as cover art...', 'fa-image');
 
       try {
         const formData = new FormData();
         formData.append('file', currentRawFile);
 
-        const res = await fetch('/api/scan?skip_deskew=true', {
+        const res = await fetch('/api/upload-cover', {
           method: 'POST',
           body: formData
         });
@@ -2807,24 +2807,53 @@
           throw new Error(`Server returned status ${res.status}`);
         }
         const data = await res.json();
-        lastScannedMetadata = data.metadata;
 
-        if (data.metadata && data.metadata.coverUrl) {
+        if (data.coverUrl) {
           const previewImg = document.getElementById('scannerPreviewImg');
-          if (previewImg) previewImg.src = data.metadata.coverUrl + '?t=' + Date.now();
+          if (previewImg) previewImg.src = data.coverUrl + '?t=' + Date.now();
           toggleCornerHandles(false);
-        }
 
-        showToast('✨ Original Photo Analyzed!', 'fa-image');
-        renderDuplicateResult(data.duplicateCheck, data.metadata);
+          if (rescanTargetRecordForDeskew) {
+            const rec = rescanTargetRecordForDeskew;
+            showToast(`Saving original cover art for '${rec.title}'...`, 'fa-image');
+            const updateRes = await fetch(`/api/records/${rec.id}/update-cover`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coverUrl: data.coverUrl })
+            });
+            if (updateRes.ok) {
+              rec.coverUrl = data.coverUrl;
+              if (currentSpinning && currentSpinning.id === rec.id) {
+                currentSpinning.coverUrl = data.coverUrl;
+                updateNowSpinningUI(currentSpinning);
+              }
+              await fetchCollection();
+              closeScannerModal();
+              showToast(`✨ Original cover set for '${rec.title}'!`, 'fa-image');
+            } else {
+              throw new Error('Failed to update record cover art.');
+            }
+            rescanTargetRecordForDeskew = null;
+            return;
+          }
+
+          if (lastScannedMetadata) {
+            lastScannedMetadata.coverUrl = data.coverUrl;
+            if (lastDuplicateCheck) {
+              renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata);
+            }
+          }
+          showToast('✨ Original photo set as cover art!', 'fa-image');
+        }
       } catch (err) {
-        console.error('Original scan error:', err);
-        renderScanError(`Failed to process original image: ${err.message}`);
+        console.error('Original photo upload error:', err);
+        renderScanError(`Failed to set original image: ${err.message}`);
       } finally {
         isProcessingScan = false;
         toggleScannerButtons(true);
       }
     }
+
 
 
     async function applyManualDeskew() {
