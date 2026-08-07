@@ -32,6 +32,29 @@ class DeskewService:
 
         return rect
 
+    @staticmethod
+    def _fix_exif_orientation(image_bytes: bytes) -> bytes:
+        """
+        Applies EXIF orientation rotation to image_bytes so backend pixel matrix orientation
+        matches browser display orientation.
+        """
+        if not image_bytes:
+            return image_bytes
+        try:
+            from PIL import Image, ImageOps
+            import io
+
+            img = Image.open(io.BytesIO(image_bytes))
+            transposed_img = ImageOps.exif_transpose(img)
+            if transposed_img is not img:
+                buf = io.BytesIO()
+                transposed_img.convert('RGB').save(buf, format="JPEG", quality=95)
+                logger.info("Applied EXIF orientation transpose to scan image.")
+                return buf.getvalue()
+        except Exception as e:
+            logger.warning(f"EXIF transpose warning: {e}")
+        return image_bytes
+
     def auto_deskew_image(self, image_bytes: bytes, target_size: int = 800, gemini_service: Any = None) -> Tuple[bytes, bool, List[List[float]]]:
         """
         Detects album cover quadrilateral in image_bytes via Gemini 3.6 Flash segmentation or CV contours,
@@ -41,8 +64,12 @@ class DeskewService:
             return image_bytes, False, []
 
         try:
+            # 0. Apply EXIF transpose to align pixel matrix with browser display
+            image_bytes = self._fix_exif_orientation(image_bytes)
+
             # 1. Decode image bytes to OpenCV BGR Mat
             nparr = np.frombuffer(image_bytes, np.uint8)
+
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
             if img is None:
@@ -203,8 +230,10 @@ class DeskewService:
             return default_corners
 
         try:
+            image_bytes = self._fix_exif_orientation(image_bytes)
             nparr = np.frombuffer(image_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
             if img is None:
                 return default_corners
 
