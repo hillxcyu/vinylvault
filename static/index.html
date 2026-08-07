@@ -2839,8 +2839,7 @@
       resetZoomPan();
       toggleCornerHandles(false);
 
-      // Step 2: Show loading status for fast OpenCV crop & deskew
-      showScanLoading('Cropping & deskewing album cover with OpenCV...');
+      showToast('Cropping & deskewing album cover...', 'fa-crop-simple');
 
       try {
         const formData = new FormData();
@@ -2882,14 +2881,13 @@
           });
         }
 
-
         // Give browser 2 animation frames to repaint the DOM
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
         // If user is deskewing cover art for an existing record, update coverUrl directly
         if (rescanTargetRecordForDeskew) {
           const rec = rescanTargetRecordForDeskew;
-          showScanLoading(`Saving deskewed cover art for '${rec.title}'...`);
+          showToast(`Saving deskewed cover art for '${rec.title}'...`, 'fa-crop-simple');
           const updateRes = await fetch(`/api/records/${rec.id}/update-cover`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2914,6 +2912,9 @@
 
         if (lastScannedMetadata) {
           lastScannedMetadata.coverUrl = cropData.coverUrl;
+          if (lastDuplicateCheck) {
+            renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata);
+          }
         }
         showToast('✨ Cover Cropped & Deskewed!', 'fa-crop-simple');
       } catch (err) {
@@ -2924,6 +2925,7 @@
         toggleScannerButtons(true);
       }
     }
+
 
 
 
