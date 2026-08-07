@@ -2483,14 +2483,15 @@
         previewImg.src = rawUrl;
         resetZoomPan();
         lastDetectedCorners = null;
-        autoDetectCornersAndSnap();
+        triggerAutoScan();
       }
     }
 
     async function triggerAutoScan() {
       if (!currentRawFile) return;
 
-      showScanLoading(`Uploading "${currentRawFile.name}" & auto-deskewing via Gemini AI...`);
+      showScanLoading(`Analyzing album art, detecting corners & checking Crate via Gemini AI...`);
+
 
       try {
         const formData = new FormData();
@@ -2901,32 +2902,19 @@
           return;
         }
 
-        // STEP 3 GEMINI ANALYSIS: Now send deskewed image to Gemini AI for vision analysis
-        showScanLoading('Step 2/2: Parsing title, artist & pressing details via Gemini AI...');
-
-        const analyzeRes = await fetch(`/api/analyze-deskewed?coverUrl=${encodeURIComponent(cropData.coverUrl)}`, {
-          method: 'POST'
-        });
-        const analyzeData = await analyzeRes.json();
-
-        if (analyzeData.status === 'success' && analyzeData.metadata) {
-          lastScannedMetadata = analyzeData.metadata;
-          if (previewImg && analyzeData.metadata.coverUrl) {
-            previewImg.src = analyzeData.metadata.coverUrl + '?t=' + Date.now();
-          }
-          showToast('✨ Album Metadata Analyzed!', 'fa-wand-magic-sparkles');
-          renderDuplicateResult(analyzeData.duplicateCheck, analyzeData.metadata);
-        } else {
-          throw new Error(analyzeData.detail || 'Album metadata analysis failed');
+        if (lastScannedMetadata) {
+          lastScannedMetadata.coverUrl = cropData.coverUrl;
         }
+        showToast('✨ Cover Cropped & Deskewed!', 'fa-crop-simple');
       } catch (err) {
         console.error('Manual deskew error:', err);
-        renderScanError(`Scan & analysis error: ${err.message}`);
+        renderScanError(`Crop & deskew error: ${err.message}`);
       } finally {
         isProcessingScan = false;
         toggleScannerButtons(true);
       }
     }
+
 
 
     let zoomScale = 1.0;
