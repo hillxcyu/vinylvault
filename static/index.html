@@ -2647,21 +2647,15 @@
     function onDragMove(e) {
       if (activeHandleIdx === null) return;
       e.preventDefault();
-      const container = document.getElementById('scannerPreviewContainer');
-      if (!container) return;
+      const img = document.getElementById('scannerPreviewImg');
+      if (!img) return;
 
-      const rect = container.getBoundingClientRect();
+      const imgRect = img.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-      const stageX = (clientX - rect.left - panX) / zoomScale;
-      const stageY = (clientY - rect.top - panY) / zoomScale;
-
-      const w = container.clientWidth || 280;
-      const h = container.clientHeight || 280;
-
-      let xPct = (stageX / w) - dragOffsetPctX;
-      let yPct = (stageY / h) - dragOffsetPctY;
+      let xPct = (clientX - imgRect.left) / imgRect.width;
+      let yPct = (clientY - imgRect.top) / imgRect.height;
 
       xPct = Math.max(0, Math.min(1, xPct));
       yPct = Math.max(0, Math.min(1, yPct));
@@ -2682,10 +2676,16 @@
 
     function updateCornerHandlesUI() {
       const container = document.getElementById('scannerPreviewContainer');
-      if (!container) return;
+      const img = document.getElementById('scannerPreviewImg');
+      if (!container || !img) return;
 
-      const w = container.clientWidth || 280;
-      const h = container.clientHeight || 280;
+      const imgRect = img.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      const offsetLeft = imgRect.left - containerRect.left;
+      const offsetTop = imgRect.top - containerRect.top;
+      const imgWidth = imgRect.width || container.clientWidth || 280;
+      const imgHeight = imgRect.height || container.clientHeight || 280;
 
       const handleIds = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
       const svgPolygon = document.getElementById('deskewPolygon');
@@ -2693,8 +2693,8 @@
 
       cornerPoints.forEach((pt, idx) => {
         const el = document.getElementById(handleIds[idx]);
-        const pxX = pt.x * w;
-        const pxY = pt.y * h;
+        const pxX = offsetLeft + (pt.x * imgWidth);
+        const pxY = offsetTop + (pt.y * imgHeight);
         if (el) {
           el.style.left = `${pxX}px`;
           el.style.top = `${pxY}px`;
@@ -2706,6 +2706,7 @@
         svgPolygon.setAttribute('points', polyPointsStr.trim());
       }
     }
+
 
     function performClientInstantCrop(imageEl, corners) {
       try {
