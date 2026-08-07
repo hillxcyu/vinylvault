@@ -1,6 +1,7 @@
 import numpy as np
 import logging
-from typing import Tuple, List
+from typing import Tuple, List, Any, Optional
+
 
 logger = logging.getLogger("vinyl_vault")
 
@@ -31,13 +32,13 @@ class DeskewService:
 
         return rect
 
-    def auto_deskew_image(self, image_bytes: bytes, target_size: int = 800) -> Tuple[bytes, bool]:
+    def auto_deskew_image(self, image_bytes: bytes, target_size: int = 800, gemini_service: Any = None) -> Tuple[bytes, bool, List[List[float]]]:
         """
-        Detects album cover quadrilateral in image_bytes, applies 4-point perspective warp,
-        and returns (processed_image_bytes, is_deskewed_flag).
+        Detects album cover quadrilateral in image_bytes via Gemini 3.6 Flash segmentation or CV contours,
+        applies 4-point perspective warp, and returns (processed_image_bytes, is_deskewed_flag, detected_corners).
         """
         if not OPENCV_AVAILABLE:
-            return image_bytes, False
+            return image_bytes, False, []
 
         try:
             # 1. Decode image bytes to OpenCV BGR Mat
@@ -45,83 +46,98 @@ class DeskewService:
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
             if img is None:
-                return image_bytes, False
+                return image_bytes, False, []
 
             h, w = img.shape[:2]
             image_area = h * w
 
-            # 2. Preprocess: Gray -> GaussianBlur -> Canny + Otsu Closing
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-            edged = cv2.Canny(blurred, 30, 150)
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-            closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
+            rect = None
+            detected_pts_pixel = []
 
-            # 3. Find outermost contours ONLY (RETR_EXTERNAL) to select album outer frame instead of inner artwork
-            contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if not contours:
-                _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
-                contours, _ = cv2.findContours(otsu_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            # 2. Attempt Gemini 3.6 Flash Segmentation Corner Detection
+            if gemini_service:
+                try:
+                    gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
+                    if gemini_corners and len(gemini_corners) == 4:
+                        pts = np.array([[pt[0] / 1000.0 * w, pt[1] / 1000.0 * h] for pt in gemini_corners], dtype="float32")
+                        rect = self._order_points(pts)
+                        detected_pts_pixel = rect.tolist()
+                        logger.info(f"Derived 4 corners via Gemini 3.6 Flash segmentation: {detected_pts_pixel}")
+                except Exception as e:
+                    logger.warning(f"Gemini corner segmentation fallback to CV: {e}")
 
-            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+            # 3. Fallback to OpenCV Contour / Otsu Edge Detection
+            if rect is None:
+                gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+                edged = cv2.Canny(blurred, 30, 150)
+                kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+                closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
-            screen_cnt = None
-            for c in contours:
-                area = cv2.contourArea(c)
-                if area < 0.05 * image_area:
-                    continue
+                contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                if not contours:
+                    _, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                    otsu_closed = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+                    contours, _ = cv2.findContours(otsu_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-                hull = cv2.convexHull(c)
-                peri = cv2.arcLength(hull, True)
+                contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
-                for eps in [0.02, 0.03, 0.04, 0.05, 0.01, 0.06, 0.08]:
-                    approx = cv2.approxPolyDP(hull, eps * peri, True)
-                    if len(approx) == 4:
-                        screen_cnt = approx.reshape(4, 2)
+                screen_cnt = None
+                for c in contours:
+                    area = cv2.contourArea(c)
+                    if area < 0.05 * image_area:
+                        continue
+
+                    hull = cv2.convexHull(c)
+                    peri = cv2.arcLength(hull, True)
+
+                    for eps in [0.02, 0.03, 0.04, 0.05, 0.01, 0.06, 0.08]:
+                        approx = cv2.approxPolyDP(hull, eps * peri, True)
+                        if len(approx) == 4:
+                            screen_cnt = approx.reshape(4, 2)
+                            break
+
+                    if screen_cnt is not None:
+                        break
+
+                    pts_hull = hull.reshape(-1, 2)
+                    if len(pts_hull) >= 4:
+                        s = pts_hull.sum(axis=1)
+                        diff = np.diff(pts_hull, axis=1).reshape(-1)
+                        tl = pts_hull[np.argmin(s)]
+                        br = pts_hull[np.argmax(s)]
+                        tr = pts_hull[np.argmin(diff)]
+                        bl = pts_hull[np.argmax(diff)]
+                        screen_cnt = np.array([tl, tr, br, bl], dtype="float32")
                         break
 
                 if screen_cnt is not None:
-                    break
-
-                pts_hull = hull.reshape(-1, 2)
-                if len(pts_hull) >= 4:
+                    pts = screen_cnt.reshape(4, 2)
+                    rect = self._order_points(pts)
+                    detected_pts_pixel = rect.tolist()
+                elif contours and cv2.contourArea(contours[0]) >= 0.05 * image_area:
+                    c = contours[0]
+                    hull = cv2.convexHull(c)
+                    pts_hull = hull.reshape(-1, 2)
                     s = pts_hull.sum(axis=1)
                     diff = np.diff(pts_hull, axis=1).reshape(-1)
                     tl = pts_hull[np.argmin(s)]
                     br = pts_hull[np.argmax(s)]
                     tr = pts_hull[np.argmin(diff)]
                     bl = pts_hull[np.argmax(diff)]
-                    screen_cnt = np.array([tl, tr, br, bl], dtype="float32")
-                    break
-
-            if screen_cnt is not None:
-                pts = screen_cnt.reshape(4, 2)
-                rect = self._order_points(pts)
-            elif contours and cv2.contourArea(contours[0]) >= 0.05 * image_area:
-                c = contours[0]
-                hull = cv2.convexHull(c)
-                pts_hull = hull.reshape(-1, 2)
-                s = pts_hull.sum(axis=1)
-                diff = np.diff(pts_hull, axis=1).reshape(-1)
-                tl = pts_hull[np.argmin(s)]
-                br = pts_hull[np.argmax(s)]
-                tr = pts_hull[np.argmin(diff)]
-                bl = pts_hull[np.argmax(diff)]
-                pts = np.array([tl, tr, br, bl], dtype="float32")
-                rect = self._order_points(pts)
-            else:
-
-                # Default tight 5% margin crop of full image frame
-                margin_x = int(w * 0.05)
-                margin_y = int(h * 0.05)
-                pts = np.array([
-                    [margin_x, margin_y],
-                    [w - margin_x, margin_y],
-                    [w - margin_x, h - margin_y],
-                    [margin_x, h - margin_y]
-                ], dtype="float32")
-                rect = self._order_points(pts)
+                    pts = np.array([tl, tr, br, bl], dtype="float32")
+                    rect = self._order_points(pts)
+                    detected_pts_pixel = rect.tolist()
+                    margin_x = int(w * 0.05)
+                    margin_y = int(h * 0.05)
+                    pts = np.array([
+                        [margin_x, margin_y],
+                        [w - margin_x, margin_y],
+                        [w - margin_x, h - margin_y],
+                        [margin_x, h - margin_y]
+                    ], dtype="float32")
+                    rect = self._order_points(pts)
+                    detected_pts_pixel = rect.tolist()
 
             # Define destination points as a square of target_size x target_size
             dst = np.array([
@@ -158,12 +174,13 @@ class DeskewService:
             # 7. Encode warped image back to JPEG bytes
             success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
             if success:
-                return encoded_img.tobytes(), True
+                return encoded_img.tobytes(), True, detected_pts_pixel
 
         except Exception as e:
             logger.error(f"Error during auto-deskew: {e}")
 
-        return image_bytes, False
+        return image_bytes, False, []
+
 
     def detect_corners(self, image_bytes: bytes) -> List[List[float]]:
         """

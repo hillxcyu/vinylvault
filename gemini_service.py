@@ -43,10 +43,65 @@ class GeminiVisionService:
             self.client = None
 
 
+    def get_album_segmentation_corners(self, image_bytes: bytes) -> Optional[List[List[int]]]:
+        """
+        Extract 4-point polygon segmentation corners of the album cover via Gemini 3.6 Flash.
+        Returns a list of 4 [x, y] coordinates normalized to 0-1000 scale, or None if unavailable.
+        """
+        if not self.client:
+            return None
+
+        try:
+            from google.genai import types
+            from pydantic import BaseModel, Field
+
+            class AlbumCornerSegmentation(BaseModel):
+                label: str = Field(description="Description of the item")
+                box_2d: List[int] = Field(description="2D bounding box [ymin, xmin, ymax, xmax] normalized 0-1000")
+                mask: List[List[int]] = Field(description="4 outer polygon corners [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] normalized 0-1000 scale")
+
+            prompt = (
+                "Locate the main vinyl record album cover or box set in this photo.\n"
+                "Detect its exact 4 physical outer corners.\n"
+                "Output a 2D bounding box in key 'box_2d', and the 4-point corner polygon in key 'mask'.\n"
+                "The 'mask' list MUST contain exactly 4 points normalized to 0-1000 scale in top-left, top-right, bottom-right, bottom-left order:\n"
+                "[\n"
+                "  [top_left_x, top_left_y],\n"
+                "  [top_right_x, top_right_y],\n"
+                "  [bottom_right_x, bottom_right_y],\n"
+                "  [bottom_left_x, bottom_left_y]\n"
+                "]"
+            )
+
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=AlbumCornerSegmentation
+            )
+
+            response = self.client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=[
+                    types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                    prompt
+                ],
+                config=config
+            )
+
+            parsed = json.loads(response.text)
+            mask = parsed.get("mask", [])
+            if len(mask) == 4 and all(isinstance(pt, list) and len(pt) == 2 for pt in mask):
+                logger.info(f"Gemini Vision Segmentation Corners detected: {mask}")
+                return mask
+        except Exception as e:
+            logger.warning(f"Gemini Vision segmentation corner detection warning: {e}")
+
+        return None
+
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
         Analyze album cover photo using Gemini 3.6 Flash Vision model with Google Search grounding and Crate inventory duplicate checking
         """
+
         if self.client:
             try:
                 from google.genai import types

@@ -415,9 +415,9 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         final_bytes = contents
         is_deskewed = False
     else:
-        detected_corners = deskew_service.detect_corners(contents)
-        deskewed_bytes, is_deskewed = deskew_service.auto_deskew_image(contents)
+        deskewed_bytes, is_deskewed, detected_corners = deskew_service.auto_deskew_image(contents, gemini_service=gemini_service)
         final_bytes = deskewed_bytes if is_deskewed else contents
+
 
 
     # 1. Upload scan cover image to GCS bucket (covers/)
