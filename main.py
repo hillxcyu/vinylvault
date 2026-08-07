@@ -694,8 +694,13 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
 
             if norm_art == ex_art and norm_title == ex_title:
                 if not norm_cat or not ex_cat or norm_cat == ex_cat:
-                    logger.info(f"Idempotency catch: Record '{req.title}' by {req.artist} already exists in collection.")
-                    return {"status": "success", "record": existing, "message": "Record already in collection"}
+                    if req.coverUrl and "shopping_cover_2.jpg" not in req.coverUrl:
+                        existing["coverUrl"] = req.coverUrl
+                        existing["originalScannedCoverUrl"] = req.coverUrl
+                        db.update_record(existing["id"], existing)
+                    logger.info(f"Idempotency catch: Record '{req.title}' by {req.artist} updated with scanned coverUrl.")
+                    return {"status": "success", "record": existing, "message": "Record updated in collection"}
+
 
     # Sanitize releaseYear to 4-digit integer if possible
     ry = rec_dict.get("releaseYear")
@@ -759,7 +764,21 @@ async def fetch_release_assets_endpoint(req: FetchCoverRequest):
     if not req.forceRefresh:
         cached_assets = db.firestore.get_release_assets(asset_key)
         if cached_assets:
+            if req.coverUrl and "shopping_cover_2.jpg" not in req.coverUrl:
+                has_orig = any(a.get("url") == req.coverUrl or a.get("type") == "📸 Original Jacket" for a in cached_assets)
+                if not has_orig:
+                    orig_asset = {
+                        "type": "📸 Original Jacket",
+                        "url": req.coverUrl,
+                        "thumbnail": req.coverUrl,
+                        "isPrimary": True,
+                        "country": req.country or "Original",
+                        "comment": "Original Scanned / Uploaded Album Cover"
+                    }
+                    cached_assets.insert(0, orig_asset)
+                    db.firestore.save_release_assets(asset_key, cached_assets)
             return {"status": "success", "assets": cached_assets, "cached": True}
+
 
     target_cover = req.coverUrl
     catno = req.catalogNumber

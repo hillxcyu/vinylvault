@@ -138,9 +138,8 @@ class DiscogsService:
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country=Japan", "is_catno": False})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl", "is_catno": False})
 
-        seen_urls = set()
-
         for q_obj in search_queries:
+
             search_url = q_obj["url"]
             is_cat_q = q_obj["is_catno"]
             try:
