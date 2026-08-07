@@ -52,17 +52,18 @@ class DeskewService:
             image_area = h * w
 
             rect = None
-            detected_pts_pixel = []
+            norm_corners = []
 
             # 2. Attempt Gemini 3.6 Flash Segmentation Corner Detection
             if gemini_service:
                 try:
                     gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
                     if gemini_corners and len(gemini_corners) == 4:
-                        pts = np.array([[pt[0] / 1000.0 * w, pt[1] / 1000.0 * h] for pt in gemini_corners], dtype="float32")
+                        # Gemini returns [y, x] in 0-1000 scale -> map x=pt[1], y=pt[0] to image pixels
+                        pts = np.array([[(pt[1] / 1000.0) * w, (pt[0] / 1000.0) * h] for pt in gemini_corners], dtype="float32")
                         rect = self._order_points(pts)
-                        detected_pts_pixel = rect.tolist()
-                        logger.info(f"Derived 4 corners via Gemini 3.6 Flash segmentation: {detected_pts_pixel}")
+                        norm_corners = [[round(float(p[0] / w), 4), round(float(p[1] / h), 4)] for p in rect]
+                        logger.info(f"Derived 4 corners via Gemini 3.6 Flash segmentation: {norm_corners}")
                 except Exception as e:
                     logger.warning(f"Gemini corner segmentation fallback to CV: {e}")
 
@@ -114,7 +115,6 @@ class DeskewService:
                 if screen_cnt is not None:
                     pts = screen_cnt.reshape(4, 2)
                     rect = self._order_points(pts)
-                    detected_pts_pixel = rect.tolist()
                 elif contours and cv2.contourArea(contours[0]) >= 0.05 * image_area:
                     c = contours[0]
                     hull = cv2.convexHull(c)
@@ -127,7 +127,7 @@ class DeskewService:
                     bl = pts_hull[np.argmax(diff)]
                     pts = np.array([tl, tr, br, bl], dtype="float32")
                     rect = self._order_points(pts)
-                    detected_pts_pixel = rect.tolist()
+                else:
                     margin_x = int(w * 0.05)
                     margin_y = int(h * 0.05)
                     pts = np.array([
@@ -137,7 +137,10 @@ class DeskewService:
                         [margin_x, h - margin_y]
                     ], dtype="float32")
                     rect = self._order_points(pts)
-                    detected_pts_pixel = rect.tolist()
+
+            if rect is not None and not norm_corners:
+                norm_corners = [[round(float(p[0] / w), 4), round(float(p[1] / h), 4)] for p in rect]
+
 
             # Define destination points as a square of target_size x target_size
             dst = np.array([
@@ -174,7 +177,8 @@ class DeskewService:
             # 7. Encode warped image back to JPEG bytes
             success, encoded_img = cv2.imencode('.jpg', warped, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
             if success:
-                return encoded_img.tobytes(), True, detected_pts_pixel
+                return encoded_img.tobytes(), True, norm_corners
+
 
         except Exception as e:
             logger.error(f"Error during auto-deskew: {e}")
