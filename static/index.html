@@ -1751,8 +1751,16 @@
         const res = await fetch('/api/fetch-release-assets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ artist: rec.artist, title: rec.title, coverUrl: rec.coverUrl, forceRefresh })
+          body: JSON.stringify({
+            artist: rec.artist,
+            title: rec.title,
+            coverUrl: rec.coverUrl,
+            catalogNumber: rec.catalogNumber,
+            country: rec.country || 'Japan',
+            forceRefresh
+          })
         });
+
         const data = await res.json();
         if (data.status === 'success' && data.assets && data.assets.length > 0) {
           releaseAssetsCache[cacheKey] = data.assets;

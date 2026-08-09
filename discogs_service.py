@@ -109,6 +109,7 @@ class DiscogsService:
     ) -> List[Dict[str, Any]]:
         assets = []
         seen_urls = set()
+        target_country = (country or "Japan").strip()
 
         # Always include original jacket cover art as Asset #1 if available
         if cover_url and cover_url not in seen_urls and "shopping_cover_2.jpg" not in cover_url:
@@ -118,7 +119,7 @@ class DiscogsService:
                 "url": cover_url,
                 "thumbnail": cover_url,
                 "isPrimary": True,
-                "country": country or "Original",
+                "country": target_country or "Original",
                 "comment": "Original Scanned / Uploaded Album Cover"
             })
 
@@ -130,16 +131,19 @@ class DiscogsService:
         if clean_catno:
             cat_parts = re.findall(r'[A-Za-z0-9\-]+', clean_catno)
             pure_cat = " ".join(cat_parts)
+            if target_country:
+                search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&country={urllib.parse.quote(target_country)}&type=release", "is_catno": True})
             search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&type=release", "is_catno": True})
+            if target_country:
+                search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno + ' ' + target_country)}&type=release", "is_catno": True})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno)}&type=release", "is_catno": True})
 
-
         if clean_a and clean_t:
-            search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country=Japan", "is_catno": False})
+            if target_country:
+                search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country={urllib.parse.quote(target_country)}", "is_catno": False})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl", "is_catno": False})
 
         for q_obj in search_queries:
-
             search_url = q_obj["url"]
             is_cat_q = q_obj["is_catno"]
             try:
@@ -160,21 +164,21 @@ class DiscogsService:
 
                         if cover_image and "spacer.gif" not in cover_image and cover_image not in seen_urls:
                             seen_urls.add(cover_image)
-                            badge_country = "🇯🇵 Japan" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
+                            badge_country = f"🇯🇵 {rel_country}" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
                             badge_catno = f" [{rel_catno}]" if rel_catno else ""
 
                             assets.append({
                                 "type": f"{badge_country} Front Cover",
                                 "url": cover_image,
                                 "thumbnail": cover_image,
-                                "isPrimary": rel_country.lower() == "japan" or is_cat_q,
+                                "isPrimary": rel_country.lower() == target_country.lower() or is_cat_q,
                                 "country": rel_country,
                                 "catalogNumber": rel_catno,
                                 "year": rel_year,
                                 "comment": f"{badge_country} Pressing{badge_catno}"
                             })
 
-                        if (len(assets) < 10 or not cover_image) and rel_id:
+                        if (len(assets) < 12 or not cover_image) and rel_id:
                             rel_url = f"https://api.discogs.com/releases/{rel_id}"
                             rel_resp = requests.get(rel_url, headers=self.headers, timeout=6)
                             if rel_resp.status_code == 200:
@@ -192,18 +196,18 @@ class DiscogsService:
                                         if uri and uri not in seen_urls:
                                             seen_urls.add(uri)
                                             is_prim = img.get("type") == "primary"
-                                            badge_country = "🇯🇵 Japan" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
+                                            badge_country = f"🇯🇵 {rel_country}" if rel_country.lower() == "japan" else (rel_country or "Vinyl")
                                             badge_catno = f" [{rel_catno}]" if rel_catno else ""
 
                                             assets.append({
                                                 "type": f"{badge_country} {'Front Cover' if is_prim else 'Sleeve Asset'}",
                                                 "url": uri,
                                                 "thumbnail": uri,
-                                                "isPrimary": (is_prim and rel_country.lower() == "japan") or is_cat_q,
+                                                "isPrimary": is_prim or rel_country.lower() == target_country.lower(),
                                                 "country": rel_country,
                                                 "catalogNumber": rel_catno,
                                                 "year": d_year,
-                                                "comment": f"{badge_country}{badge_catno} Release #{rel_id}"
+                                                "comment": f"{badge_country} Release{badge_catno}"
                                             })
                                             if len(assets) >= 10:
                                                 break
@@ -225,7 +229,28 @@ class DiscogsService:
                 "comment": "Current Album Cover"
             })
 
-        return assets[:10]
+        # Priority sort assets so target country (e.g. Japan) and matching catno appear first
+        def asset_priority(asset):
+            if asset.get("type", "").startswith("📸 Original"):
+                return 0
+            cntry = (asset.get("country") or "").lower()
+            asset_cat = (asset.get("catalogNumber") or "").lower()
+            target_cat = (clean_catno or "").lower()
+
+            matches_country = target_country.lower() in cntry or cntry in target_country.lower()
+            matches_catno = target_cat and (target_cat in asset_cat or asset_cat in target_cat)
+
+            if matches_country and matches_catno:
+                return 1
+            if matches_country:
+                return 2
+            if matches_catno:
+                return 3
+            return 4
+
+        assets.sort(key=asset_priority)
+        return assets[:12]
+
 
 discogs_service = DiscogsService()
 

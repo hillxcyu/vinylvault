@@ -116,11 +116,13 @@ class PronounceRequest(BaseModel):
     text: str
 
 class FetchCoverRequest(BaseModel):
-
     artist: str
     title: str
     coverUrl: Optional[str] = None
+    catalogNumber: Optional[str] = None
+    country: Optional[str] = None
     forceRefresh: Optional[bool] = False
+
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index.html", response_class=HTMLResponse)
@@ -851,11 +853,19 @@ async def fetch_release_assets_endpoint(req: FetchCoverRequest):
 
     target_cover = req.coverUrl
     catno = req.catalogNumber
+    country = req.country or "Japan"
+
+    norm_title = (req.title or "").strip().lower()
+    norm_artist = (req.artist or "").strip().lower()
+
     if not target_cover or not catno:
         for r in db.get_all_records():
-            if r.get("title") == req.title or r.get("artist") == req.artist:
+            r_title = (r.get("title") or "").strip().lower()
+            r_artist = (r.get("artist") or "").strip().lower()
+            if r_title and norm_title and r_artist and norm_artist and r_title == norm_title and r_artist == norm_artist:
                 target_cover = target_cover or r.get("coverUrl")
                 catno = catno or r.get("catalogNumber")
+                country = req.country or r.get("country") or "Japan"
                 break
 
     assets = discogs_service.fetch_all_release_assets(
@@ -863,8 +873,9 @@ async def fetch_release_assets_endpoint(req: FetchCoverRequest):
         req.title,
         cover_url=target_cover,
         catalog_number=catno,
-        country=req.country or "Japan"
+        country=country
     )
+
     if assets:
         db.firestore.save_release_assets(asset_key, assets)
 
