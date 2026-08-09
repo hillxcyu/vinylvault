@@ -722,7 +722,8 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
                     if req.coverUrl and "shopping_cover_2.jpg" not in req.coverUrl:
                         existing["coverUrl"] = req.coverUrl
                         existing["originalScannedCoverUrl"] = req.coverUrl
-                        db.update_record(existing["id"], existing)
+                        db.update_record(existing)
+
                     logger.info(f"Idempotency catch: Record '{req.title}' by {req.artist} updated with scanned coverUrl.")
                     return {"status": "success", "record": existing, "message": "Record updated in collection"}
 
@@ -799,7 +800,8 @@ async def update_record_cover_endpoint(record_id: str, req: Dict[str, Any]):
 
     rec["coverUrl"] = cover_url
     rec["originalScannedCoverUrl"] = cover_url
-    db.update_record(record_id, rec)
+    db.update_record(rec)
+
     if db.firestore.db:
         db.firestore.save_record(rec)
     return {"status": "success", "record": rec}

@@ -1591,14 +1591,19 @@ class VinylDatabase:
         return record_data
 
 
-    def update_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_record(self, record_data: Any, record_dict_fallback: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Updates an existing record in memory, saves to local JSON, and persists to Firestore.
-        Also invalidates cached chronicle so changes are reflected in AI insights immediately.
+        Updates an existing record in memory and persists to Firestore.
+        Flexible signature supports both update_record(rec_dict) and update_record(rec_id, rec_dict).
         """
-        rec_id = record_data.get("id")
+        if isinstance(record_data, str) and record_dict_fallback is not None:
+            record_data = record_dict_fallback
+        elif not isinstance(record_data, dict) and isinstance(record_dict_fallback, dict):
+            record_data = record_dict_fallback
+
+        rec_id = record_data.get("id") if isinstance(record_data, dict) else None
         if not rec_id:
-            return record_data
+            return record_data if isinstance(record_data, dict) else {}
 
         for i, r in enumerate(self.records):
             if r.get("id") == rec_id:
@@ -1608,6 +1613,7 @@ class VinylDatabase:
             self.records.insert(0, record_data)
 
         self.save_records()
+
 
         try:
             if self.firestore.db:
