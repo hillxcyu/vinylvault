@@ -1320,40 +1320,17 @@ class VinylDatabase:
 
         self.wishlist = list(INITIAL_WISHLIST)
         
-        # Connect directly to Cloud Firestore as primary database for all collections
-        fs_recs = None
-        fs_spins = None
-        fs_chronicle = None
-
-        if self.firestore.db:
-            try:
-                fs_recs = self.firestore.get_records()
-                fs_spins = self.firestore.get_spins()
-                fs_chronicle = self.firestore.get_chronicle()
-            except Exception as e:
-                print(f"Direct Firestore load error during startup: {e}")
-
-        if fs_recs is not None and len(fs_recs) > 0:
-            print(f"Directly loaded {len(fs_recs)} records from Cloud Firestore database.")
-            self.records = fs_recs
-            self._save_json(RECORDS_FILE, fs_recs)
-        else:
-            print("Fallback: loading records from local storage.")
-            self.records = self._load_records()
-
-        if fs_spins is not None:
-            self.spins_log = fs_spins
-            self._save_json(SPINS_FILE, fs_spins)
-        else:
-            self.spins_log = self._load_spins()
-
-        if fs_chronicle is not None:
-            self.chronicle = fs_chronicle
-            self._save_json(CHRONICLE_FILE, fs_chronicle)
-        else:
-            self.chronicle = self._load_chronicle()
-
+        # Load local storage first for instant server startup (< 0.1s)
+        self.records = self._load_records()
+        self.spins_log = self._load_spins()
+        self.chronicle = self._load_chronicle()
         self.now_spinning = None  # In-memory only state (resets to Standby on cold boot)
+
+        # Non-blocking background Firestore sync
+        if self.firestore.db:
+            import threading
+            threading.Thread(target=self.sync_firestore_on_startup, daemon=True).start()
+
 
 
 
