@@ -19,10 +19,12 @@ def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int
     if not image_bytes:
         return image_bytes
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
         img = Image.open(io.BytesIO(image_bytes))
+        img = ImageOps.exif_transpose(img)
 
         if img.mode in ("RGBA", "P", "LA"):
+
             img = img.convert("RGB")
 
         w, h = img.size

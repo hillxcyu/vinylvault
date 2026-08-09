@@ -486,8 +486,10 @@ class DeskewService:
             return image_bytes, False
 
         try:
+            image_bytes = self._fix_exif_orientation(image_bytes)
             nparr = np.frombuffer(image_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
 
             if img is None:
                 return image_bytes, False
