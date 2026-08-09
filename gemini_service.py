@@ -57,13 +57,12 @@ class GeminiVisionService:
 
             class AlbumCornerSegmentation(BaseModel):
                 label: str = Field(description="Description of the item")
-                box_2d: List[int] = Field(description="2D bounding box [ymin, xmin, ymax, xmax] normalized 0-1000")
                 mask: List[List[int]] = Field(description="4 outer polygon corners [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] normalized 0-1000 scale")
 
             prompt = (
                 "Locate the main vinyl record album cover or box set in this photo.\n"
                 "Detect its exact 4 physical outer corners.\n"
-                "Output a 2D bounding box in key 'box_2d' as [ymin, xmin, ymax, xmax] (0-1000 scale), and 4 corner polygon mask in key 'mask'.\n"
+                "Output 4 corner polygon mask in key 'mask'.\n"
                 "Each point in 'mask' MUST be [x, y] normalized to 0-1000 scale:\n"
                 "[\n"
                 "  [top_left_x, top_left_y],\n"
@@ -72,6 +71,7 @@ class GeminiVisionService:
                 "  [bottom_left_x, bottom_left_y]\n"
                 "]"
             )
+
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -152,14 +152,14 @@ class GeminiVisionService:
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
-                    "12. 'box_2d': [ymin, xmin, ymax, xmax] bounding box normalized 0-1000.\n"
-                    "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
+                    "12. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
 
-                    "14. 'listeningGuide': Object with keys:\n"
+                    "13. 'listeningGuide': Object with keys:\n"
                     "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
                     "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
                     "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
                     "   - 'recommendedMood': (string, ideal listening atmosphere)"
+
 
                 )
 
