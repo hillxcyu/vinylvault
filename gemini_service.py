@@ -48,7 +48,12 @@ def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int
 
 
 class GeminiVisionService:
+    @staticmethod
+    def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int = 85) -> bytes:
+        return downsample_image_bytes(image_bytes, max_dim=max_dim, quality=quality)
+
     def __init__(self):
+
         self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
         self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
         self.client = None
