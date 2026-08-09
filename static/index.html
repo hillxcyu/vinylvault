@@ -778,16 +778,46 @@
     }
 
     const pronunciationCache = new Map();
+    let currentPronouncingAudio = null;
+    let currentPronounceBtnIcon = null;
+
+    function stopCurrentAudioPlayback() {
+      if (currentPronouncingAudio) {
+        try {
+          currentPronouncingAudio.pause();
+          currentPronouncingAudio.currentTime = 0;
+        } catch(e) {}
+        currentPronouncingAudio = null;
+      }
+
+      if (currentPronounceBtnIcon) {
+        currentPronounceBtnIcon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+        currentPronounceBtnIcon = null;
+      }
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      if (typeof stopCurrentSpeech === 'function') {
+        stopCurrentSpeech();
+      }
+    }
 
     // High-Fidelity Audio Pronunciation via Gemini 3.1 Flash TTS Preview (Aoede Voice) with Client & Server Caching
     async function pronounceText(text, btnElement) {
       if (!text) return;
+
+      // Stop any currently playing audio before starting new playback
+      stopCurrentAudioPlayback();
+
       const clean = text.replace(/\([\u4e00-\u9fff\w\s\.]+\)/g, '').trim();
       const cacheKey = clean.toLowerCase();
 
       let icon = null;
       if (btnElement) {
         icon = btnElement.querySelector('i') || btnElement;
+        currentPronounceBtnIcon = icon;
       }
 
       function playAudioData(audioB64, mimeType, isCached = false) {
@@ -798,17 +828,25 @@
         showToast(`🔊 Playing '${clean}' ${isCached ? '(Cached Audio)' : '(Gemini 3.1 Flash TTS)'}`, 'fa-volume-high');
 
         const audio = new Audio(`data:${mimeType || 'audio/wav'};base64,${audioB64}`);
+        currentPronouncingAudio = audio;
+
         audio.onended = () => {
           if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+          if (currentPronouncingAudio === audio) currentPronouncingAudio = null;
+          if (currentPronounceBtnIcon === icon) currentPronounceBtnIcon = null;
         };
         audio.onerror = (e) => {
           console.warn('Audio playback error:', e);
           if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+          if (currentPronouncingAudio === audio) currentPronouncingAudio = null;
+          if (currentPronounceBtnIcon === icon) currentPronounceBtnIcon = null;
           fallbackSpeechSynthesis(clean, icon);
         };
         audio.play().catch(err => {
           console.warn('Audio play exception:', err);
           if (icon) icon.classList.remove('text-amber-400', 'animate-bounce', 'animate-spin');
+          if (currentPronouncingAudio === audio) currentPronouncingAudio = null;
+          if (currentPronounceBtnIcon === icon) currentPronounceBtnIcon = null;
           fallbackSpeechSynthesis(clean, icon);
         });
       }
@@ -818,7 +856,6 @@
         console.log("Serving client-cached audio for:", clean);
         const cached = pronunciationCache.get(cacheKey);
         playAudioData(cached.audioB64, cached.mimeType, true);
-
         return;
       }
 
@@ -851,6 +888,7 @@
         fallbackSpeechSynthesis(clean, icon);
       }
     }
+
 
 
 
@@ -2169,13 +2207,14 @@
 
       // If user clicks while currently speaking from this button, toggle STOP
       if (activeSpeech.isSpeaking && activeSpeech.btnElement === btnElement) {
-        stopCurrentSpeech();
+        stopCurrentAudioPlayback();
         showToast('Speech playback stopped', 'fa-circle-stop');
         return;
       }
 
-      // Stop any other active speech
-      stopCurrentSpeech();
+      // Stop any other active speech / pronunciation audio
+      stopCurrentAudioPlayback();
+
 
       const bubble = btnElement.closest('.bg-stone-900\\/60');
       if (!bubble) return;
