@@ -18,7 +18,9 @@ import re
 import base64
 import logging
 import urllib.request
+import asyncio
 from datetime import datetime
+
 
 
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, BackgroundTasks
@@ -297,27 +299,8 @@ async def reanalyze_record_metadata_endpoint(record_id: str):
     }
 
 
-@app.post("/api/records/{record_id}/update-cover")
-async def update_record_cover_endpoint(record_id: str, payload: UpdateCoverPayload):
-
-    rec = db.get_record_by_id(record_id)
-    if not rec:
-        raise HTTPException(status_code=404, detail="Record not found")
-
-    rec["coverUrl"] = payload.coverUrl
-    db.update_record(rec)
-
-    return {
-
-        "status": "success",
-        "message": f"Cover art updated for '{rec.get('title')}'",
-        "coverUrl": payload.coverUrl,
-        "record": rec
-    }
-
-
-
 @app.post("/api/admin/repair-covers")
+
 async def repair_covers_admin_endpoint():
     recs = db.get_all_records(sync_if_needed=True)
     updated_count = 0
@@ -468,13 +451,13 @@ def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
 @app.post("/api/scan")
 async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(False)):
     contents = await file.read()
-    raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(contents).decode('utf-8')}"
+    crate_records = db.get_all_records()
 
     # 1. Single unified Gemini 3.6 Flash Vision Call (Metadata + Grounding + 4-Corner Segmentation)
     extracted_metadata = gemini_service.analyze_album_cover(
         contents, 
         filename="scan.jpg", 
-        crate_records=db.get_all_records()
+        crate_records=crate_records
     )
 
     # 2. Detect 4 corners using Gemini Vision 3.6 Flash segmentation
@@ -482,19 +465,26 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
 
     # 3. Perspective-warp cover image using detected corners
     deskewed_bytes = deskew_service.warp_image_from_normalized_corners(contents, detected_corners)
-    deskewed_b64 = f"data:image/jpeg;base64,{base64.b64encode(deskewed_bytes).decode('utf-8')}"
+
+    # Downsample preview base64 images to 1024px max dimension for fast transmission (<200KB vs 7MB)
+    opt_raw_bytes = gemini_service.downsample_image_bytes(contents, max_dim=1024, quality=85)
+    opt_deskewed_bytes = gemini_service.downsample_image_bytes(deskewed_bytes, max_dim=1024, quality=85)
+
+    raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_raw_bytes).decode('utf-8')}"
+    deskewed_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_deskewed_bytes).decode('utf-8')}"
 
     extracted_metadata["coverUrl"] = deskewed_b64
     extracted_metadata["rawCoverUrl"] = raw_b64
     extracted_metadata["deskewed"] = True
 
-    # 4. Store optional Discogs official cover suggestion using extracted catalog number and country
+    # 4. Store optional Discogs official cover suggestion asynchronously
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     catno = extracted_metadata.get("catalogNumber", "")
     country = extracted_metadata.get("country", "Japan")
     if artist and title:
-        official_img = discogs_service.fetch_official_cover(
+        official_img = await asyncio.to_thread(
+            discogs_service.fetch_official_cover,
             artist,
             title,
             cover_url=deskewed_b64,
@@ -504,12 +494,11 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         if official_img:
             extracted_metadata["officialCoverUrl"] = official_img
 
-    # 5. Automatically run duplicate check on extracted metadata
+    # 5. Automatically run duplicate check on extracted metadata using pre-fetched crate_records
     duplicate_result = build_duplicate_result(
         extracted_metadata,
-        db.get_all_records()
+        crate_records
     )
-
 
     return {
         "metadata": extracted_metadata,
@@ -518,6 +507,7 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         "coverUrl": deskewed_b64,
         "detectedCorners": detected_corners
     }
+
 
 
 @app.post("/api/upload-cover")
