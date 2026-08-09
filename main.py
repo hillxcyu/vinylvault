@@ -31,12 +31,10 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
 from database import db
-from duplicate_engine import DuplicateEngine
 from gemini_service import gemini_service
 from discogs_service import discogs_service
 from deskew_service import deskew_service
 from classical_service import classical_service
-from batch_import_webarchive import run_batch_import
 from gcs_service import gcs_service
 from fastapi.responses import RedirectResponse
 
@@ -385,13 +383,58 @@ async def get_stats():
         "genreBreakdown": genres
     }
 
+def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
+    if crate_records is None:
+        crate_records = db.get_all_records()
+
+    is_in_crate = metadata.get("isAlreadyInCrate", False)
+    match_id = metadata.get("crateMatchId")
+    reason = metadata.get("crateMatchReason") or ""
+    
+    matching_rec = None
+    if match_id and crate_records:
+        matching_rec = next((r for r in crate_records if r.get("id") == match_id), None)
+        
+    if not matching_rec and crate_records:
+        title = (metadata.get("albumTitle") or metadata.get("title") or "").lower().strip()
+        artist = (metadata.get("artist") or "").lower().strip()
+        catno = (metadata.get("catalogNumber") or "").lower().strip()
+        catno_clean = "".join(c for c in catno if c.isalnum())
+        
+        for r in crate_records:
+            r_cat = (r.get("catalogNumber") or "").lower().strip()
+            r_cat_clean = "".join(c for c in r_cat if c.isalnum())
+            if catno_clean and len(catno_clean) >= 3 and catno_clean == r_cat_clean:
+                matching_rec = r
+                break
+            r_title = (r.get("title") or "").lower().strip()
+            r_artist = (r.get("artist") or "").lower().strip()
+            if title and artist and title == r_title and artist == r_artist:
+                matching_rec = r
+                break
+
+    if is_in_crate or matching_rec:
+        rec_title = matching_rec.get("title", "") if matching_rec else metadata.get("albumTitle", "")
+        return {
+            "status": "EXACT_MATCH",
+            "matchingRecord": matching_rec,
+            "message": f"ALREADY IN YOUR COLLECTION! {reason or f'Matches record \"{rec_title}\".'}"
+        }
+
+    if metadata.get("isWishlistMatch"):
+        return {
+            "status": "WISHLIST_MATCH",
+            "message": metadata.get("wishlistMatchReason") or "This album is currently on your wishlist!"
+        }
+
+    return {
+        "status": "NEW_RECORD",
+        "message": f"NEW ALBUM DISCOVERED! Clean copy verified: '{metadata.get('artist', '')} - {metadata.get('albumTitle', '')}'."
+    }
+
 @app.post("/api/check-duplicate")
 async def check_duplicate(query: DuplicateCheckQuery):
-    result = DuplicateEngine.check_duplicate(
-        query.dict(),
-        db.get_all_records(),
-        db.get_wishlist()
-    )
+    result = build_duplicate_result(query.dict(), db.get_all_records())
     return result
 
 def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
@@ -447,11 +490,11 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
             extracted_metadata["officialCoverUrl"] = official_img
 
     # 5. Automatically run duplicate check on extracted metadata
-    duplicate_result = DuplicateEngine.check_duplicate(
+    duplicate_result = build_duplicate_result(
         extracted_metadata,
-        db.get_all_records(),
-        db.get_wishlist()
+        db.get_all_records()
     )
+
 
     return {
         "metadata": extracted_metadata,
@@ -552,10 +595,9 @@ async def analyze_deskewed_endpoint(coverUrl: str):
         if official_img:
             extracted_metadata["officialCoverUrl"] = official_img
 
-    duplicate_result = DuplicateEngine.check_duplicate(
+    duplicate_result = build_duplicate_result(
         extracted_metadata,
-        db.get_all_records(),
-        db.get_wishlist()
+        db.get_all_records()
     )
 
     # Auto-fill missing cover art for existing record if scanned image exists
@@ -610,11 +652,11 @@ async def manual_deskew_endpoint(
         if assets:
             db.firestore.save_release_assets(asset_key, assets)
 
-    duplicate_result = DuplicateEngine.check_duplicate(
+    duplicate_result = build_duplicate_result(
         extracted_metadata,
-        db.get_all_records(),
-        db.get_wishlist()
+        db.get_all_records()
     )
+
 
     return {
         "status": "success",
@@ -1050,13 +1092,6 @@ async def restore_sample_data_endpoint():
     res = db.restore_sample_data()
     return {"status": "success", "restored": res}
 
-@app.post("/api/batch-import-webarchive")
-async def batch_import_route():
-    try:
-        res = run_batch_import()
-        return res
-    except Exception as e:
-        logger.error(f"Error running batch import: {e}")
 @app.post("/api/pronounce")
 async def pronounce_endpoint(req: PronounceRequest):
     if not req.text or not req.text.strip():
