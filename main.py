@@ -415,11 +415,13 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
 
     if is_in_crate or matching_rec:
         rec_title = matching_rec.get("title", "") if matching_rec else metadata.get("albumTitle", "")
+        fallback_msg = f'Matches record "{rec_title}".' if rec_title else 'Matches existing album in collection.'
         return {
             "status": "EXACT_MATCH",
             "matchingRecord": matching_rec,
-            "message": f"ALREADY IN YOUR COLLECTION! {reason or f'Matches record \"{rec_title}\".'}"
+            "message": f"ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
         }
+
 
     if metadata.get("isWishlistMatch"):
         return {
