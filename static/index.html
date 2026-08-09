@@ -47,8 +47,34 @@
 </head>
 <body class="min-h-screen pb-24 sm:pb-12 flex flex-col bg-stone-950 text-stone-100 font-sans selection:bg-amber-500 selection:text-black">
 
+  <!-- Initial DB Connection Blur Overlay -->
+  <div id="initialDbConnectingOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/85 backdrop-blur-md transition-all duration-500">
+    <div class="flex flex-col items-center justify-center p-8 bg-stone-900/90 border border-stone-800 rounded-3xl shadow-2xl max-w-sm w-full mx-4 text-center">
+      <!-- Animated Spinning Record Icon -->
+      <div class="relative w-20 h-20 mb-5 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin"></div>
+        <div class="w-14 h-14 bg-stone-950 rounded-full border border-stone-800 flex items-center justify-center shadow-inner">
+          <i class="fa-solid fa-record-vinyl text-amber-500 text-2xl animate-pulse"></i>
+        </div>
+      </div>
+      
+      <h3 class="text-lg font-extrabold text-white mb-1 tracking-tight">Connecting to Vinyl Vault...</h3>
+      <p id="dbConnectionStatusText" class="text-xs text-amber-400 font-medium mb-4 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-cloud-arrow-down text-xs animate-bounce"></i>
+        Syncing Cloud Firestore Database
+      </p>
+
+      <div id="dbConnectionRetryContainer" class="hidden mt-2">
+        <button onclick="retryDbConnection()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold text-xs rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-rotate-right mr-1.5"></i> Retry Connection
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Minimalistic Pinned Navigation Bar with Era Dropdown -->
   <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/85 backdrop-blur-2xl px-4 py-2.5 mb-6">
+
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
       <!-- Logo & Title -->
       <div class="flex items-center space-x-2.5">
@@ -292,7 +318,8 @@
         <div class="flex items-center gap-3">
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-stone-500 text-sm"></i>
-            <input type="text" id="searchInput" onkeyup="filterCrate()" placeholder="Search title, artist, or genre in crate..." class="w-full bg-stone-900 border border-stone-800 text-base md:text-sm rounded-xl pl-10 pr-4 py-2.5 text-gray-200 focus:outline-none focus:border-amber-500">
+            <input type="text" id="searchInput" onkeyup="filterCrate()" placeholder="Search title, artist, label, or genre in crate..." class="w-full bg-stone-900 border border-stone-800 text-base md:text-sm rounded-xl pl-10 pr-4 py-2.5 text-gray-200 focus:outline-none focus:border-amber-500">
+
           </div>
         </div>
       </div>
@@ -1419,21 +1446,60 @@
     }
 
 
+    function hideDbConnectingOverlay() {
+      const overlay = document.getElementById('initialDbConnectingOverlay');
+      if (overlay) {
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+        }, 500);
+      }
+    }
+
+    function showDbConnectionError(msg) {
+      const statusText = document.getElementById('dbConnectionStatusText');
+      const retryBox = document.getElementById('dbConnectionRetryContainer');
+      if (statusText) {
+        statusText.className = 'text-xs text-rose-400 font-medium mb-4 flex items-center justify-center gap-2';
+        statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-xs"></i> ${msg || 'Connection failed'}`;
+      }
+      if (retryBox) {
+        retryBox.classList.remove('hidden');
+      }
+    }
+
+    async function retryDbConnection() {
+      const statusText = document.getElementById('dbConnectionStatusText');
+      const retryBox = document.getElementById('dbConnectionRetryContainer');
+      if (statusText) {
+        statusText.className = 'text-xs text-amber-400 font-medium mb-4 flex items-center justify-center gap-2';
+        statusText.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-xs animate-bounce"></i> Syncing Cloud Firestore Database`;
+      }
+      if (retryBox) retryBox.classList.add('hidden');
+      await fetchCollection();
+      await fetchStats();
+      await fetchChronicle();
+    }
+
     async function fetchCollection() {
       try {
         const res = await fetch('/api/records');
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
         allRecords = data.records || [];
         document.getElementById('recordCountBadge').innerText = allRecords.length;
         document.getElementById('statTotalRecords').innerText = allRecords.length;
 
         await fetchNowSpinning();
-
         renderRecordsGrid(allRecords);
+
+        hideDbConnectingOverlay();
       } catch (err) {
         console.error('Error fetching collection:', err);
+        showDbConnectionError('Unable to connect to Vinyl Vault database.');
       }
     }
+
 
 
     async function fetchStats() {
@@ -2319,11 +2385,16 @@
 
 
     function filterCrate() {
-      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
       let filtered = allRecords.filter(r => 
-        r.title.toLowerCase().includes(q) || 
-        r.artist.toLowerCase().includes(q) || 
-        (r.genre && r.genre.toLowerCase().includes(q))
+        (r.title && r.title.toLowerCase().includes(q)) || 
+        (r.artist && r.artist.toLowerCase().includes(q)) || 
+        (r.genre && r.genre.toLowerCase().includes(q)) ||
+        (r.label && r.label.toLowerCase().includes(q)) ||
+        (r.catalogNumber && r.catalogNumber.toLowerCase().includes(q)) ||
+        (r.country && r.country.toLowerCase().includes(q)) ||
+        (r.releaseYear && String(r.releaseYear).toLowerCase().includes(q)) ||
+        (r.pressings && r.pressings.some(p => (p.label && p.label.toLowerCase().includes(q)) || (p.catalogNumber && p.catalogNumber.toLowerCase().includes(q))))
       );
 
       if (selectedEraHeaderFilter !== 'all') {
@@ -2331,13 +2402,15 @@
           const g = (r.genre || '').toLowerCase();
           const t = (r.title || '').toLowerCase();
           const a = (r.artist || '').toLowerCase();
+          const l = (r.label || '').toLowerCase();
           const target = selectedEraHeaderFilter.toLowerCase();
-          return g.includes(target) || t.includes(target) || a.includes(target);
+          return g.includes(target) || t.includes(target) || a.includes(target) || l.includes(target);
         });
       }
 
       renderRecordsGrid(filtered);
     }
+
 
     function filterCrateByEra(eraValue) {
       selectedEraHeaderFilter = eraValue;

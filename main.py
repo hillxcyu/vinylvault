@@ -407,11 +407,22 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
             if catno_clean and len(catno_clean) >= 3 and catno_clean == r_cat_clean:
                 matching_rec = r
                 break
+
+            for p in r.get("pressings", []):
+                p_cat = (p.get("catalogNumber") or "").lower().strip()
+                p_cat_clean = "".join(c for c in p_cat if c.isalnum())
+                if catno_clean and len(catno_clean) >= 3 and catno_clean == p_cat_clean:
+                    matching_rec = r
+                    break
+            if matching_rec:
+                break
+
             r_title = (r.get("title") or "").lower().strip()
             r_artist = (r.get("artist") or "").lower().strip()
             if title and artist and title == r_title and artist == r_artist:
                 matching_rec = r
                 break
+
 
     if is_in_crate or matching_rec:
         rec_title = matching_rec.get("title", "") if matching_rec else metadata.get("albumTitle", "")
