@@ -730,8 +730,12 @@ class GeminiVisionService:
                             "model": "gemini-3.1-flash-tts-preview",
                             "voice": "Aoede"
                         }
+                        if len(self._pronunciation_cache) >= 100:
+                            first_key = next(iter(self._pronunciation_cache))
+                            self._pronunciation_cache.pop(first_key, None)
                         self._pronunciation_cache[cache_key] = result
                         return result
+
         except Exception as e:
             logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
             return {"error": str(e)}

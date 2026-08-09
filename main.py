@@ -558,15 +558,18 @@ async def analyze_deskewed_endpoint(coverUrl: str):
     filename = os.path.basename(coverUrl)
 
     if coverUrl.startswith("http://") or coverUrl.startswith("https://"):
-        try:
+        def _fetch_url():
             req = urllib.request.Request(
                 coverUrl,
                 headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
             )
             with urllib.request.urlopen(req, timeout=12) as resp:
-                final_bytes = resp.read()
+                return resp.read()
+        try:
+            final_bytes = await asyncio.to_thread(_fetch_url)
         except Exception as e:
             logger.warning(f"Error downloading coverUrl from HTTP/GCS: {e}")
+
 
 
     if not final_bytes:

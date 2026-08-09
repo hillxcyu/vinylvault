@@ -148,7 +148,12 @@ class DiscogsService:
             is_cat_q = q_obj["is_catno"]
             try:
                 resp = requests.get(search_url, headers=self.headers, timeout=6)
+                if resp.status_code == 429:
+                    logger.warning("Discogs API rate limit (HTTP 429) hit; breaking early.")
+                    break
                 if resp.status_code == 200:
+
+
                     results = resp.json().get("results", [])
                     for r in results[:10]:
                         rel_id = r.get("id")

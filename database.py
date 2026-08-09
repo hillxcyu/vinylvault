@@ -1527,7 +1527,9 @@ class VinylDatabase:
 
 
     def save_records(self):
+        self._rebuild_record_map()
         self._save_json(RECORDS_FILE, self.records)
+
 
     def save_spins(self):
         self._save_json(SPINS_FILE, self.spins_log)
@@ -1545,11 +1547,17 @@ class VinylDatabase:
 
 
 
+    def _rebuild_record_map(self):
+        self._record_map = {r["id"]: r for r in self.records if r and isinstance(r, dict) and r.get("id")}
+
     def get_record_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
+        if hasattr(self, "_record_map") and self._record_map:
+            return self._record_map.get(record_id)
         for r in self.records:
-            if r["id"] == record_id:
+            if r.get("id") == record_id:
                 return r
         return None
+
 
     def add_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
         # Check for existing duplicate record by normalized title and artist

@@ -2430,7 +2430,15 @@
 
 
 
+    let filterCrateTimeout = null;
     function filterCrate() {
+      if (filterCrateTimeout) clearTimeout(filterCrateTimeout);
+      filterCrateTimeout = setTimeout(() => {
+        _execFilterCrate();
+      }, 150);
+    }
+
+    function _execFilterCrate() {
       const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
       let filtered = allRecords.filter(r => 
         (r.title && r.title.toLowerCase().includes(q)) || 
@@ -2456,6 +2464,7 @@
 
       renderRecordsGrid(filtered);
     }
+
 
 
     function filterCrateByEra(eraValue) {
