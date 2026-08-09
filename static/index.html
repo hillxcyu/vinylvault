@@ -422,8 +422,9 @@
           <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm flex-shrink-0">AI</div>
           <div class="flex-1 min-w-0">
             <div class="chat-text text-stone-300 leading-relaxed text-sm">
-              Ask me anything about the currently spinning album! I can share liner notes, band backstory, vinyl mastering details, or track breakdowns.
+              <p>Ask me anything about the currently spinning album! I can share liner notes, band backstory, vinyl mastering details, or track breakdowns.</p>
             </div>
+
             <div class="mt-3 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400">
               <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
               <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak message via Gemini 3.1 Flash TTS">
@@ -1736,6 +1737,27 @@
       }
     }
 
+    function addSpeakerButtonsToContainer(containerElement) {
+      if (!containerElement) return;
+      const paragraphs = containerElement.querySelectorAll('p, li');
+      paragraphs.forEach(p => {
+        if (p.querySelector('.paragraph-speaker-btn')) return;
+        const text = p.innerText.replace(/[\u25b2\u25bc\u25b6\u25c0]/g, '').trim();
+        if (text.length > 3) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'paragraph-speaker-btn inline-flex items-center justify-center text-stone-400 hover:text-amber-400 p-1 ml-1.5 transition-colors cursor-pointer align-middle border border-stone-800/80 hover:border-amber-500/40 rounded-md bg-stone-900/60 shadow-xs';
+          btn.title = 'Listen to this paragraph';
+          btn.innerHTML = '<i class="fa-solid fa-volume-high text-xs"></i>';
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            pronounceText(text, btn);
+          };
+          p.appendChild(btn);
+        }
+      });
+    }
+
     function renderListeningGuide(guide) {
       // 1. Render Backstory
       const bgEl = document.getElementById('guideBackground');
@@ -1744,10 +1766,18 @@
       } else {
         bgEl.innerText = guide.albumBackground || 'No background available.';
       }
+      addSpeakerButtonsToContainer(bgEl);
 
-      // 2. Render Pro-Tips
-      document.getElementById('guideVinylTip').innerText = guide.vinylTip || 'Enjoy the music!';
-      document.getElementById('guideMood').innerText = guide.recommendedMood || 'Warm audio atmosphere.';
+      // 2. Render Pro-Tips & Atmosphere
+      const vinylTipEl = document.getElementById('guideVinylTip');
+      vinylTipEl.innerText = guide.vinylTip || 'Enjoy the music!';
+      const tipParent = vinylTipEl.parentElement || vinylTipEl;
+      addSpeakerButtonsToContainer(tipParent);
+
+      const moodEl = document.getElementById('guideMood');
+      moodEl.innerText = guide.recommendedMood || 'Warm audio atmosphere.';
+      const moodParent = moodEl.parentElement || moodEl;
+      addSpeakerButtonsToContainer(moodParent);
 
       // 3. Render Full Tracklist with Speaker Buttons & Audiophile Highlights
       const tracklistContainer = document.getElementById('tracklistContainer');
@@ -1763,6 +1793,7 @@
           const hasHighlight = t.highlight || (t.whatToListenFor && t.whatToListenFor.length > 0);
           const notes = t.whatToListenFor || '';
           const safeTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const safeNotes = notes.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
           const item = document.createElement('div');
           item.className = 'bg-stone-900/80 rounded-xl border border-stone-800/80 overflow-hidden';
@@ -1785,11 +1816,13 @@
                     <i class="fa-solid fa-chevron-down text-xs transition-transform group-open:rotate-180"></i>
                   </div>
                 </summary>
-                <div class="px-4 pb-4 pt-2 text-sm text-stone-200 border-t border-stone-800/60 bg-stone-950/80 leading-relaxed">
-                  <span class="font-bold text-amber-400">What to listen for: </span> ${notes}
+                <div class="px-4 pb-4 pt-2 text-sm text-stone-200 border-t border-stone-800/60 bg-stone-950/80 leading-relaxed highlight-note-content">
+                  <p><span class="font-bold text-amber-400">What to listen for: </span> ${notes}</p>
                 </div>
               </details>
             `;
+            const noteDiv = item.querySelector('.highlight-note-content');
+            if (noteDiv) addSpeakerButtonsToContainer(noteDiv);
           } else {
             item.innerHTML = `
               <div class="p-3.5 font-medium text-sm text-stone-200 flex items-center justify-between">
@@ -1811,6 +1844,7 @@
         tracklistContainer.innerHTML = '<div class="text-xs text-stone-400">No tracklist found.</div>';
       }
     }
+
 
     function sendQuickChip(text) {
       document.getElementById('chatInput').value = text;
@@ -1964,6 +1998,9 @@
         }
 
         if (fullText) {
+          textEl.innerHTML = (typeof marked !== 'undefined') ? marked.parse(fullText) : fullText;
+          addSpeakerButtonsToContainer(textEl);
+
           const contentWrapper = aiBubble.querySelector('.flex-1');
           const speakerBar = document.createElement('div');
           speakerBar.className = 'mt-3 pt-2.5 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400 w-full';
@@ -1971,7 +2008,7 @@
             <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
             <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak full AI response via Gemini 3.1 Flash TTS">
               <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
-              <span>Speak</span>
+              <span>Speak Full Response</span>
             </button>
           `;
           if (contentWrapper) {
@@ -1980,6 +2017,7 @@
             aiBubble.appendChild(speakerBar);
           }
         }
+
       } catch (err) {
         textEl.innerText = 'Unable to connect to AI companion at this time.';
       }
@@ -3273,9 +3311,11 @@
 
 
     // Initial load
+    addSpeakerButtonsToContainer(document.getElementById('chatLog'));
     fetchCollection();
     fetchStats();
     fetchChronicle();
   </script>
+
 </body>
 </html>
