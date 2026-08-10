@@ -858,8 +858,9 @@ class FetchCoverRequest(BaseModel):
 
 @app.post("/api/fetch-official-cover")
 async def fetch_official_cover_endpoint(req: FetchCoverRequest):
-    img_url = discogs_service.fetch_official_cover(req.artist, req.title, cover_url=req.coverUrl)
+    img_url = await asyncio.to_thread(discogs_service.fetch_official_cover, req.artist, req.title, cover_url=req.coverUrl)
     return {"status": "success", "coverUrl": img_url}
+
 
 @app.post("/api/fetch-release-assets")
 async def fetch_release_assets_endpoint(req: FetchCoverRequest):
@@ -901,7 +902,8 @@ async def fetch_release_assets_endpoint(req: FetchCoverRequest):
                 country = req.country or r.get("country") or "Japan"
                 break
 
-    assets = discogs_service.fetch_all_release_assets(
+    assets = await asyncio.to_thread(
+        discogs_service.fetch_all_release_assets,
         req.artist,
         req.title,
         cover_url=target_cover,
@@ -923,7 +925,8 @@ async def get_release_assets_by_key(key: str, catno: Optional[str] = None, count
         artist = rec.get("artist", "")
         title = rec.get("title", "")
         catalog_number = catno or rec.get("catalogNumber", "")
-        assets = discogs_service.fetch_all_release_assets(
+        assets = await asyncio.to_thread(
+            discogs_service.fetch_all_release_assets,
             artist,
             title,
             cover_url=rec.get("coverUrl"),
@@ -935,8 +938,9 @@ async def get_release_assets_by_key(key: str, catno: Optional[str] = None, count
     parts = key.split("_")
     artist = parts[0] if parts else ""
     title = parts[1] if len(parts) > 1 else ""
-    assets = discogs_service.fetch_all_release_assets(artist, title, catalog_number=catno, country=country)
+    assets = await asyncio.to_thread(discogs_service.fetch_all_release_assets, artist, title, catalog_number=catno, country=country)
     return {"status": "success", "assets": assets}
+
 
 
 GUIDE_CACHE_DIR = os.path.join(os.path.dirname(__file__), "data_store", "listening_guides")
