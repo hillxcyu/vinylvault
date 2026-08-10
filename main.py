@@ -341,9 +341,46 @@ async def repair_covers_admin_endpoint():
 
 
 
+_daily_poster_cache = {}
+
+@app.get("/api/daily-poster")
+async def get_daily_poster(date_str: Optional[str] = None):
+    import hashlib
+    if not date_str:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    records = db.get_all_records()
+    if not records:
+        return {"error": "No records in vault"}
+
+    if date_str in _daily_poster_cache:
+        return _daily_poster_cache[date_str]
+
+    # Deterministic selection based on date string hash
+    hash_val = int(hashlib.md5(date_str.encode('utf-8')).hexdigest(), 16)
+    selected_index = hash_val % len(records)
+    selected_record = records[selected_index]
+
+    # Generate insights via Gemini in thread
+    insights = await asyncio.to_thread(gemini_service.generate_daily_poster_insights, selected_record)
+
+    result = {
+        "date": date_str,
+        "record": selected_record,
+        "headline": insights.get("headline", f"Featured Vinyl: {selected_record.get('title')}"),
+        "listeningHighlight": insights.get("listeningHighlight", ""),
+        "trivia": insights.get("trivia", ""),
+        "pairingNote": insights.get("pairingNote", "")
+    }
+
+    _daily_poster_cache[date_str] = result
+    return result
+
+
 @app.get("/api/wishlist")
 async def get_wishlist():
     return {"wishlist": db.get_wishlist()}
+
 
 @app.get("/api/chronicle")
 async def get_chronicle():

@@ -741,8 +741,64 @@ class GeminiVisionService:
             return {"error": str(e)}
         return {"error": "No audio parts returned from gemini-3.1-flash-tts-preview"}
 
+    def generate_daily_poster_insights(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generates curated listening highlights, interesting trivia, and pairing notes
+        for the Daily Poster feature using Gemini AI.
+        """
+        title = record_data.get("title", "Unknown Album")
+        artist = record_data.get("artist", "Unknown Artist")
+        year = record_data.get("releaseYear", "")
+        genre = record_data.get("genre", "Vinyl Record")
+        catalog = record_data.get("catalogNumber", "")
 
+        prompt = f"""
+        You are an expert vinyl curator and classical/audiophile musicologist for "Vinyl Vault".
+        Generate an elegant, engaging Daily Record Showcase Poster card for this album:
+        Title: {title}
+        Artist: {artist}
+        Year: {year}
+        Genre: {genre}
+        Catalog Number: {catalog}
+
+        Provide a JSON response with the following keys:
+        1. "headline": A poetic, catchy 4-8 word tag line for today's poster (e.g., "A Timeless Masterpiece of Baroque Elegance").
+        2. "listeningHighlight": 2 concise sentences describing why this album is essential today, highlighting its acoustic timbre, key movement, or emotional warmth.
+        3. "trivia": 2 fascinating sentences sharing a lesser-known historical fact, master tape context, or pressing rarity detail.
+        4. "pairingNote": A cozy 1-sentence atmosphere or beverage pairing recommendation.
+
+        Respond strictly in valid JSON format without markdown code blocks.
+        """
+
+        if not self.client:
+            return {
+                "headline": f"Featured Vinyl Highlight: {title}",
+                "listeningHighlight": f"An exquisite recording of {title} by {artist}. Immerse yourself in the warm analog soundstage and expressive dynamics.",
+                "trivia": f"First pressed in {year or 'the golden analog era'}, this release remains a cherished piece in audiophile pressings.",
+                "pairingNote": "Best enjoyed with a warm cup of espresso or tea during an evening listening session."
+            }
+
+        try:
+            from google.genai import types
+            response = self.client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
+            )
+            data = json.loads(response.text)
+            return data
+        except Exception as e:
+            logger.warning(f"Gemini daily poster insights fallback: {e}")
+            return {
+                "headline": f"Featured Vault Pick: {title}",
+                "listeningHighlight": f"An outstanding performance of {title} by {artist}. Experience its full dynamic range and analog warmth on vinyl.",
+                "trivia": f"Catalog number {catalog or 'N/A'} is renowned among collectors for its distinct soundstage engineering.",
+                "pairingNote": "Perfect for a quiet ambient listening session."
+            }
 
 
 gemini_service = GeminiVisionService()
+
 
