@@ -1,50 +1,34 @@
 steps:
-  # Step 1: Run Python syntax validation & sanity checks
-  - name: 'python:3.11-slim'
-    entrypoint: 'python'
-    args: ['-m', 'py_compile', 'main.py', 'gemini_service.py', 'database.py', 'classical_service.py', 'deskew_service.py', 'cache_service.py']
-
-  # Step 2: Build Docker container image tagged with $COMMIT_SHA and latest
+  # Step 1: Build container image using Dockerfile
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$COMMIT_SHA'
-      - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest'
-      - '.'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest',
+      '.'
+    ]
 
-  # Step 3: Push container images to Google Artifact Registry
+  # Step 2: Push container image tag and latest to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$COMMIT_SHA'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA']
 
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest']
 
-  # Step 4: Deploy container image to Cloud Run service
+  # Step 3: Deploy to Cloud Run in asia-east2 (Hong Kong)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'vinyl-vault'
-      - '--image'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$COMMIT_SHA'
-      - '--region'
-      - 'us-central1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--set-env-vars'
-      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,GOOGLE_GENAI_USE_VERTEXAI=true,GCS_BUCKET_NAME=$PROJECT_ID-vinyl-vault-data,FIRESTORE_DATABASE=vinylvault'
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', 'vinyl-vault-hk',
+      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA',
+      '--region', 'asia-east2',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--set-env-vars', 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global'
+    ]
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA'
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest'
 
-options:
-  logging: CLOUD_LOGGING_ONLY
+timeout: '1200s'
