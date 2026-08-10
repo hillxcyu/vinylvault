@@ -2,7 +2,6 @@ substitutions:
   _SHORT_SHA: 'latest'
 
 options:
-  machineType: 'N1_HIGHCPU_8'
   logging: 'CLOUD_LOGGING_ONLY'
 
 steps:
@@ -14,7 +13,7 @@ steps:
       - |
         docker pull us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest || true
 
-  # Step 2: Fast container build leveraging layer cache and 8 high-CPU cores
+  # Step 2: Container build leveraging Docker layer caching
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
