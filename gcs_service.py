@@ -7,8 +7,9 @@ logger = logging.getLogger("vinyl_vault")
 class GCSStorageManager:
     def __init__(self):
         self.bucket_name = os.environ.get(
-            "GCS_BUCKET_NAME", "universal-trail-492014-n5-vinyl-vault-data"
+            "GCS_BUCKET_NAME", "universal-trail-492014-n5-vinyl-vault-hk-data"
         )
+
         self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
         self.client = None
         self.bucket = None
