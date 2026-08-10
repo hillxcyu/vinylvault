@@ -3801,23 +3801,29 @@
       const feed = document.getElementById('journalEntriesFeed');
       if (!feed) return;
 
-      if (!append) feed.innerHTML = '';
+      if (!append) {
+        feed.innerHTML = '';
+      }
+
+      // Group incoming spins by dateKey
+      const groups = [];
+      let currentGroup = null;
 
       spins.forEach(spin => {
-        const title = spin.title || 'Unknown Title';
-        const artist = spin.artist || 'Unknown Artist';
-        const coverUrl = spin.coverUrl || SVG_PLACEHOLDER;
-        const catNo = spin.catalogNumber || '';
-        
-        let formattedDate = 'Recently Spun';
-        if (spin.timestamp) {
+        let dateKey = 'Recently Spun';
+        let timeStr = '';
+
+        const ts = spin.timestamp || spin.spunAt || spin.time;
+        if (ts) {
           try {
-            const d = new Date(spin.timestamp);
+            const d = new Date(ts);
             if (!isNaN(d.getTime())) {
-              formattedDate = d.toLocaleString('en-US', {
+              dateKey = d.toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric',
+                year: 'numeric'
+              });
+              timeStr = d.toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit'
               });
@@ -3825,38 +3831,79 @@
           } catch(e) {}
         }
 
-        const card = document.createElement('div');
-        card.className = 'apple-card p-4 rounded-2xl border border-stone-800/80 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group shadow-md';
-        card.innerHTML = `
-          <div class="flex items-center gap-3.5 min-w-0 flex-1">
-            <div class="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-stone-700/60 flex-shrink-0 relative group-hover:scale-105 transition-transform">
-              <img src="${coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover" />
-            </div>
-            <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <h4 class="text-sm sm:text-base font-extrabold text-white truncate group-hover:text-amber-400 transition-colors">${title}</h4>
-                ${catNo ? `<span class="px-2 py-0.5 rounded bg-stone-900 border border-stone-800 text-[10px] font-mono font-bold text-amber-400">${catNo}</span>` : ''}
-              </div>
-              <p class="text-xs text-stone-300 font-semibold truncate">${artist}</p>
-              <p class="text-[11px] text-stone-400 flex items-center gap-1.5 font-mono">
-                <i class="fa-solid fa-clock text-amber-500 text-[10px]"></i>
-                <span>${formattedDate}</span>
-              </p>
-            </div>
-          </div>
+        if (!currentGroup || currentGroup.dateKey !== dateKey) {
+          currentGroup = { dateKey, items: [] };
+          groups.push(currentGroup);
+        }
+        currentGroup.items.push({ ...spin, timeStr });
+      });
 
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-stone-800/60 pt-2 sm:pt-0">
-            ${spin.recordId ? `
-              <button onclick="spinRecord('${spin.recordId}'); switchTab('nowSpinning');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-full shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
-                <i class="fa-solid fa-circle-play text-xs"></i>
-                <span>Spin Again</span>
-              </button>
-            ` : ''}
-          </div>
-        `;
-        feed.appendChild(card);
+      groups.forEach(group => {
+        let groupBlock = null;
+        let listContainer = null;
+
+        if (append && feed.lastElementChild) {
+          const lastKey = feed.lastElementChild.getAttribute('data-date-key');
+          if (lastKey === group.dateKey) {
+            groupBlock = feed.lastElementChild;
+            listContainer = groupBlock.querySelector('.date-spins-list');
+          }
+        }
+
+        if (!groupBlock) {
+          groupBlock = document.createElement('div');
+          groupBlock.setAttribute('data-date-key', group.dateKey);
+          groupBlock.className = 'space-y-3 pt-2';
+
+          groupBlock.innerHTML = `
+            <div class="flex items-center gap-2 pb-1 border-b border-stone-800/80">
+              <i class="fa-solid fa-calendar-day text-amber-500 text-xs"></i>
+              <h4 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-amber-400 font-mono">${group.dateKey}</h4>
+            </div>
+            <div class="date-spins-list pl-2 sm:pl-4 border-l-2 border-amber-500/30 space-y-3 ml-1 sm:ml-2"></div>
+          `;
+          feed.appendChild(groupBlock);
+          listContainer = groupBlock.querySelector('.date-spins-list');
+        }
+
+        group.items.forEach(spin => {
+          const title = spin.title || 'Unknown Title';
+          const artist = spin.artist || 'Unknown Artist';
+          const coverUrl = spin.coverUrl || SVG_PLACEHOLDER;
+          const catNo = spin.catalogNumber || '';
+
+          const card = document.createElement('div');
+          card.className = 'apple-card p-3.5 sm:p-4 rounded-2xl border border-stone-800/80 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group shadow-md min-w-0 max-w-full';
+          
+          card.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0 max-w-full flex-1">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-stone-900 border border-stone-700/60 flex-shrink-0 relative group-hover:scale-105 transition-transform">
+                <img src="${coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover" />
+              </div>
+              <div class="min-w-0 max-w-full flex-1 space-y-0.5">
+                <h5 class="text-sm sm:text-base font-extrabold text-white break-words group-hover:text-amber-400 transition-colors leading-snug">${title}</h5>
+                <div class="flex flex-wrap items-center gap-1.5 text-xs text-stone-300 font-semibold break-words">
+                  <span>${artist}</span>
+                  ${catNo ? `<span class="px-1.5 py-0.5 rounded bg-stone-900/90 border border-stone-800 text-[10px] font-mono font-bold text-amber-400 break-all">${catNo}</span>` : ''}
+                </div>
+                ${spin.timeStr ? `<p class="text-[10px] text-stone-400 font-mono flex items-center gap-1 pt-0.5"><i class="fa-solid fa-clock text-amber-500/80 text-[9px]"></i> ${spin.timeStr}</p>` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-stone-800/50 pt-2 sm:pt-0 flex-shrink-0">
+              ${spin.recordId ? `
+                <button onclick="spinRecord('${spin.recordId}'); switchTab('nowSpinning');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-full shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer flex-shrink-0">
+                  <i class="fa-solid fa-circle-play text-xs"></i>
+                  <span>Spin Again</span>
+                </button>
+              ` : ''}
+            </div>
+          `;
+          listContainer.appendChild(card);
+        });
       });
     }
+
 
     window.addEventListener('scroll', () => {
       if (activeTab !== 'landing') return;
