@@ -1161,17 +1161,18 @@ class FirestoreManager:
                 print(f"GCP Firestore client init warning (using local/GCS fallback): {err}")
                 self.db = None
 
-    def get_records(self) -> Optional[List[Dict[str, Any]]]:
+    def get_records(self, timeout: float = 3.0) -> Optional[List[Dict[str, Any]]]:
         if not self.db:
             return None
         try:
-            docs = self.db.collection("records").get(timeout=10.0)
+            docs = self.db.collection("records").get(timeout=timeout)
             records = [d.to_dict() for d in docs if d.exists and d.to_dict()]
             print(f"Loaded {len(records)} records from GCP Firestore.")
             return records
         except Exception as e:
             print(f"Firestore get_records warning/timeout (using local fallback): {e}")
             return None
+
 
 
 
@@ -1374,9 +1375,11 @@ class VinylDatabase:
                 self.save_records()
                 print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
             else:
-                print("Firestore collection is empty. No automatic reseeding. Ready for user records.")
-                self.records = []
-                self.save_records()
+                print("Firestore collection returned 0 records. Preserving local disk records.")
+                if not self.records:
+                    self.records = []
+                    self.save_records()
+
         except Exception as e:
             print(f"Background Firestore sync warning: {e}")
 
