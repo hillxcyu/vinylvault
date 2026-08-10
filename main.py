@@ -406,6 +406,46 @@ async def get_stats():
         "genreBreakdown": genres
     }
 
+@app.get("/api/spins")
+async def get_spins_endpoint(limit: int = 10, offset: int = 0):
+    spins = db.get_spins_log() or []
+    
+    def parse_time(s):
+        ts = s.get("timestamp") or s.get("spunAt") or s.get("time") or ""
+        return str(ts)
+
+    sorted_spins = sorted(spins, key=parse_time, reverse=True)
+    
+    if not sorted_spins:
+        records = db.get_all_records()
+        fallback_spins = []
+        for r in records:
+            if r.get("spinsCount", 0) > 0 or r.get("lastSpunAt"):
+                fallback_spins.append({
+                    "id": f"spin_{r.get('id')}",
+                    "recordId": r.get("id"),
+                    "title": r.get("title", "Unknown Title"),
+                    "artist": r.get("artist", "Unknown Artist"),
+                    "coverUrl": r.get("coverUrl") or "",
+                    "timestamp": r.get("lastSpunAt") or "2026-08-01T12:00:00Z",
+                    "catalogNumber": r.get("catalogNumber") or "",
+                    "notes": f"Spun {r.get('spinsCount', 1)} time(s) on turntable."
+                })
+        sorted_spins = sorted(fallback_spins, key=parse_time, reverse=True)
+
+    paginated_spins = sorted_spins[offset : offset + limit]
+    has_more = (offset + limit) < len(sorted_spins)
+    
+    return {
+        "status": "success",
+        "spins": paginated_spins,
+        "total": len(sorted_spins),
+        "offset": offset,
+        "limit": limit,
+        "hasMore": has_more
+    }
+
+
 def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
     if crate_records is None:
         crate_records = db.get_all_records()

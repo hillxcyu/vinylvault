@@ -106,9 +106,6 @@
 
         <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
         <div class="hidden sm:flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
-          <button id="tabBtnLanding" onclick="switchTab('landing')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all bg-amber-500 text-black shadow-md flex items-center gap-1.5 active-bounce">
-            <i class="fa-solid fa-star text-black text-xs"></i> <span>Daily Showcase</span>
-          </button>
           <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
             <i class="fa-solid fa-circle-play"></i> <span>Now Spinning</span>
           </button>
@@ -120,6 +117,7 @@
             <i class="fa-solid fa-hourglass-half text-amber-500"></i> Chronicle
           </button>
         </div>
+
       </div>
 
     </div>
@@ -244,6 +242,34 @@
         </div>
       </section>
 
+      <!-- LISTENING HISTORY JOURNAL (REVERSE CHRONOLOGICAL FEED) -->
+      <section id="listeningJournalSection" class="glass-panel p-6 rounded-3xl space-y-6 border border-stone-800/80 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-stone-800/80 pb-4">
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-2.5">
+              <i class="fa-solid fa-book-open text-amber-500"></i> Listening History Journal
+            </h3>
+            <p class="text-xs text-stone-400 mt-1">Timeline log of vinyl sessions & spin history (Newest first).</p>
+          </div>
+          <span id="journalTotalBadge" class="px-3.5 py-1.5 bg-amber-500/10 text-amber-400 font-mono text-xs font-bold rounded-full border border-amber-500/20 shadow-sm">
+            0 Spins Logged
+          </span>
+        </div>
+
+        <!-- Journal Entries Timeline Feed -->
+        <div id="journalEntriesFeed" class="space-y-4">
+          <!-- Dynamically populated spin entries -->
+        </div>
+
+        <!-- Scroll Loading Sentinel & Status -->
+        <div id="journalLoadingSentinel" class="py-6 flex flex-col items-center justify-center space-y-2 text-stone-400 text-xs">
+          <div id="journalSpinner" class="hidden flex items-center gap-2 text-amber-400 font-semibold">
+            <i class="fa-solid fa-circle-notch animate-spin text-sm"></i> Loading older spin entries...
+          </div>
+          <p id="journalEndMsg" class="hidden text-stone-500 italic">End of Listening History Journal</p>
+        </div>
+      </section>
+
       <!-- Quick Action Cards Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div onclick="switchTab('crate')" class="apple-card p-5 rounded-2xl border border-stone-800/80 cursor-pointer space-y-2 hover:border-amber-500/40 group transition-all">
@@ -271,6 +297,7 @@
         </div>
       </div>
     </div>
+
 
 
     <!-- TAB 1: NOW SPINNING VIEW -->
@@ -3703,12 +3730,152 @@
     }
 
 
+    let journalOffset = 0;
+    const journalLimit = 8;
+    let journalHasMore = true;
+    let journalLoading = false;
+
+    async function fetchListeningJournal(isNextPage = false) {
+      if (journalLoading) return;
+      if (isNextPage && !journalHasMore) return;
+
+      journalLoading = true;
+      const spinner = document.getElementById('journalSpinner');
+      const endMsg = document.getElementById('journalEndMsg');
+      if (spinner) spinner.classList.remove('hidden');
+
+      if (!isNextPage) {
+        journalOffset = 0;
+        journalHasMore = true;
+        if (endMsg) endMsg.classList.add('hidden');
+        const feed = document.getElementById('journalEntriesFeed');
+        if (feed) feed.innerHTML = '';
+      }
+
+      try {
+        const res = await fetch(`/api/spins?limit=${journalLimit}&offset=${journalOffset}`);
+        const data = await res.json();
+
+        if (spinner) spinner.classList.add('hidden');
+
+        if (data && data.status === 'success' && Array.isArray(data.spins)) {
+          const feed = document.getElementById('journalEntriesFeed');
+          const badge = document.getElementById('journalTotalBadge');
+          if (badge && typeof data.total === 'number') {
+            badge.innerText = `${data.total} Spin(s) Logged`;
+          }
+
+          if (data.spins.length === 0 && journalOffset === 0) {
+            if (feed) {
+              feed.innerHTML = `
+                <div class="text-center py-10 text-stone-400 space-y-2">
+                  <i class="fa-solid fa-record-vinyl text-3xl text-stone-600"></i>
+                  <p class="text-sm font-semibold">No vinyl spins logged in history yet.</p>
+                  <p class="text-xs text-stone-500">Spin an album from your crate to start your listening journal!</p>
+                </div>
+              `;
+            }
+            journalHasMore = false;
+            if (endMsg) endMsg.classList.remove('hidden');
+            journalLoading = false;
+            return;
+          }
+
+          renderJournalEntries(data.spins, isNextPage);
+          journalOffset += data.spins.length;
+          journalHasMore = data.hasMore;
+
+          if (!journalHasMore && endMsg) {
+            endMsg.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching listening journal spins:', err);
+        if (spinner) spinner.classList.add('hidden');
+      } finally {
+        journalLoading = false;
+      }
+    }
+
+    function renderJournalEntries(spins, append = false) {
+      const feed = document.getElementById('journalEntriesFeed');
+      if (!feed) return;
+
+      if (!append) feed.innerHTML = '';
+
+      spins.forEach(spin => {
+        const title = spin.title || 'Unknown Title';
+        const artist = spin.artist || 'Unknown Artist';
+        const coverUrl = spin.coverUrl || SVG_PLACEHOLDER;
+        const catNo = spin.catalogNumber || '';
+        
+        let formattedDate = 'Recently Spun';
+        if (spin.timestamp) {
+          try {
+            const d = new Date(spin.timestamp);
+            if (!isNaN(d.getTime())) {
+              formattedDate = d.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            }
+          } catch(e) {}
+        }
+
+        const card = document.createElement('div');
+        card.className = 'apple-card p-4 rounded-2xl border border-stone-800/80 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group shadow-md';
+        card.innerHTML = `
+          <div class="flex items-center gap-3.5 min-w-0 flex-1">
+            <div class="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-stone-700/60 flex-shrink-0 relative group-hover:scale-105 transition-transform">
+              <img src="${coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1 space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h4 class="text-sm sm:text-base font-extrabold text-white truncate group-hover:text-amber-400 transition-colors">${title}</h4>
+                ${catNo ? `<span class="px-2 py-0.5 rounded bg-stone-900 border border-stone-800 text-[10px] font-mono font-bold text-amber-400">${catNo}</span>` : ''}
+              </div>
+              <p class="text-xs text-stone-300 font-semibold truncate">${artist}</p>
+              <p class="text-[11px] text-stone-400 flex items-center gap-1.5 font-mono">
+                <i class="fa-solid fa-clock text-amber-500 text-[10px]"></i>
+                <span>${formattedDate}</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-stone-800/60 pt-2 sm:pt-0">
+            ${spin.recordId ? `
+              <button onclick="spinRecord('${spin.recordId}'); switchTab('nowSpinning');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-full shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-circle-play text-xs"></i>
+                <span>Spin Again</span>
+              </button>
+            ` : ''}
+          </div>
+        `;
+        feed.appendChild(card);
+      });
+    }
+
+    window.addEventListener('scroll', () => {
+      if (activeTab !== 'landing') return;
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const bodyHeight = document.documentElement.scrollHeight;
+      if (bodyHeight - scrollPosition < 350) {
+        fetchListeningJournal(true);
+      }
+    });
+
     // Initial load
     addSpeakerButtonsToContainer(document.getElementById('chatLog'));
+    switchTab('landing');
     fetchCollection();
     fetchDailyPoster();
+    fetchListeningJournal();
     fetchStats();
     fetchChronicle();
+
   </script>
 
 </body>
