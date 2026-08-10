@@ -23,7 +23,7 @@ steps:
       '--region', 'asia-east2',
       '--platform', 'managed',
       '--allow-unauthenticated',
-      '--set-env-vars', 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global'
+      '--set-env-vars', 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,FIRESTORE_DATABASE_ID=vinylvault-hk'
     ]
 
 images:
