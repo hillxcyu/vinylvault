@@ -1142,9 +1142,10 @@ NOW_SPINNING_FILE = os.path.join(DATA_DIR, "now_spinning.json")
 class FirestoreManager:
     def __init__(self):
         self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
-        self.database_id = os.environ.get("FIRESTORE_DATABASE", "vinylvault")
+        self.database_id = os.environ.get("FIRESTORE_DATABASE_ID") or os.environ.get("FIRESTORE_DATABASE", "vinylvault-hk")
         self.db = None
         self._init_firestore()
+
 
     def _init_firestore(self):
         try:
