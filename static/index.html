@@ -2440,16 +2440,30 @@
 
     function _execFilterCrate() {
       const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-      let filtered = allRecords.filter(r => 
-        (r.title && r.title.toLowerCase().includes(q)) || 
-        (r.artist && r.artist.toLowerCase().includes(q)) || 
-        (r.genre && r.genre.toLowerCase().includes(q)) ||
-        (r.label && r.label.toLowerCase().includes(q)) ||
-        (r.catalogNumber && r.catalogNumber.toLowerCase().includes(q)) ||
-        (r.country && r.country.toLowerCase().includes(q)) ||
-        (r.releaseYear && String(r.releaseYear).toLowerCase().includes(q)) ||
-        (r.pressings && r.pressings.some(p => (p.label && p.label.toLowerCase().includes(q)) || (p.catalogNumber && p.catalogNumber.toLowerCase().includes(q))))
-      );
+      const cleanQ = q.replace(/[^a-z0-9]/g, '');
+
+      let filtered = allRecords.filter(r => {
+        const cat = (r.catalogNumber || '').toLowerCase();
+        const cleanCat = cat.replace(/[^a-z0-9]/g, '');
+
+        const matchesCat = (cat && cat.includes(q)) ||
+          (cleanQ.length >= 2 && cleanCat && cleanCat.includes(cleanQ)) ||
+          (r.pressings && r.pressings.some(p => {
+            const pCat = (p.catalogNumber || '').toLowerCase();
+            const cleanPCat = pCat.replace(/[^a-z0-9]/g, '');
+            return (pCat && pCat.includes(q)) || (cleanQ.length >= 2 && cleanPCat && cleanPCat.includes(cleanQ));
+          }));
+
+        return matchesCat ||
+          (r.title && r.title.toLowerCase().includes(q)) || 
+          (r.artist && r.artist.toLowerCase().includes(q)) || 
+          (r.genre && r.genre.toLowerCase().includes(q)) ||
+          (r.label && r.label.toLowerCase().includes(q)) ||
+          (r.country && r.country.toLowerCase().includes(q)) ||
+          (r.releaseYear && String(r.releaseYear).toLowerCase().includes(q)) ||
+          (r.pressings && r.pressings.some(p => p.label && p.label.toLowerCase().includes(q)));
+      });
+
 
       if (selectedEraHeaderFilter !== 'all') {
         filtered = filtered.filter(r => {
