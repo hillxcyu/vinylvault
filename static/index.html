@@ -2440,29 +2440,39 @@
 
     function _execFilterCrate() {
       const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-      const cleanQ = q.replace(/[^a-z0-9]/g, '');
+      const terms = q.split(/\s+/).filter(Boolean);
 
       let filtered = allRecords.filter(r => {
-        const cat = (r.catalogNumber || '').toLowerCase();
-        const cleanCat = cat.replace(/[^a-z0-9]/g, '');
+        if (terms.length === 0) return true;
 
-        const matchesCat = (cat && cat.includes(q)) ||
-          (cleanQ.length >= 2 && cleanCat && cleanCat.includes(cleanQ)) ||
-          (r.pressings && r.pressings.some(p => {
-            const pCat = (p.catalogNumber || '').toLowerCase();
-            const cleanPCat = pCat.replace(/[^a-z0-9]/g, '');
-            return (pCat && pCat.includes(q)) || (cleanQ.length >= 2 && cleanPCat && cleanPCat.includes(cleanQ));
-          }));
+        return terms.every(term => {
+          const cleanTerm = term.replace(/[^a-z0-9]/g, '');
 
-        return matchesCat ||
-          (r.title && r.title.toLowerCase().includes(q)) || 
-          (r.artist && r.artist.toLowerCase().includes(q)) || 
-          (r.genre && r.genre.toLowerCase().includes(q)) ||
-          (r.label && r.label.toLowerCase().includes(q)) ||
-          (r.country && r.country.toLowerCase().includes(q)) ||
-          (r.releaseYear && String(r.releaseYear).toLowerCase().includes(q)) ||
-          (r.pressings && r.pressings.some(p => p.label && p.label.toLowerCase().includes(q)));
+          const cat = (r.catalogNumber || '').toLowerCase();
+          const cleanCat = cat.replace(/[^a-z0-9]/g, '');
+
+          const matchesCat = (cat && cat.includes(term)) ||
+            (cleanTerm.length >= 2 && cleanCat && cleanCat.includes(cleanTerm)) ||
+            (r.pressings && r.pressings.some(p => {
+              const pCat = (p.catalogNumber || '').toLowerCase();
+              const cleanPCat = pCat.replace(/[^a-z0-9]/g, '');
+              return (pCat && pCat.includes(term)) || (cleanTerm.length >= 2 && cleanPCat && cleanPCat.includes(cleanTerm));
+            }));
+
+          if (matchesCat) return true;
+
+          return (
+            (r.title && r.title.toLowerCase().includes(term)) || 
+            (r.artist && r.artist.toLowerCase().includes(term)) || 
+            (r.genre && r.genre.toLowerCase().includes(term)) ||
+            (r.label && r.label.toLowerCase().includes(term)) ||
+            (r.country && r.country.toLowerCase().includes(term)) ||
+            (r.releaseYear && String(r.releaseYear).toLowerCase().includes(term)) ||
+            (r.pressings && r.pressings.some(p => p.label && p.label.toLowerCase().includes(term)))
+          );
+        });
       });
+
 
 
       if (selectedEraHeaderFilter !== 'all') {
