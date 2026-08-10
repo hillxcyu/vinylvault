@@ -1,26 +1,25 @@
+substitutions:
+  _SHORT_SHA: 'latest'
+
 steps:
   # Step 1: Build container image using Dockerfile
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA',
-      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}',
       '.'
     ]
 
-  # Step 2: Push container image tag and latest to Artifact Registry
+  # Step 2: Push container image tag to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA']
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest']
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}']
 
   # Step 3: Deploy to Cloud Run in asia-east2 (Hong Kong)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args: [
       'run', 'deploy', 'vinyl-vault-hk',
-      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA',
+      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}',
       '--region', 'asia-east2',
       '--platform', 'managed',
       '--allow-unauthenticated',
@@ -28,7 +27,6 @@ steps:
     ]
 
 images:
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:$SHORT_SHA'
-  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}'
 
 timeout: '1200s'
