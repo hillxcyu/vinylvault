@@ -1,20 +1,37 @@
 substitutions:
   _SHORT_SHA: 'latest'
 
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: 'CLOUD_LOGGING_ONLY'
+
 steps:
-  # Step 1: Build container image using Dockerfile
+  # Step 1: Pull previous image for Docker layer caching
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker pull us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest || true
+
+  # Step 2: Fast container build leveraging layer cache and 8 high-CPU cores
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
+      '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest',
       '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest',
       '.'
     ]
 
-  # Step 2: Push container image tag to Artifact Registry
+  # Step 3: Push container images to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}']
 
-  # Step 3: Deploy to Cloud Run in asia-east2 (Hong Kong)
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest']
+
+  # Step 4: Deploy to Cloud Run in asia-east2 (Hong Kong)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args: [
@@ -28,5 +45,6 @@ steps:
 
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest'
 
-timeout: '1200s'
+timeout: '600s'
