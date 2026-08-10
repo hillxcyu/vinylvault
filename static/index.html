@@ -73,7 +73,7 @@
   </div>
 
   <!-- Minimalistic Pinned Navigation Bar with Era Dropdown -->
-  <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/85 backdrop-blur-2xl px-4 py-2.5 mb-6">
+  <nav class="sticky top-0 z-40 glass-panel border-b border-stone-800/80 bg-stone-950/85 backdrop-blur-2xl px-4 pb-2.5 mb-6" style="padding-top: calc(0.625rem + env(safe-area-inset-top, 0px));">
 
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
       <!-- Logo & Title -->
@@ -88,7 +88,7 @@
         </div>
       </div>
 
-      <!-- Header Controls: Era Dropdown, AI Chat & Desktop Navigation Tabs -->
+      <!-- Header Controls: Era Dropdown & Desktop Navigation Tabs -->
       <div class="flex items-center gap-2">
         <!-- Era Dropdown Selection Menu -->
         <div class="relative flex items-center">
@@ -104,15 +104,9 @@
           <i class="fa-solid fa-chevron-down text-[10px] text-amber-400 absolute right-2.5 pointer-events-none"></i>
         </div>
 
-        <!-- AI Chat Header Button (Icon Only) -->
-        <button onclick="openChatModal()" class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 rounded-full text-sm font-bold transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95" title="Open AI Vinyl Companion Chat">
-          <i class="fa-solid fa-comments"></i>
-        </button>
-
-
-
         <!-- Navigation Tabs (Hidden on Mobile, Visible on Tablet/Desktop) -->
         <div class="hidden sm:flex items-center bg-stone-900/90 p-1 rounded-full border border-stone-800/90 shadow-inner">
+
           <button id="tabBtnNowSpinning" onclick="switchTab('nowSpinning')" class="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all text-stone-400 hover:text-white flex items-center gap-2 active-bounce">
             <i class="fa-solid fa-circle-play"></i> <span>Now Spinning</span>
           </button>
