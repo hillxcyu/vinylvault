@@ -1444,8 +1444,11 @@
       const navDock = document.getElementById('floatingMobileNavDock');
       if (navDock) navDock.classList.remove('hidden');
       const chatFab = document.getElementById('chatToggleFab');
-      if (chatFab) chatFab.classList.remove('hidden');
+      if (chatFab && window.innerWidth >= 640) {
+        chatFab.classList.remove('hidden');
+      }
     }
+
 
 
     function openLightbox(imgUrl, captionText) {
