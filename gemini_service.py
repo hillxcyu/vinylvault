@@ -120,8 +120,9 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumCornerSegmentation,
-                thinking_config=types.ThinkingConfig(thinking_budget=0)
+                thinking_config=types.ThinkingConfig(thinking_level="minimal")
             )
+
 
 
             response = self.client.models.generate_content(
