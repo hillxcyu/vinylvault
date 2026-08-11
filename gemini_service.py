@@ -222,10 +222,41 @@ class GeminiVisionService:
 
                 )
 
+                from pydantic import BaseModel, Field
+
+                class TracklistSchema(BaseModel):
+                    position: Optional[str] = Field(default="A1", description="Track position e.g. A1, B1")
+                    title: str = Field(description="Track title or movement")
+                    duration: Optional[str] = Field(default="", description="Duration e.g. 5:24")
+                    highlight: Optional[bool] = Field(default=False, description="Is key track highlight")
+                    whatToListenFor: Optional[str] = Field(default="", description="Detail to listen for")
+
+                class ListeningGuideSchema(BaseModel):
+                    albumBackground: str = Field(description="Historical backstory, composition origin, and pressing highlights")
+                    tracklist: List[TracklistSchema] = Field(default_factory=list, description="Array of track items")
+                    vinylTip: Optional[str] = Field(default="", description="Audiophile tip for this pressing")
+                    recommendedMood: Optional[str] = Field(default="", description="Recommended listening atmosphere")
+
+                class AlbumScanMetadataSchema(BaseModel):
+                    artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
+                    albumTitle: str = Field(description="Full album title or composer/work title")
+                    catalogNumber: Optional[str] = Field(default="", description="Exact catalog number e.g. VIC-28001")
+                    label: Optional[str] = Field(default="", description="Exact record label e.g. Deutsche Grammophon")
+                    country: Optional[str] = Field(default="Japan", description="Release country")
+                    releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
+                    genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
+                    confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
+                    isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
+                    crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
+                    crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
+                    mask: Optional[List[List[int]]] = Field(default=None, description="4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000")
+                    listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
+
                 config = types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AlbumScanMetadataSchema,
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
-
 
                 response = self.client.models.generate_content(
                     model="gemini-3.6-flash",
@@ -235,7 +266,6 @@ class GeminiVisionService:
                     ],
                     config=config
                 )
-
 
                 text = response.text or ""
                 if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
@@ -254,20 +284,20 @@ class GeminiVisionService:
                 if text.endswith("```"):
                     text = text[:-3]
 
-                
                 try:
                     parsed = json.loads(text.strip())
-                except Exception:
+                except Exception as err:
                     json_match = re.search(r'\{.*\}', text, re.DOTALL)
                     if json_match:
                         parsed = json.loads(json_match.group(0))
                     else:
-                        raise
+                        raise err
 
                 return parsed
             except Exception as e:
                 logger.error(f"Error in Gemini Vision API call (gemini-3.6-flash): {e}")
                 raise RuntimeError(f"Gemini Vision API error (gemini-3.6-flash): {e}")
+
 
         raise RuntimeError("Gemini AI client is not initialized")
 
