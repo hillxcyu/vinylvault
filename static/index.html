@@ -596,11 +596,12 @@
   </footer>
 
   <!-- Distraction-Free Full-Screen AI Chat Modal Overlay -->
-  <div id="chatModal" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl hidden flex flex-col p-0 md:p-6">
-    <div class="w-full h-full md:max-w-4xl mx-auto flex flex-col bg-stone-950 md:glass-panel rounded-none md:rounded-2xl p-3 sm:p-4 md:p-6 border-0 md:border md:border-stone-800 shadow-none md:shadow-2xl relative">
+  <div id="chatModal" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl hidden flex flex-col p-0 md:p-6" style="padding-top: max(2.5rem, env(safe-area-inset-top, 36px)); padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 20px)); padding-left: max(0.5rem, env(safe-area-inset-left, 0px)); padding-right: max(0.5rem, env(safe-area-inset-right, 0px));">
+    <div class="w-full h-full md:max-w-4xl mx-auto flex flex-col bg-stone-950 md:glass-panel rounded-none md:rounded-2xl p-4 sm:p-5 md:p-6 border-0 md:border md:border-stone-800 shadow-none md:shadow-2xl relative">
       
       <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-stone-800/80 pb-3 mb-3 md:pb-4 md:mb-4 flex-shrink-0">
+      <div class="flex items-center justify-between border-b border-stone-800/80 pb-3 mb-3 md:pb-4 md:mb-4 flex-shrink-0 pt-1 sm:pt-0">
+
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
             <i class="fa-solid fa-comments"></i>
