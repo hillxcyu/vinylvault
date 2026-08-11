@@ -119,8 +119,10 @@ class GeminiVisionService:
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_schema=AlbumCornerSegmentation
+                response_schema=AlbumCornerSegmentation,
+                thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
+
 
             response = self.client.models.generate_content(
                 model="gemini-3.6-flash",
