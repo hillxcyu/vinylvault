@@ -86,14 +86,15 @@ class DeskewService:
                 try:
                     gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
                     if gemini_corners and len(gemini_corners) == 4:
-                        # Gemini returns [x, y] in 0-1000 scale -> map x=pt[0], y=pt[1] to image pixels
-                        pts = np.array([[(pt[0] / 1000.0) * w, (pt[1] / 1000.0) * h] for pt in gemini_corners], dtype="float32")
+                        # Gemini returns [y, x] in 0-1000 scale -> pt[0]=y, pt[1]=x
+                        pts = np.array([[(pt[1] / 1000.0) * w, (pt[0] / 1000.0) * h] for pt in gemini_corners], dtype="float32")
                         rect = self._order_points(pts)
                         norm_corners = [[round(float(p[0] / w), 4), round(float(p[1] / h), 4)] for p in rect]
                         logger.info(f"Derived 4 corners via Gemini 3.6 Flash segmentation: {norm_corners}")
 
                 except Exception as e:
                     logger.warning(f"Gemini corner segmentation fallback to CV: {e}")
+
 
             # 3. Fallback to OpenCV Contour / Otsu Edge Detection
             if rect is None:
@@ -300,10 +301,11 @@ class DeskewService:
 
             norm_pts = []
             for pt in mask:
-                u = pt[0] / 1000.0
-                v = pt[1] / 1000.0
-                canvas_x = offset_x + u * w_rendered
-                canvas_y = offset_y + v * h_rendered
+                # Gemini returns [y, x] in 0-1000 scale -> pt[0]=y, pt[1]=x
+                y_norm = pt[0] / 1000.0
+                x_norm = pt[1] / 1000.0
+                canvas_x = offset_x + x_norm * w_rendered
+                canvas_y = offset_y + y_norm * h_rendered
                 norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
 
             return norm_pts
@@ -363,14 +365,15 @@ class DeskewService:
                     if gemini_corners and len(gemini_corners) == 4:
                         norm_pts = []
                         for pt in gemini_corners:
-                            # pt is [x, y] in 0-1000 scale
-                            u = pt[0] / 1000.0
-                            v = pt[1] / 1000.0
-                            canvas_x = offset_x + u * w_rendered
-                            canvas_y = offset_y + v * h_rendered
+                            # Gemini returns [y, x] in 0-1000 scale -> pt[0]=y, pt[1]=x
+                            y_norm = pt[0] / 1000.0
+                            x_norm = pt[1] / 1000.0
+                            canvas_x = offset_x + x_norm * w_rendered
+                            canvas_y = offset_y + y_norm * h_rendered
                             norm_pts.append([round(float(canvas_x), 4), round(float(canvas_y), 4)])
                         logger.info(f"Gemini Vision detect_corners canvas points: {norm_pts}")
                         return norm_pts
+
 
                 except Exception as e:
                     logger.warning(f"Gemini detect_corners fallback to CV: {e}")
