@@ -102,18 +102,18 @@ class GeminiVisionService:
 
             class AlbumCornerSegmentation(BaseModel):
                 label: str = Field(description="Description of the item")
-                mask: List[List[int]] = Field(description="4 outer polygon corners [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] normalized 0-1000 scale")
+                box_2d: List[int] = Field(description="The 2D bounding box of the item as [ymin, xmin, ymax, xmax] normalized to 0-1000.")
+                mask: List[List[int]] = Field(description="4 outer polygon corners [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 scale")
 
             prompt = (
                 "Locate the main vinyl record album cover or box set in this photo.\n"
-                "Detect its exact 4 physical outer corners.\n"
-                "Output 4 corner polygon mask in key 'mask'.\n"
-                "Each point in 'mask' MUST be [x, y] normalized to 0-1000 scale:\n"
+                "Detect its exact 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and its 4 physical outer corners 'mask'.\n"
+                "Each point in 'mask' MUST be [y, x] normalized to 0-1000 scale:\n"
                 "[\n"
-                "  [top_left_x, top_left_y],\n"
-                "  [top_right_x, top_right_y],\n"
-                "  [bottom_right_x, bottom_right_y],\n"
-                "  [bottom_left_x, bottom_left_y]\n"
+                "  [top_left_y, top_left_x],\n"
+                "  [top_right_y, top_right_x],\n"
+                "  [bottom_right_y, bottom_right_x],\n"
+                "  [bottom_left_y, bottom_left_x]\n"
                 "]"
             )
 
@@ -133,8 +133,9 @@ class GeminiVisionService:
 
             parsed = json.loads(response.text)
             mask = parsed.get("mask", [])
+            box_2d = parsed.get("box_2d", [])
             if len(mask) == 4 and all(isinstance(pt, list) and len(pt) == 2 for pt in mask):
-                logger.info(f"Gemini Vision Segmentation Corners detected: {mask}")
+                logger.info(f"Gemini Vision Segmentation Corners detected: mask={mask}, box_2d={box_2d}")
                 return mask
         except Exception as e:
             logger.warning(f"Gemini Vision segmentation corner detection warning: {e}")
@@ -189,15 +190,13 @@ class GeminiVisionService:
                         f"4. If no album with equivalent title/performers exists in the crate list, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'.\n"
                     )
 
-
-
                 prompt = (
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
                     "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
                     "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
                     "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
                     "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing (e.g., 'EAC-60150-51' was released in 1978, 'UCJG-9012' in 2009). Always return an accurate 4-digit 'releaseYear' integer.\n"
-                    "CRITICAL REQUIREMENT 5: Simultaneously perform 2D polygon segmentation to detect the 4 exact outer boundary corners of the album jacket/sleeve.\n"
+                    "CRITICAL REQUIREMENT 5: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
@@ -211,15 +210,13 @@ class GeminiVisionService:
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
-                    "12. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
-
-                    "13. 'listeningGuide': Object with keys:\n"
+                    "12. 'box_2d': Array of 4 integers [ymin, xmin, ymax, xmax] normalized 0-1000.\n"
+                    "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
+                    "14. 'listeningGuide': Object with keys:\n"
                     "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
                     "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
                     "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
                     "   - 'recommendedMood': (string, ideal listening atmosphere)"
-
-
                 )
 
                 from pydantic import BaseModel, Field
@@ -249,6 +246,7 @@ class GeminiVisionService:
                     isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
                     crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
                     crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
+                    box_2d: Optional[List[int]] = Field(default=None, description="2D bounding box [ymin, xmin, ymax, xmax] normalized 0-1000")
                     mask: Optional[List[List[int]]] = Field(default=None, description="4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000")
                     listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
 
@@ -257,6 +255,7 @@ class GeminiVisionService:
                     response_schema=AlbumScanMetadataSchema,
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
+
 
                 response = self.client.models.generate_content(
                     model="gemini-3.6-flash",
