@@ -134,7 +134,16 @@ class GeminiVisionService:
                 config=config
             )
 
-            parsed = json.loads(response.text)
+            text = (response.text or "").strip()
+            if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, "text") and part.text:
+                        text += part.text
+            text = text.strip()
+            if not text:
+                return None
+
+            parsed = json.loads(text)
             mask = parsed.get("mask", [])
             box_2d = parsed.get("box_2d", [])
             if len(mask) == 4 and all(isinstance(pt, list) and len(pt) == 2 for pt in mask):
@@ -847,7 +856,15 @@ class GeminiVisionService:
                     response_mime_type="application/json"
                 )
             )
-            data = json.loads(response.text)
+            text = (response.text or "").strip()
+            if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, "text") and part.text:
+                        text += part.text
+            text = text.strip()
+            if not text:
+                raise ValueError("Empty response from Gemini")
+            data = json.loads(text)
             return data
         except Exception as e:
             logger.warning(f"Gemini daily poster insights fallback: {e}")
