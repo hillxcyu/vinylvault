@@ -340,7 +340,16 @@ class GeminiVisionService:
                     config=config
                 )
 
-                text = response.text.strip()
+                text = (response.text or "").strip()
+                if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                    for part in response.candidates[0].content.parts:
+                        if hasattr(part, "text") and part.text:
+                            text += part.text
+                text = text.strip()
+
+                if not text:
+                    raise ValueError("Gemini API returned empty text response")
+
                 if text.startswith("```json"):
                     text = text[7:]
                 if text.startswith("```"):
