@@ -2022,6 +2022,9 @@
           body: JSON.stringify({ 
             artist, 
             albumTitle: title, 
+            catalogNumber: (currentSpinning ? (currentSpinning.catalogNumber || currentSpinning.catno || null) : null),
+            label: (currentSpinning ? (currentSpinning.label || null) : null),
+            country: (currentSpinning ? (currentSpinning.country || null) : null),
             recordId: (currentSpinning ? currentSpinning.id : null),
             forceRefresh 
           })

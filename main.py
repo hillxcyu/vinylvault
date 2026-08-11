@@ -111,6 +111,9 @@ class AddRecordRequest(BaseModel):
 class ListeningGuideRequest(BaseModel):
     artist: str
     albumTitle: str
+    catalogNumber: Optional[str] = None
+    label: Optional[str] = None
+    country: Optional[str] = None
     recordId: Optional[str] = None
     forceRefresh: Optional[bool] = False
 
@@ -1034,8 +1037,29 @@ async def get_listening_guide(req: ListeningGuideRequest):
         except Exception:
             pass
 
+    # Extract release details (catalog number, label, country) if available
+    cat_no = req.catalogNumber
+    lbl = req.label
+    cntry = req.country
+
+    if req.recordId:
+        rec = db.get_record_by_id(req.recordId)
+        if rec:
+            if not cat_no:
+                cat_no = rec.get("catalogNumber") or rec.get("catno")
+            if not lbl:
+                lbl = rec.get("label")
+            if not cntry:
+                cntry = rec.get("country")
+
     # 3. Call Gemini 3.6 Flash to generate fresh guide
-    guide = gemini_service.generate_listening_guide(req.artist, req.albumTitle)
+    guide = gemini_service.generate_listening_guide(
+        artist=req.artist, 
+        title=req.albumTitle,
+        catalog_number=cat_no,
+        label=lbl,
+        country=cntry
+    )
     if guide:
         db.firestore.save_listening_guide(guide_key, guide)
         try:

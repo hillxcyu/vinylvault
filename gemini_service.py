@@ -304,28 +304,45 @@ class GeminiVisionService:
         raise RuntimeError("Gemini AI client is not initialized")
 
 
-    def generate_listening_guide(self, artist: str, title: str) -> Dict[str, Any]:
+    def generate_listening_guide(
+        self, 
+        artist: str, 
+        title: str, 
+        catalog_number: Optional[str] = None, 
+        label: Optional[str] = None, 
+        country: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
-        Generate a rich audiophile listening guide using Gemini 3.5 Flash with Search Grounding.
+        Generate a rich audiophile listening guide using Gemini 3.6 Flash with Search Grounding.
         Returns detailed backstory/pressing notes, full tracklist with Side A/B positions, and foldable highlights.
         """
         if self.client:
             try:
                 from google.genai import types
 
+                details_parts = []
+                if catalog_number:
+                    details_parts.append(f"Catalog No: {catalog_number}")
+                if label:
+                    details_parts.append(f"Label: {label}")
+                if country:
+                    details_parts.append(f"Release Country: {country}")
+
+                spec_str = f" ({', '.join(details_parts)})" if details_parts else ""
+
                 prompt = (
                     f"You are an expert musicologist, audiophile vinyl curator, and record historian. "
-                    f"Create a deep-dive, comprehensive vinyl listening guide for the album '{title}' by {artist}.\n"
-                    f"Use Google Search grounding to gather rich historical details, recording session anecdotes, pressing details, mastering engineering notes, and full tracklists.\n"
+                    f"Create a deep-dive, comprehensive vinyl listening guide for the album '{title}' by {artist}{spec_str}.\n"
+                    f"Use Google Search grounding to gather rich historical details, recording session anecdotes, pressing details (specifically focusing on this release/catalog number/label/country if provided), mastering engineering notes, and full tracklists.\n"
                     f"Return ONLY a valid JSON object with the following keys:\n"
-                    f"1. \"albumBackground\": A detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes, and trivia.\n"
+                    f"1. \"albumBackground\": A detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes (referencing this specific pressing/catalog/label/country if known), and trivia.\n"
                     f"2. \"tracklist\": An array of track objects representing the complete track list of the vinyl release. Each track object must have:\n"
                     f"   - \"position\": (string, e.g. 'A1', 'A2', 'B1', 'B2')\n"
                     f"   - \"title\": (string, track name)\n"
                     f"   - \"duration\": (string or null, e.g. '4:12')\n"
                     f"   - \"highlight\": (boolean, true if this track has notable audiophile/musical details to listen for, false otherwise)\n"
                     f"   - \"whatToListenFor\": (string or null, if highlight is true, provide 1-2 sentences of specific mixing, instrument, or production details to pay attention to on vinyl).\n"
-                    f"3. \"vinylTip\": A short pro-tip for vinyl listeners (e.g. tracking weight, dynamic range, inner-groove distortion, pressing highlights).\n"
+                    f"3. \"vinylTip\": A short pro-tip for vinyl listeners (e.g. tracking weight, dynamic range, inner-groove distortion, pressing highlights for this release/catalog).\n"
                     f"4. \"recommendedMood\": A brief phrase describing the ideal atmosphere (e.g. 'Late night dim lights with headphones and single-malt whisky')."
                 )
 
