@@ -18,15 +18,19 @@ def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int
     Reduces upload payload size by >95% (from 5MB+ to ~150KB), significantly speeding up
     Gemini Vision processing time while preserving full readability for OCR & corners.
     """
-    if not image_bytes:
+    if not image_bytes or len(image_bytes) < 180000:
         return image_bytes
     try:
+        import gc
         from PIL import Image, ImageOps
         img = Image.open(io.BytesIO(image_bytes))
+        w, h = img.size
+        if max(w, h) <= max_dim and len(image_bytes) < 300000:
+            img.close()
+            return image_bytes
+
         img = ImageOps.exif_transpose(img)
-
         if img.mode in ("RGBA", "P", "LA"):
-
             img = img.convert("RGB")
 
         w, h = img.size
@@ -39,13 +43,19 @@ def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int
                 new_w = int(w * (max_dim / float(h)))
 
             resample_filter = getattr(Image, "Resampling", Image).LANCZOS
-            img = img.resize((new_w, new_h), resample=resample_filter)
+            resized_img = img.resize((new_w, new_h), resample=resample_filter)
+            img.close()
 
             out_buf = io.BytesIO()
-            img.save(out_buf, format="JPEG", quality=quality, optimize=True)
+            resized_img.save(out_buf, format="JPEG", quality=quality, optimize=True)
+            resized_img.close()
             compressed = out_buf.getvalue()
+            out_buf.close()
+            gc.collect()
             logger.info(f"Image downsampled: {len(image_bytes)} bytes ({w}x{h}) -> {len(compressed)} bytes ({new_w}x{new_h})")
             return compressed
+        else:
+            img.close()
     except Exception as e:
         logger.warning(f"Image downsampling warning (using original image): {e}")
     return image_bytes

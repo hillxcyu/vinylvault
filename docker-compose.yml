@@ -9,9 +9,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - GOOGLE_CLOUD_PROJECT=vital-octagon-19612
+      - PORT=8000
+      - GOOGLE_CLOUD_PROJECT=universal-trail-492014-n5
       - GOOGLE_CLOUD_LOCATION=global
-      - GOOGLE_GENAI_USE_VERTEXAI=true
+      - FIRESTORE_DATABASE_ID=vinylvault-hk
+      - GCS_BUCKET_NAME=universal-trail-492014-n5-vinyl-vault-hk-data
       - GOOGLE_APPLICATION_CREDENTIALS=/app/adc.json
     volumes:
       - ~/.config/gcloud/application_default_credentials.json:/app/adc.json:ro
