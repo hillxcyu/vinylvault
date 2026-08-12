@@ -69,16 +69,32 @@ class DiscogsService:
         chosen_country = country
 
         if assets:
-            for a in assets:
-                url = a.get("url", "")
-                if url and "shopping_cover_2.jpg" not in url:
-                    chosen_url = url
-                    chosen_year = a.get("year")
-                    if a.get("catalogNumber"):
-                        chosen_catno = a.get("catalogNumber")
-                    if a.get("country"):
-                        chosen_country = a.get("country")
-                    break
+            best_asset = None
+            if country:
+                target_c = country.strip().lower()
+                for a in assets:
+                    url = a.get("url", "")
+                    a_country = (a.get("country") or "").lower()
+                    if url and "shopping_cover_2.jpg" not in url and a_country == target_c:
+                        best_asset = a
+                        break
+
+            if not best_asset:
+                for a in assets:
+                    url = a.get("url", "")
+                    if url and "shopping_cover_2.jpg" not in url and a.get("type") != "📸 Original Jacket":
+                        best_asset = a
+                        break
+
+            if best_asset:
+                if best_asset.get("url"):
+                    chosen_url = best_asset["url"]
+                if best_asset.get("year"):
+                    chosen_year = best_asset["year"]
+                if best_asset.get("catalogNumber"):
+                    chosen_catno = best_asset["catalogNumber"]
+                if best_asset.get("country"):
+                    chosen_country = best_asset["country"]
 
         return {
             "coverUrl": chosen_url,
@@ -128,19 +144,24 @@ class DiscogsService:
         clean_catno = re.sub(r'[~]', ' ', catalog_number).strip() if catalog_number else ""
 
         search_queries = []
+        # Target country queries prioritized first when target_country is set
+        if clean_catno and target_country:
+            cat_parts = re.findall(r'[A-Za-z0-9\-]+', clean_catno)
+            pure_cat = " ".join(cat_parts)
+            search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&country={urllib.parse.quote(target_country)}&type=release", "is_catno": True})
+            search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno + ' ' + target_country)}&type=release", "is_catno": True})
+
+        if clean_a and clean_t and target_country:
+            search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country={urllib.parse.quote(target_country)}", "is_catno": False})
+
+        # Fallback queries across all countries
         if clean_catno:
             cat_parts = re.findall(r'[A-Za-z0-9\-]+', clean_catno)
             pure_cat = " ".join(cat_parts)
-            if target_country:
-                search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&country={urllib.parse.quote(target_country)}&type=release", "is_catno": True})
             search_queries.append({"url": f"https://api.discogs.com/database/search?catno={urllib.parse.quote(pure_cat)}&type=release", "is_catno": True})
-            if target_country:
-                search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno + ' ' + target_country)}&type=release", "is_catno": True})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(clean_catno)}&type=release", "is_catno": True})
 
         if clean_a and clean_t:
-            if target_country:
-                search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl&country={urllib.parse.quote(target_country)}", "is_catno": False})
             search_queries.append({"url": f"https://api.discogs.com/database/search?q={urllib.parse.quote(f'{clean_a} {clean_t}')}&type=release&format=vinyl", "is_catno": False})
 
         for q_obj in search_queries:

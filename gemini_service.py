@@ -296,16 +296,17 @@ class GeminiVisionService:
         optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
 
         prompt = (
-            "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
-            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
-            "CRITICAL REQUIREMENT 1: Extract and verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
-            "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label.\n"
-            "CRITICAL REQUIREMENT 2: If the catalog number, label, or release year is NOT clearly visible or missing from the uploaded cover photo, USE GOOGLE SEARCH to identify and verify the exact official release catalog number, label, and release details.\n"
-            "CRITICAL REQUIREMENT 3: Return an accurate 4-digit 'releaseYear' integer.\n\n"
+            "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
+            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
+            "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
+            "1. Beware of legacy artwork catalog numbers! International/reissue pressings (especially Japanese pressings on Deutsche Grammophon, Decca, EMI, Philips, Columbia) frequently reprint original artwork displaying a legacy master catalog number (e.g. '2535 201', '2535 455', '139 707').\n"
+            "2. Look closely at the jacket for Japanese corner tabs (photo mounts), obi strips, or Japanese distribution markers.\n"
+            "3. When corner tabs or obi strips are present, OR if a legacy artwork number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT domestic/Japanese pressing catalog number (e.g. search '[Artist/Composer] [Album Title] Japanese pressing catalog number 15GM 28MG MG SLPM VIC EAC').\n"
+            "4. Extract and return the exact Japanese or domestic pressing catalog number (e.g., '15GM3093', 'EAC-30073', 'VIC-28001') in 'catalogNumber' and set 'country' to 'Japan' (or specific pressing country). DO NOT return the legacy artwork template number (e.g. '2535 201' / '2535 455') when a specific domestic release number exists.\n\n"
             "Extract and return ONLY a valid JSON object with the following fields:\n"
             "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
             "2. 'albumTitle': Full album title or composer/work title.\n"
-            "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLPM 138 707').\n"
+            "3. 'catalogNumber': Exact catalog number (e.g. '15GM3093', 'VIC-28001').\n"
             "4. 'label': Exact record label name (e.g. 'Deutsche Grammophon', 'Decca').\n"
             "5. 'country': Release country or pressing origin (e.g. 'Japan', 'Germany', 'US', 'UK').\n"
             "6. 'releaseYear': Exact 4-digit release year integer.\n"
@@ -412,17 +413,19 @@ class GeminiVisionService:
                     )
 
                 prompt = (
-                    "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
-                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
-                    "CRITICAL REQUIREMENT 1: Verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
-                    "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
-                    "CRITICAL REQUIREMENT 2: Return an accurate 4-digit 'releaseYear' integer.\n"
-                    "CRITICAL REQUIREMENT 3: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
+                    "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
+                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
+                    "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
+                    "1. Beware of legacy artwork catalog numbers! International/reissue pressings (especially Japanese pressings on Deutsche Grammophon, Decca, EMI, Philips, Columbia) frequently reprint original artwork displaying a legacy master catalog number (e.g. '2535 201', '2535 455', '139 707').\n"
+                    "2. Look closely at the jacket for Japanese corner tabs (photo mounts), obi strips, or Japanese distribution markers.\n"
+                    "3. When corner tabs or obi strips are present, OR if a legacy artwork number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT domestic/Japanese pressing catalog number (e.g. search '[Artist/Composer] [Album Title] Japanese pressing catalog number 15GM 28MG MG SLPM VIC EAC').\n"
+                    "4. Extract and return the exact Japanese or domestic pressing catalog number (e.g., '15GM3093', 'EAC-30073', 'VIC-28001') in 'catalogNumber' and set 'country' to 'Japan' (or specific pressing country). DO NOT return the legacy artwork template number (e.g. '2535 201' / '2535 455') when a specific domestic release number exists.\n\n"
+                    "CRITICAL REQUIREMENT 1: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
                     "2. 'albumTitle': Full album title or composer/work title.\n"
-                    "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLA 6187', 'VIC-28001', '2530 229', 'IMP-2026-001').\n"
+                    "3. 'catalogNumber': Exact catalog number (e.g. '15GM3093', 'VIC-28001').\n"
                     "4. 'label': Exact record label name (e.g. 'Decca', 'Seraphim', 'Deutsche Grammophon', 'EMI', 'Philips', 'RCA').\n"
                     "5. 'country': Release country or pressing origin (e.g. 'Japan', 'US', 'UK', 'Germany').\n"
                     "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1978, 1961, 2009).\n"
@@ -456,7 +459,8 @@ class GeminiVisionService:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=AlbumScanMetadataSchema,
-                        thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                        thinking_config=types.ThinkingConfig(thinking_level="minimal"),
+                        tools=[types.Tool(google_search=types.GoogleSearch())]
                     )
 
                     response = self.client.models.generate_content(
