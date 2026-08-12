@@ -319,7 +319,7 @@ class GeminiVisionService:
             "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
             "4. 'label': Exact record label name.\n"
             "5. 'country': Release country or pressing origin.\n"
-            "6. 'releaseYear': Exact 4-digit release year integer.\n"
+            "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). Look closely at the jacket for ℗ or © copyright dates, phonogram dates, obi strip dates, or search Google for the exact pressing release year of this catalog number. DO NOT default to current year (like 2024 or 2026) or guess arbitrarily. Return null if unknown.\n"
             "7. 'genre': Musical genre/style.\n"
             "8. 'confidenceScore': Number between 0 and 1."
         )
@@ -334,7 +334,7 @@ class GeminiVisionService:
                 catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
                 label: Optional[str] = Field(default="", description="Exact record label name")
                 country: Optional[str] = Field(default="Japan", description="Release country")
-                releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
+                releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer (e.g. 1972). Do NOT default to current year or guess. Return null if unknown.")
                 genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
                 confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
 
@@ -438,7 +438,7 @@ class GeminiVisionService:
                     "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
                     "4. 'label': Exact record label name.\n"
                     "5. 'country': Release country or pressing origin.\n"
-                    "6. 'releaseYear': Exact 4-digit release year integer.\n"
+                    "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). Look closely at the jacket for ℗ or © copyright dates, phonogram dates, obi strip dates, or search Google for the exact pressing release year of this catalog number. DO NOT default to current year (like 2024 or 2026) or guess arbitrarily. Return null if unknown.\n"
                     "7. 'genre': Musical genre/style.\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
@@ -456,7 +456,7 @@ class GeminiVisionService:
                     catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
                     label: Optional[str] = Field(default="", description="Exact record label name")
                     country: Optional[str] = Field(default="Japan", description="Release country")
-                    releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
+                    releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer (e.g. 1972). Do NOT default to current year or guess. Return null if unknown.")
                     genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
                     confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
                     isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
