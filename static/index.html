@@ -3182,10 +3182,12 @@
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (!data || !data.metadata) return;
+          console.log('✨ [Call C] Deep metadata received:', data.metadata);
           lastScannedMetadata = {
             ...(lastScannedMetadata || {}),
             ...data.metadata
           };
+          console.log('✨ [Updated lastScannedMetadata]:', lastScannedMetadata);
           if (lastDuplicateCheck) {
             renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
           }
@@ -4028,6 +4030,8 @@
       const coverUrl = lastScannedMetadata.coverUrl || SVG_PLACEHOLDER;
       const originalScannedCoverUrl = lastScannedMetadata.coverUrl || SVG_PLACEHOLDER;
       const formatDetails = lastScannedMetadata.formatDetails || 'Standard Vinyl LP';
+
+      console.log('💾 Saving scanned record to database with payload:', { artist, title, releaseYear, catalogNumber, country, label });
 
       try {
         // Enforce synchronous database & Firestore saving BEFORE taking user to next screen

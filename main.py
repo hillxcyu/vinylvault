@@ -583,6 +583,7 @@ async def scan_deep_metadata(file: UploadFile = File(...)):
             deep_meta["releaseYear"] = info["releaseYear"]
         if not deep_meta.get("catalogNumber") and info.get("catalogNumber"):
             deep_meta["catalogNumber"] = info["catalogNumber"]
+    logger.info(f"Call C deep-metadata result: releaseYear={deep_meta.get('releaseYear')}, artist='{deep_meta.get('artist')}', title='{deep_meta.get('albumTitle')}', catno='{deep_meta.get('catalogNumber')}'")
     return {"metadata": deep_meta}
 
 @app.post("/api/scan")
@@ -650,6 +651,8 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
             extracted_metadata["releaseYear"] = discogs_info["releaseYear"]
         if not extracted_metadata.get("catalogNumber") and discogs_info.get("catalogNumber"):
             extracted_metadata["catalogNumber"] = discogs_info["catalogNumber"]
+
+    logger.info(f"Scan analysis complete: releaseYear={extracted_metadata.get('releaseYear')}, artist='{extracted_metadata.get('artist')}', title='{extracted_metadata.get('albumTitle')}'")
 
     # 4. Automatically run duplicate check on extracted metadata using pre-fetched crate_records
     duplicate_result = build_duplicate_result(
