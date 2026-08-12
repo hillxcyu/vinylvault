@@ -55,7 +55,7 @@ class DeskewService:
             logger.warning(f"EXIF transpose warning: {e}")
         return image_bytes
 
-    def auto_deskew_image(self, image_bytes: bytes, target_size: int = 800, gemini_service: Any = None) -> Tuple[bytes, bool, List[List[float]]]:
+    def auto_deskew_image(self, image_bytes: bytes, target_size: int = 1024, gemini_service: Any = None) -> Tuple[bytes, bool, List[List[float]]]:
         """
         Detects album cover quadrilateral in image_bytes via Gemini 3.6 Flash segmentation or CV contours,
         applies 4-point perspective warp, and returns (processed_image_bytes, is_deskewed_flag, detected_corners).
@@ -214,7 +214,7 @@ class DeskewService:
 
         return image_bytes, False, []
 
-    def warp_image_from_normalized_corners(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 800) -> bytes:
+    def warp_image_from_normalized_corners(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 1024) -> bytes:
         """
         Warp raw image bytes using 4 normalized 0.0..1.0 corner points or 0..1000 scale points.
         Performs EXIF orientation transpose first, maps points to pixel coordinates, and applies cv2.warpPerspective.
@@ -479,7 +479,7 @@ class DeskewService:
 
         return default_corners
 
-    def manual_deskew_image(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 800) -> Tuple[bytes, bool]:
+    def manual_deskew_image(self, image_bytes: bytes, corners: List[List[float]], target_size: int = 1024) -> Tuple[bytes, bool]:
 
         """
         Applies a 4-point perspective transform using user-specified corner points
