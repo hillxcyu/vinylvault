@@ -887,23 +887,22 @@
 
 
 
-      <!-- Manual Query Form -->
-      <div class="space-y-3 pt-2">
-        <div class="text-xs font-semibold text-gray-400 uppercase">Or Search Manually</div>
-        <div class="grid grid-cols-2 gap-3">
-          <input type="text" id="manualArtist" placeholder="Artist (e.g. Tame Impala)" class="bg-stone-900 border border-stone-800 text-base md:text-sm rounded-lg p-2 text-gray-200 focus:outline-none focus:border-amber-500">
-          <input type="text" id="manualTitle" placeholder="Album Title (e.g. Currents)" class="bg-stone-900 border border-stone-800 text-base md:text-sm rounded-lg p-2 text-gray-200 focus:outline-none focus:border-amber-500">
-        </div>
-        <button onclick="checkDuplicateManual()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-lg border border-stone-700 transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-magnifying-glass text-amber-400"></i> Verify Ownership Status
-        </button>
-      </div>
-
-      <!-- Scan / Duplicate Check Result Card -->
-      <div id="scanResultContainer" class="hidden glass-panel rounded-xl p-4 space-y-3 border border-stone-800">
+      <!-- Scan Result & Metadata Info Display Card (Replacing old manual query section) -->
+      <div id="scanResultContainer" class="hidden glass-panel rounded-xl p-4 space-y-3 border border-stone-800/80 shadow-2xl">
+        <!-- Collection Ownership Status Badge -->
         <div id="scanStatusBadge" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2"></div>
-        <p id="scanStatusMessage" class="text-xs text-gray-300"></p>
-        <div id="scanActionContainer"></div>
+        <p id="scanStatusMessage" class="text-xs text-stone-300"></p>
+
+        <!-- Album Metadata & Research Display Box -->
+        <div id="scanMetadataBox" class="bg-stone-900/90 border border-stone-800 rounded-xl p-3.5 space-y-2.5 shadow-inner">
+          <div class="flex items-center justify-center py-6 gap-3 text-amber-400">
+            <i class="fa-solid fa-compact-disc animate-spin text-2xl"></i>
+            <span class="text-xs font-semibold text-stone-300">Analyzing album cover & verifying collection...</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons (Spin / Add to Crate) -->
+        <div id="scanActionContainer" class="pt-1"></div>
       </div>
 
     </div>
@@ -2818,30 +2817,10 @@
 
       container.classList.remove('hidden');
       badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      badge.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ANALYZING...`;
+      badge.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ANALYZING COVER...`;
       message.innerText = messageText;
-      actionBox.innerHTML = '';
-    }
-
-    async function checkDuplicateManual() {
-      const artist = document.getElementById('manualArtist').value.trim();
-      const title = document.getElementById('manualTitle').value.trim();
-      if (!artist && !title) return;
-
-      showScanLoading(`Checking collection status for "${artist} - ${title}"...`);
-
-      try {
-        const res = await fetch('/api/check-duplicate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ artist, albumTitle: title })
-        });
-        const data = await res.json();
-        lastScannedMetadata = { artist, albumTitle: title, genre: 'Manual Entry' };
-        renderDuplicateResult(data, lastScannedMetadata);
-      } catch (err) {
-        renderScanError(err.message);
-      }
+      renderScanMetadataBox(null, true);
+      if (actionBox) actionBox.innerHTML = '';
     }
 
     async function handlePhotoUpload(e) {
@@ -2907,7 +2886,7 @@
             lastScannedMetadata.albumTitle = lastScannedMetadata.albumTitle || data.metadata?.albumTitle || '';
           }
 
-          renderDuplicateResult(data.duplicateCheck, lastScannedMetadata);
+          renderDuplicateResult(data.duplicateCheck, lastScannedMetadata, true);
 
           if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
             updateNowSpinningUI(data.duplicateCheck.matchingRecord);
@@ -2926,7 +2905,7 @@
             ...data.metadata
           };
           if (lastDuplicateCheck) {
-            renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata);
+            renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
           }
           showToast('✨ Deep release metadata & listening guide loaded!', 'fa-book-open');
         })
@@ -3508,7 +3487,97 @@
     }
 
 
-    function renderDuplicateResult(result, metadata) {
+    function renderScanMetadataBox(metadata, isDeepMetaLoading = false) {
+      const metaBox = document.getElementById('scanMetadataBox');
+      if (!metaBox) return;
+
+      if (!metadata || (!metadata.artist && !metadata.albumTitle && !metadata.title)) {
+        metaBox.innerHTML = `
+          <div class="flex items-center justify-center py-6 gap-3 text-amber-400">
+            <i class="fa-solid fa-compact-disc animate-spin text-2xl"></i>
+            <span class="text-xs font-semibold text-stone-300">Retrieving album metadata & research...</span>
+          </div>
+        `;
+        return;
+      }
+
+      const artist = metadata.artist || 'Unknown Artist';
+      const title = metadata.albumTitle || metadata.title || 'Untitled Album';
+      const label = metadata.label || '';
+      const catNum = metadata.catalogNumber || '';
+      const country = metadata.country || '';
+      const year = metadata.releaseYear || '';
+      const genre = metadata.genre || '';
+      const listeningGuide = metadata.listeningGuide;
+
+      let statusPill = '';
+      if (isDeepMetaLoading) {
+        statusPill = `
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30 shadow-sm animate-pulse">
+            <i class="fa-solid fa-spinner animate-spin text-amber-400"></i> Fetching deep meta...
+          </span>
+        `;
+      } else {
+        statusPill = `
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30 shadow-sm">
+            <i class="fa-solid fa-check text-emerald-400"></i> Enriched
+          </span>
+        `;
+      }
+
+      let metaGrid = '';
+      if (label || catNum || country || year || genre) {
+        metaGrid = `
+          <div class="grid grid-cols-2 gap-2 text-xs text-stone-300 pt-2 border-t border-stone-800/80">
+            ${label ? `<div><span class="text-stone-500">Label:</span> <span class="font-medium text-stone-200">${label}</span></div>` : ''}
+            ${catNum ? `<div><span class="text-stone-500">Catalog #:</span> <span class="font-medium text-stone-200">${catNum}</span></div>` : ''}
+            ${country ? `<div><span class="text-stone-500">Country:</span> <span class="font-medium text-stone-200">${country}</span></div>` : ''}
+            ${year ? `<div><span class="text-stone-500">Year:</span> <span class="font-medium text-stone-200">${year}</span></div>` : ''}
+            ${genre ? `<div><span class="text-stone-500">Genre:</span> <span class="font-medium text-stone-200">${genre}</span></div>` : ''}
+          </div>
+        `;
+      } else if (isDeepMetaLoading) {
+        metaGrid = `
+          <div class="flex items-center gap-2 text-xs text-stone-400 pt-2 border-t border-stone-800/80">
+            <i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Grounding deep pressings & listening guide via Google Search...
+          </div>
+        `;
+      }
+
+      let guideSection = '';
+      if (listeningGuide) {
+        let guideText = '';
+        if (typeof listeningGuide === 'string') {
+          guideText = listeningGuide;
+        } else if (typeof listeningGuide === 'object') {
+          guideText = listeningGuide.overview || listeningGuide.summary || listeningGuide.keyTracks || JSON.stringify(listeningGuide);
+        }
+        guideSection = `
+          <div class="mt-2.5 pt-2 border-t border-stone-800/80 text-xs">
+            <div class="font-bold text-amber-400 text-[11px] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-book-open"></i> Listening Guide Included
+            </div>
+            <p class="text-stone-300 line-clamp-3 leading-relaxed text-[11px] bg-stone-950/60 p-2 rounded-lg border border-stone-800">
+              ${guideText}
+            </p>
+          </div>
+        `;
+      }
+
+      metaBox.innerHTML = `
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="text-sm font-bold text-white tracking-wide">${title}</div>
+            <div class="text-xs font-medium text-amber-400">${artist}</div>
+          </div>
+          <div>${statusPill}</div>
+        </div>
+        ${metaGrid}
+        ${guideSection}
+      `;
+    }
+
+    function renderDuplicateResult(result, metadata, isDeepMetaLoading = false) {
       const container = document.getElementById('scanResultContainer');
       const badge = document.getElementById('scanStatusBadge');
       const message = document.getElementById('scanStatusMessage');
@@ -3520,6 +3589,8 @@
       } else {
         message.innerText = result.message;
       }
+
+      renderScanMetadataBox(metadata, isDeepMetaLoading);
 
       if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
