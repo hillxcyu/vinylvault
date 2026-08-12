@@ -768,7 +768,7 @@
     </div>
 
     <!-- Zoomable Image Canvas Container -->
-    <div id="lightboxImageWrapper" class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing" onclick="event.stopPropagation()" onwheel="handleLightboxWheel(event)" onmousedown="handleLightboxMouseDown(event)" onmousemove="handleLightboxMouseMove(event)" onmouseup="handleLightboxMouseUp()" onmouseleave="handleLightboxMouseUp()" ontouchstart="handleLightboxMouseDown(event)" ontouchmove="handleLightboxMouseMove(event)" ontouchend="handleLightboxMouseUp()">
+    <div id="lightboxImageWrapper" class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing touch-none" onclick="event.stopPropagation()" onwheel="handleLightboxWheel(event)" onmousedown="handleLightboxMouseDown(event)" onmousemove="handleLightboxMouseMove(event)" onmouseup="handleLightboxMouseUp()" onmouseleave="handleLightboxMouseUp()" ontouchstart="handleLightboxTouchStart(event)" ontouchmove="handleLightboxTouchMove(event)" ontouchend="handleLightboxTouchEnd(event)" ontouchcancel="handleLightboxTouchEnd(event)">
       <img id="lightboxImage" src="" onclick="toggleLightboxZoom()" class="max-w-full max-h-[80vh] object-contain rounded-xl border border-stone-800 shadow-2xl transition-transform duration-150 ease-out origin-center pointer-events-auto" draggable="false" title="Click to zoom in / reset" />
     </div>
 
@@ -1476,10 +1476,16 @@
     let lightboxPanX = 0;
     let lightboxPanY = 0;
     let isLightboxDragging = false;
+    let isPinching = false;
+    let initialPinchDist = 0;
+    let initialScale = 1.0;
+    let pinchCenterX = 0;
+    let pinchCenterY = 0;
     let lightboxStartMouseX = 0;
     let lightboxStartMouseY = 0;
     let lightboxStartPanX = 0;
     let lightboxStartPanY = 0;
+    let lightboxHasMoved = false;
 
     function applyLightboxTransform() {
       const img = document.getElementById('lightboxImage');
@@ -1495,6 +1501,9 @@
       lightboxScale = 1.0;
       lightboxPanX = 0;
       lightboxPanY = 0;
+      isPinching = false;
+      isLightboxDragging = false;
+      lightboxHasMoved = false;
       applyLightboxTransform();
     }
 
@@ -1509,6 +1518,10 @@
     }
 
     function toggleLightboxZoom() {
+      if (lightboxHasMoved) {
+        lightboxHasMoved = false;
+        return;
+      }
       if (lightboxScale > 1.2) {
         resetLightboxZoom();
       } else {
@@ -1519,9 +1532,11 @@
 
     function handleLightboxMouseDown(e) {
       if (e.target.closest('button')) return;
+      isPinching = false;
       isLightboxDragging = true;
-      lightboxStartMouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-      lightboxStartMouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+      lightboxHasMoved = false;
+      lightboxStartMouseX = e.clientX;
+      lightboxStartMouseY = e.clientY;
       lightboxStartPanX = lightboxPanX;
       lightboxStartPanY = lightboxPanY;
       const img = document.getElementById('lightboxImage');
@@ -1529,12 +1544,11 @@
     }
 
     function handleLightboxMouseMove(e) {
-      if (!isLightboxDragging) return;
+      if (!isLightboxDragging || isPinching) return;
       if (e.cancelable) e.preventDefault();
-      const currentX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-      const currentY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
-      const dx = currentX - lightboxStartMouseX;
-      const dy = currentY - lightboxStartMouseY;
+      const dx = e.clientX - lightboxStartMouseX;
+      const dy = e.clientY - lightboxStartMouseY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) lightboxHasMoved = true;
       lightboxPanX = lightboxStartPanX + dx;
       lightboxPanY = lightboxStartPanY + dy;
       applyLightboxTransform();
@@ -1542,6 +1556,85 @@
 
     function handleLightboxMouseUp() {
       if (!isLightboxDragging) return;
+      isLightboxDragging = false;
+      const img = document.getElementById('lightboxImage');
+      if (img) img.style.transition = 'transform 0.15s ease-out';
+    }
+
+    function handleLightboxTouchStart(e) {
+      if (e.touches && e.touches.length === 2) {
+        isPinching = true;
+        isLightboxDragging = false;
+        lightboxHasMoved = true;
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialScale = lightboxScale;
+        pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        lightboxStartPanX = lightboxPanX;
+        lightboxStartPanY = lightboxPanY;
+        const img = document.getElementById('lightboxImage');
+        if (img) img.style.transition = 'none';
+        return;
+      }
+      if (e.target.closest('button')) return;
+      isPinching = false;
+      isLightboxDragging = true;
+      lightboxHasMoved = false;
+      lightboxStartMouseX = e.touches && e.touches[0] ? e.touches[0].clientX : 0;
+      lightboxStartMouseY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+      lightboxStartPanX = lightboxPanX;
+      lightboxStartPanY = lightboxPanY;
+      const img = document.getElementById('lightboxImage');
+      if (img) img.style.transition = 'none';
+    }
+
+    function handleLightboxTouchMove(e) {
+      if (e.touches && e.touches.length === 2) {
+        if (e.cancelable) e.preventDefault();
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (initialPinchDist > 0) {
+          const factor = currentDist / initialPinchDist;
+          lightboxScale = Math.max(0.75, Math.min(5.0, initialScale * factor));
+          const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          lightboxPanX = lightboxStartPanX + (currentCenterX - pinchCenterX);
+          lightboxPanY = lightboxStartPanY + (currentCenterY - pinchCenterY);
+          applyLightboxTransform();
+        }
+        lightboxHasMoved = true;
+        return;
+      }
+      if (isPinching || !isLightboxDragging) return;
+      if (e.cancelable) e.preventDefault();
+      const currentX = e.touches && e.touches[0] ? e.touches[0].clientX : 0;
+      const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
+      const dx = currentX - lightboxStartMouseX;
+      const dy = currentY - lightboxStartMouseY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) lightboxHasMoved = true;
+      lightboxPanX = lightboxStartPanX + dx;
+      lightboxPanY = lightboxStartPanY + dy;
+      applyLightboxTransform();
+    }
+
+    function handleLightboxTouchEnd(e) {
+      if (e && e.touches && e.touches.length === 1) {
+        isPinching = false;
+        isLightboxDragging = true;
+        lightboxStartMouseX = e.touches[0].clientX;
+        lightboxStartMouseY = e.touches[0].clientY;
+        lightboxStartPanX = lightboxPanX;
+        lightboxStartPanY = lightboxPanY;
+        return;
+      }
+      if (e && e.touches && e.touches.length > 0) return;
+
+      isPinching = false;
       isLightboxDragging = false;
       const img = document.getElementById('lightboxImage');
       if (img) img.style.transition = 'transform 0.15s ease-out';
