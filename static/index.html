@@ -2992,7 +2992,9 @@
       }
       showToast('Cropping cover with detected corners...', 'fa-crop-simple');
       try {
-        const uploadFile = await compressScanImageFile(currentRawFile, 1200, 0.85);
+        // Use high-resolution canvas compression (1800px max dimension @ 92% quality)
+        // for the final crop so the resulting GCS album cover art is crystal clear.
+        const uploadFile = await compressScanImageFile(currentRawFile, 1800, 0.92);
         const formData = new FormData();
         formData.append('file', uploadFile);
         formData.append('corners', JSON.stringify([
