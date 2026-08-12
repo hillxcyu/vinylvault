@@ -309,16 +309,16 @@ class GeminiVisionService:
             "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
             "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
             "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
-            "1. Beware of legacy artwork catalog numbers! International/reissue pressings (especially Japanese pressings on Deutsche Grammophon, Decca, EMI, Philips, Columbia) frequently reprint original artwork displaying a legacy master catalog number (e.g. '2535 201', '2535 455', '139 707').\n"
-            "2. Look closely at the jacket for Japanese corner tabs (photo mounts), obi strips, or Japanese distribution markers.\n"
-            "3. When corner tabs or obi strips are present, OR if a legacy artwork number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT domestic/Japanese pressing catalog number (e.g. search '[Artist/Composer] [Album Title] Japanese pressing catalog number 15GM 28MG MG SLPM VIC EAC').\n"
-            "4. Extract and return the exact Japanese or domestic pressing catalog number (e.g., '15GM3093', 'EAC-30073', 'VIC-28001') in 'catalogNumber' and set 'country' to 'Japan' (or specific pressing country). DO NOT return the legacy artwork template number (e.g. '2535 201' / '2535 455') when a specific domestic release number exists.\n\n"
+            "1. Beware of legacy artwork catalog numbers! International, reissue, or regional pressings frequently reprint original artwork displaying a legacy master catalog number printed on the original jacket design.\n"
+            "2. Look closely at the jacket for regional corner tabs (photo mounts), obi strips, stickers, or local distribution markers.\n"
+            "3. When regional corner tabs or obi strips are present, OR if a legacy artwork master number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT local or domestic pressing catalog number.\n"
+            "4. Extract and return the exact domestic or regional pressing catalog number in 'catalogNumber' and set 'country' to the specific pressing country. DO NOT return the legacy master artwork template number when a specific local release catalog number exists.\n\n"
             "Extract and return ONLY a valid JSON object with the following fields:\n"
             "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
             "2. 'albumTitle': Full album title or composer/work title.\n"
-            "3. 'catalogNumber': Exact catalog number (e.g. '15GM3093', 'VIC-28001').\n"
-            "4. 'label': Exact record label name (e.g. 'Deutsche Grammophon', 'Decca').\n"
-            "5. 'country': Release country or pressing origin (e.g. 'Japan', 'Germany', 'US', 'UK').\n"
+            "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
+            "4. 'label': Exact record label name.\n"
+            "5. 'country': Release country or pressing origin.\n"
             "6. 'releaseYear': Exact 4-digit release year integer.\n"
             "7. 'genre': Musical genre/style.\n"
             "8. 'confidenceScore': Number between 0 and 1."
@@ -331,8 +331,8 @@ class GeminiVisionService:
             class AlbumMetadataSchema(BaseModel):
                 artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                 albumTitle: str = Field(description="Full album title or composer/work title")
-                catalogNumber: Optional[str] = Field(default="", description="Exact catalog number e.g. VIC-28001")
-                label: Optional[str] = Field(default="", description="Exact record label e.g. Deutsche Grammophon")
+                catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
+                label: Optional[str] = Field(default="", description="Exact record label name")
                 country: Optional[str] = Field(default="Japan", description="Release country")
                 releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
                 genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
@@ -426,20 +426,20 @@ class GeminiVisionService:
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
                     "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
                     "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
-                    "1. Beware of legacy artwork catalog numbers! International/reissue pressings (especially Japanese pressings on Deutsche Grammophon, Decca, EMI, Philips, Columbia) frequently reprint original artwork displaying a legacy master catalog number (e.g. '2535 201', '2535 455', '139 707').\n"
-                    "2. Look closely at the jacket for Japanese corner tabs (photo mounts), obi strips, or Japanese distribution markers.\n"
-                    "3. When corner tabs or obi strips are present, OR if a legacy artwork number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT domestic/Japanese pressing catalog number (e.g. search '[Artist/Composer] [Album Title] Japanese pressing catalog number 15GM 28MG MG SLPM VIC EAC').\n"
-                    "4. Extract and return the exact Japanese or domestic pressing catalog number (e.g., '15GM3093', 'EAC-30073', 'VIC-28001') in 'catalogNumber' and set 'country' to 'Japan' (or specific pressing country). DO NOT return the legacy artwork template number (e.g. '2535 201' / '2535 455') when a specific domestic release number exists.\n\n"
+                    "1. Beware of legacy artwork catalog numbers! International, reissue, or regional pressings frequently reprint original artwork displaying a legacy master catalog number printed on the original jacket design.\n"
+                    "2. Look closely at the jacket for regional corner tabs (photo mounts), obi strips, stickers, or local distribution markers.\n"
+                    "3. When regional corner tabs or obi strips are present, OR if a legacy artwork master number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT local or domestic pressing catalog number.\n"
+                    "4. Extract and return the exact domestic or regional pressing catalog number in 'catalogNumber' and set 'country' to the specific pressing country. DO NOT return the legacy master artwork template number when a specific local release catalog number exists.\n\n"
                     "CRITICAL REQUIREMENT 1: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
                     "2. 'albumTitle': Full album title or composer/work title.\n"
-                    "3. 'catalogNumber': Exact catalog number (e.g. '15GM3093', 'VIC-28001').\n"
-                    "4. 'label': Exact record label name (e.g. 'Decca', 'Seraphim', 'Deutsche Grammophon', 'EMI', 'Philips', 'RCA').\n"
-                    "5. 'country': Release country or pressing origin (e.g. 'Japan', 'US', 'UK', 'Germany').\n"
-                    "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1978, 1961, 2009).\n"
-                    "7. 'genre': Musical genre/style (e.g. 'Baroque', 'Classical Orchestral', 'Violin Concerto', 'Chamber Music', 'Jazz').\n"
+                    "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
+                    "4. 'label': Exact record label name.\n"
+                    "5. 'country': Release country or pressing origin.\n"
+                    "6. 'releaseYear': Exact 4-digit release year integer.\n"
+                    "7. 'genre': Musical genre/style.\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
@@ -453,8 +453,8 @@ class GeminiVisionService:
                 class AlbumScanMetadataSchema(BaseModel):
                     artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                     albumTitle: str = Field(description="Full album title or composer/work title")
-                    catalogNumber: Optional[str] = Field(default="", description="Exact catalog number e.g. VIC-28001")
-                    label: Optional[str] = Field(default="", description="Exact record label e.g. Deutsche Grammophon")
+                    catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
+                    label: Optional[str] = Field(default="", description="Exact record label name")
                     country: Optional[str] = Field(default="Japan", description="Release country")
                     releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
                     genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
