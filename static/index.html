@@ -1415,9 +1415,6 @@
     }
 
     function openChatModal() {
-      if (!currentSpinning && allRecords.length > 0) {
-        updateNowSpinningUI(allRecords[0]);
-      }
       const subtitle = document.getElementById('chatModalSubtitle');
       if (subtitle) {
         if (currentSpinning) {

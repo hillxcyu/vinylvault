@@ -995,6 +995,7 @@ def sanitize_cache_key(name: str) -> str:
 
 @app.post("/api/listening-guide")
 async def get_listening_guide(req: ListeningGuideRequest):
+    logger.info(f"Received /api/listening-guide request for '{req.artist}' - '{req.albumTitle}' (forceRefresh={req.forceRefresh}, recordId={req.recordId})")
     guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.albumTitle)}"
     
     # 0. Check if target record in database already holds listeningGuide on the record object
@@ -1053,6 +1054,7 @@ async def get_listening_guide(req: ListeningGuideRequest):
                 cntry = rec.get("country")
 
     # 3. Call Gemini 3.6 Flash to generate fresh guide
+    logger.info(f"Invoking Gemini 3.6 Flash + Grounding for listening guide generation: '{req.artist}' - '{req.albumTitle}' (catNo={cat_no}, label={lbl}, country={cntry})")
     guide = gemini_service.generate_listening_guide(
         artist=req.artist, 
         title=req.albumTitle,

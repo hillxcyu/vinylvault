@@ -225,10 +225,10 @@ class GeminiVisionService:
                     "12. 'box_2d': Array of 4 integers [ymin, xmin, ymax, xmax] normalized 0-1000.\n"
                     "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
                     "14. 'listeningGuide': Object with keys:\n"
-                    "   - 'albumBackground': (string, 2-3 paragraph historical backstory, composition origin, and pressing highlights)\n"
-                    "   - 'tracklist': Array of track objects with 'position', 'title', 'duration', 'highlight' (boolean), and 'whatToListenFor' (string)\n"
-                    "   - 'vinylTip': (string, audiophile listening tip for this pressing)\n"
-                    "   - 'recommendedMood': (string, ideal listening atmosphere)"
+                    "   - 'albumBackground': (string, a detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes referencing this specific catalog/label/country if identified, and trivia)\n"
+                    "   - 'tracklist': Array of track objects representing the complete vinyl tracklist. Each track object must have 'position' (e.g. 'A1', 'B1'), 'title' (string), 'duration' (string or null, e.g. '4:12'), 'highlight' (boolean, true if notable audiophile/musical details exist), and 'whatToListenFor' (string or null, if highlight is true, 1-2 sentences of specific mixing, instrument, or vinyl production details)\n"
+                    "   - 'vinylTip': (string, short audiophile pro-tip e.g. tracking weight, dynamic range, inner-groove distortion, or pressing highlights)\n"
+                    "   - 'recommendedMood': (string, brief phrase describing ideal listening atmosphere)"
                 )
 
                 from pydantic import BaseModel, Field
@@ -262,28 +262,31 @@ class GeminiVisionService:
                     mask: Optional[List[List[int]]] = Field(default=None, description="4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000")
                     listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
 
-                config = types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=AlbumScanMetadataSchema,
-                    tools=[types.Tool(google_search=types.GoogleSearch())]
-                )
+                try:
+                    config = types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=AlbumScanMetadataSchema,
+                        tools=[types.Tool(google_search=types.GoogleSearch())]
+                    )
 
+                    response = self.client.models.generate_content(
+                        model="gemini-3.6-flash",
+                        contents=[
+                            types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
+                            prompt
+                        ],
+                        config=config
+                    )
 
-                response = self.client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=[
-                        types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
-                        prompt
-                    ],
-                    config=config
-                )
-
-                text = response.text or ""
-                if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-                    for part in response.candidates[0].content.parts:
-                        if hasattr(part, "text") and part.text:
-                            text += part.text
-                text = text.strip()
+                    text = (response.text or "").strip()
+                    if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                        for part in response.candidates[0].content.parts:
+                            if hasattr(part, "text") and part.text:
+                                text += part.text
+                    text = text.strip()
+                except Exception as vis_err:
+                    logger.warning(f"Primary Vision API call encountered error ({vis_err}); retrying fallback...")
+                    text = ""
 
                 if not text:
                     raise ValueError("Gemini Vision API returned empty text response")
@@ -339,9 +342,12 @@ class GeminiVisionService:
 
                 spec_str = f" ({', '.join(details_parts)})" if details_parts else ""
 
+                clean_title = re.sub(r'["“”]', "'", title)
+                clean_artist = re.sub(r'["“”]', "'", artist)
+
                 prompt = (
                     f"You are an expert musicologist, audiophile vinyl curator, and record historian. "
-                    f"Create a deep-dive, comprehensive vinyl listening guide for the album '{title}' by {artist}{spec_str}.\n"
+                    f"Create a deep-dive, comprehensive vinyl listening guide for the album '{clean_title}' by {clean_artist}{spec_str}.\n"
                     f"Use Google Search grounding to gather rich historical details, recording session anecdotes, pressing details (specifically focusing on this release/catalog number/label/country if provided), mastering engineering notes, and full tracklists.\n"
                     f"Return ONLY a valid JSON object with the following keys:\n"
                     f"1. \"albumBackground\": A detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes (referencing this specific pressing/catalog/label/country if known), and trivia.\n"
@@ -355,23 +361,60 @@ class GeminiVisionService:
                     f"4. \"recommendedMood\": A brief phrase describing the ideal atmosphere (e.g. 'Late night dim lights with headphones and single-malt whisky')."
                 )
 
-                config = types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
-                    response_mime_type="application/json"
-                )
+                from pydantic import BaseModel, Field
 
-                response = self.client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=prompt,
-                    config=config
-                )
+                class TrackItemSchema(BaseModel):
+                    position: Optional[str] = Field(default="A1", description="Track position e.g. A1, A2, B1")
+                    title: str = Field(description="Track name or movement")
+                    duration: Optional[str] = Field(default=None, description="Duration e.g. 4:12")
+                    highlight: Optional[bool] = Field(default=False, description="True if audiophile highlight")
+                    whatToListenFor: Optional[str] = Field(default=None, description="Specific mixing or performance details to pay attention to")
 
-                text = (response.text or "").strip()
-                if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-                    for part in response.candidates[0].content.parts:
-                        if hasattr(part, "text") and part.text:
-                            text += part.text
-                text = text.strip()
+                class ListeningGuideResponseSchema(BaseModel):
+                    albumBackground: str = Field(description="Detailed 2-3 paragraph backstory covering origin, production, studio equipment, mastering, and pressing notes")
+                    tracklist: List[TrackItemSchema] = Field(default_factory=list, description="Array of track items")
+                    vinylTip: Optional[str] = Field(default="", description="Pro-tip for vinyl listeners")
+                    recommendedMood: Optional[str] = Field(default="", description="Ideal listening atmosphere")
+
+                try:
+                    config = types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=ListeningGuideResponseSchema,
+                        tools=[types.Tool(google_search=types.GoogleSearch())]
+                    )
+
+                    response = self.client.models.generate_content(
+                        model="gemini-3.6-flash",
+                        contents=prompt,
+                        config=config
+                    )
+
+                    text = (response.text or "").strip()
+                    if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                        for part in response.candidates[0].content.parts:
+                            if hasattr(part, "text") and part.text:
+                                text += part.text
+                    text = text.strip()
+                except Exception as search_err:
+                    logger.warning(f"Google Search grounded call encountered error/timeout ({search_err}); retrying without search grounding tools...")
+                    text = ""
+
+                if not text:
+                    logger.warning("Search-grounded call returned empty text; retrying with ungrounded Gemini Flash generation...")
+                    fallback_config = types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    )
+                    fallback_resp = self.client.models.generate_content(
+                        model="gemini-3.6-flash",
+                        contents=prompt,
+                        config=fallback_config
+                    )
+                    text = (fallback_resp.text or "").strip()
+                    if not text and hasattr(fallback_resp, "candidates") and fallback_resp.candidates and fallback_resp.candidates[0].content and fallback_resp.candidates[0].content.parts:
+                        for part in fallback_resp.candidates[0].content.parts:
+                            if hasattr(part, "text") and part.text:
+                                text += part.text
+                    text = text.strip()
 
                 if not text:
                     raise ValueError("Gemini API returned empty text response")
