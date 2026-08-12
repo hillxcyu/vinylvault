@@ -2995,6 +2995,13 @@
         if (previewImg) previewImg.src = '';
       }
       resetZoomPan();
+      lastScannedMetadata = null;
+      lastDuplicateCheck = null;
+      lastDetectedCorners = null;
+      currentRawFile = null;
+      const resultContainer = document.getElementById('scanResultContainer');
+      if (resultContainer) resultContainer.classList.add('hidden');
+      renderScanMetadataBox(null, true);
     }
 
     function openScannerModal() {
@@ -3131,6 +3138,11 @@
     async function triggerAutoScan() {
       if (!currentRawFile) return;
 
+      // Clear stale scan state from previous album scans
+      lastScannedMetadata = null;
+      lastDuplicateCheck = null;
+      lastDetectedCorners = null;
+
       showScanLoading(`⚡ Analyzing album cover via 3 decoupled Gemini AI workers...`);
 
       const formDataA = new FormData();
@@ -3190,6 +3202,8 @@
           console.log('✨ [Updated lastScannedMetadata]:', lastScannedMetadata);
           if (lastDuplicateCheck) {
             renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
+          } else {
+            renderScanMetadataBox(lastScannedMetadata, false);
           }
           showToast('✨ Release metadata loaded!', 'fa-book-open');
         })
