@@ -1151,15 +1151,10 @@ class FirestoreManager:
         try:
             from google.cloud import firestore
             self.db = firestore.Client(project=self.project_id, database=self.database_id)
-            print(f"GCP Firestore client initialized for project: {self.project_id}, database: {self.database_id}")
+            print(f"GCP Firestore client successfully connected to project: {self.project_id}, database: {self.database_id}")
         except Exception as e:
-            try:
-                from google.cloud import firestore
-                self.db = firestore.Client(project=self.project_id)
-                print(f"GCP Firestore client fallback for default database.")
-            except Exception as err:
-                print(f"GCP Firestore client init warning (using local/GCS fallback): {err}")
-                self.db = None
+            print(f"GCP Firestore client init error for database {self.database_id}: {e}")
+            self.db = None
 
     def get_records(self, timeout: float = 3.0) -> Optional[List[Dict[str, Any]]]:
         if not self.db:

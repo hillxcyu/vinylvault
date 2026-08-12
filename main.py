@@ -1,6 +1,8 @@
 import os
 os.environ["GOOGLE_CLOUD_PROJECT"] = "universal-trail-492014-n5"
 os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
+os.environ["FIRESTORE_DATABASE_ID"] = "vinylvault-hk"
+os.environ["GCS_BUCKET_NAME"] = "universal-trail-492014-n5-vinyl-vault-hk-data"
 
 
 container_adc = "/root/.config/gcloud/application_default_credentials.json"
