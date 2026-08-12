@@ -1476,11 +1476,11 @@
     let lightboxPanX = 0;
     let lightboxPanY = 0;
     let isLightboxDragging = false;
-    let isPinching = false;
-    let initialPinchDist = 0;
-    let initialScale = 1.0;
-    let pinchCenterX = 0;
-    let pinchCenterY = 0;
+    let lightboxIsPinching = false;
+    let lightboxInitialPinchDist = 0;
+    let lightboxInitialScale = 1.0;
+    let lightboxPinchCenterX = 0;
+    let lightboxPinchCenterY = 0;
     let lightboxStartMouseX = 0;
     let lightboxStartMouseY = 0;
     let lightboxStartPanX = 0;
@@ -1501,7 +1501,7 @@
       lightboxScale = 1.0;
       lightboxPanX = 0;
       lightboxPanY = 0;
-      isPinching = false;
+      lightboxIsPinching = false;
       isLightboxDragging = false;
       lightboxHasMoved = false;
       applyLightboxTransform();
@@ -1532,7 +1532,7 @@
 
     function handleLightboxMouseDown(e) {
       if (e.target.closest('button')) return;
-      isPinching = false;
+      lightboxIsPinching = false;
       isLightboxDragging = true;
       lightboxHasMoved = false;
       lightboxStartMouseX = e.clientX;
@@ -1544,7 +1544,7 @@
     }
 
     function handleLightboxMouseMove(e) {
-      if (!isLightboxDragging || isPinching) return;
+      if (!isLightboxDragging || lightboxIsPinching) return;
       if (e.cancelable) e.preventDefault();
       const dx = e.clientX - lightboxStartMouseX;
       const dy = e.clientY - lightboxStartMouseY;
@@ -1563,16 +1563,16 @@
 
     function handleLightboxTouchStart(e) {
       if (e.touches && e.touches.length === 2) {
-        isPinching = true;
+        lightboxIsPinching = true;
         isLightboxDragging = false;
         lightboxHasMoved = true;
-        initialPinchDist = Math.hypot(
+        lightboxInitialPinchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        initialScale = lightboxScale;
-        pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        lightboxInitialScale = lightboxScale;
+        lightboxPinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        lightboxPinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
         lightboxStartPanX = lightboxPanX;
         lightboxStartPanY = lightboxPanY;
         const img = document.getElementById('lightboxImage');
@@ -1580,7 +1580,7 @@
         return;
       }
       if (e.target.closest('button')) return;
-      isPinching = false;
+      lightboxIsPinching = false;
       isLightboxDragging = true;
       lightboxHasMoved = false;
       lightboxStartMouseX = e.touches && e.touches[0] ? e.touches[0].clientX : 0;
@@ -1598,19 +1598,19 @@
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        if (initialPinchDist > 0) {
-          const factor = currentDist / initialPinchDist;
-          lightboxScale = Math.max(0.75, Math.min(5.0, initialScale * factor));
+        if (lightboxInitialPinchDist > 0) {
+          const factor = currentDist / lightboxInitialPinchDist;
+          lightboxScale = Math.max(0.75, Math.min(5.0, lightboxInitialScale * factor));
           const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
           const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-          lightboxPanX = lightboxStartPanX + (currentCenterX - pinchCenterX);
-          lightboxPanY = lightboxStartPanY + (currentCenterY - pinchCenterY);
+          lightboxPanX = lightboxStartPanX + (currentCenterX - lightboxPinchCenterX);
+          lightboxPanY = lightboxStartPanY + (currentCenterY - lightboxPinchCenterY);
           applyLightboxTransform();
         }
         lightboxHasMoved = true;
         return;
       }
-      if (isPinching || !isLightboxDragging) return;
+      if (lightboxIsPinching || !isLightboxDragging) return;
       if (e.cancelable) e.preventDefault();
       const currentX = e.touches && e.touches[0] ? e.touches[0].clientX : 0;
       const currentY = e.touches && e.touches[0] ? e.touches[0].clientY : 0;
@@ -1624,7 +1624,7 @@
 
     function handleLightboxTouchEnd(e) {
       if (e && e.touches && e.touches.length === 1) {
-        isPinching = false;
+        lightboxIsPinching = false;
         isLightboxDragging = true;
         lightboxStartMouseX = e.touches[0].clientX;
         lightboxStartMouseY = e.touches[0].clientY;
@@ -1634,7 +1634,7 @@
       }
       if (e && e.touches && e.touches.length > 0) return;
 
-      isPinching = false;
+      lightboxIsPinching = false;
       isLightboxDragging = false;
       const img = document.getElementById('lightboxImage');
       if (img) img.style.transition = 'transform 0.15s ease-out';
