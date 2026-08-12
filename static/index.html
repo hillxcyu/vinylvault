@@ -1830,13 +1830,17 @@
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
         allRecords = data.records || [];
-        document.getElementById('recordCountBadge').innerText = allRecords.length;
-        document.getElementById('statTotalRecords').innerText = allRecords.length;
 
-        await fetchNowSpinning();
-        renderRecordsGrid(allRecords);
-
+        // Hide connection overlay immediately upon receiving response from Firestore
         hideDbConnectingOverlay();
+
+        const badge = document.getElementById('recordCountBadge');
+        if (badge) badge.innerText = allRecords.length;
+        const statTotal = document.getElementById('statTotalRecords');
+        if (statTotal) statTotal.innerText = allRecords.length;
+
+        try { await fetchNowSpinning(); } catch (e) { console.warn('fetchNowSpinning error:', e); }
+        try { renderRecordsGrid(allRecords); } catch (e) { console.error('renderRecordsGrid error:', e); }
       } catch (err) {
         console.error('Error fetching collection:', err);
         showDbConnectionError('Unable to connect to Vinyl Vault database.');
@@ -4287,6 +4291,11 @@
     fetchListeningJournal();
     fetchStats();
     fetchChronicle();
+
+    // Safety fallback: ensure initial connecting overlay is always dismissed within 2.5s
+    setTimeout(() => {
+      hideDbConnectingOverlay();
+    }, 2500);
 
   </script>
 
