@@ -284,10 +284,11 @@ class GeminiVisionService:
             return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": f"Error: {e}"}
 
 
-    def extract_album_metadata_and_guide(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
+    def extract_album_metadata(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
         """
-        Deep metadata & listening guide extraction (Call C) via Gemini 3.6 Flash + Google Search Grounding.
-        Returns catalog number, label, release country, release year, genre, and listening guide.
+        Fast album metadata extraction (Call C) via Gemini 3.6 Flash.
+        Returns catalog number, label, release country, release year, genre, and confidence score.
+        Thinking level is set to minimal for maximum response speed (~1s).
         """
         if not self.client:
             return {}
@@ -297,9 +298,9 @@ class GeminiVisionService:
         prompt = (
             "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
             "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
-            "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
+            "CRITICAL REQUIREMENT 1: Extract and verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
             "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label.\n"
-            "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing. Always return an accurate 4-digit 'releaseYear' integer.\n\n"
+            "CRITICAL REQUIREMENT 2: Return an accurate 4-digit 'releaseYear' integer.\n\n"
             "Extract and return ONLY a valid JSON object with the following fields:\n"
             "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
             "2. 'albumTitle': Full album title or composer/work title.\n"
@@ -308,28 +309,14 @@ class GeminiVisionService:
             "5. 'country': Release country or pressing origin (e.g. 'Japan', 'Germany', 'US', 'UK').\n"
             "6. 'releaseYear': Exact 4-digit release year integer.\n"
             "7. 'genre': Musical genre/style.\n"
-            "8. 'confidenceScore': Number between 0 and 1.\n"
-            "9. 'listeningGuide': Object with 'albumBackground', 'tracklist', 'vinylTip', 'recommendedMood'."
+            "8. 'confidenceScore': Number between 0 and 1."
         )
 
         try:
             from google.genai import types
             from pydantic import BaseModel, Field
 
-            class TracklistSchema(BaseModel):
-                position: Optional[str] = Field(default="A1", description="Track position e.g. A1, B1")
-                title: str = Field(description="Track title or movement")
-                duration: Optional[str] = Field(default="", description="Duration e.g. 5:24")
-                highlight: Optional[bool] = Field(default=False, description="Is key track highlight")
-                whatToListenFor: Optional[str] = Field(default="", description="Detail to listen for")
-
-            class ListeningGuideSchema(BaseModel):
-                albumBackground: str = Field(description="Historical backstory, composition origin, and pressing highlights")
-                tracklist: List[TracklistSchema] = Field(default_factory=list, description="Array of track items")
-                vinylTip: Optional[str] = Field(default="", description="Audiophile tip for this pressing")
-                recommendedMood: Optional[str] = Field(default="", description="Recommended listening atmosphere")
-
-            class AlbumDeepMetadataSchema(BaseModel):
+            class AlbumMetadataSchema(BaseModel):
                 artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                 albumTitle: str = Field(description="Full album title or composer/work title")
                 catalogNumber: Optional[str] = Field(default="", description="Exact catalog number e.g. VIC-28001")
@@ -338,12 +325,11 @@ class GeminiVisionService:
                 releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
                 genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
                 confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
-                listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_schema=AlbumDeepMetadataSchema,
-                tools=[types.Tool(google_search=types.GoogleSearch())]
+                response_schema=AlbumMetadataSchema,
+                thinking_config=types.ThinkingConfig(thinking_level="minimal")
             )
 
             response = self.client.models.generate_content(
@@ -365,16 +351,20 @@ class GeminiVisionService:
                 return {}
 
             parsed = json.loads(text)
-            logger.info(f"Gemini Deep Metadata & Guide (Call C) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
+            logger.info(f"Gemini Fast Metadata (Call C) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
             return parsed
         except Exception as e:
-            logger.warning(f"Deep metadata extraction warning: {e}")
+            logger.warning(f"Fast metadata extraction warning: {e}")
             return {}
+
+    def extract_album_metadata_and_guide(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
+        """Backward-compatible wrapper pointing to extract_album_metadata."""
+        return self.extract_album_metadata(image_bytes, filename=filename)
 
 
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
-        Analyze album cover photo using Gemini 3.6 Flash Vision model with Google Search grounding and Crate inventory duplicate checking
+        Analyze album cover photo using Gemini 3.6 Flash Vision model with minimal thinking level for fast metadata and duplicate checking.
         """
 
         if self.client:
@@ -422,10 +412,10 @@ class GeminiVisionService:
                 prompt = (
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
                     "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
-                    "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
+                    "CRITICAL REQUIREMENT 1: Verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
                     "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label (e.g. 'Deutsche Grammophon', 'Decca', 'Seraphim', 'Philips', 'EMI', 'CBS Masterworks', 'Archiv').\n"
-                    "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing (e.g., 'EAC-60150-51' was released in 1978, 'UCJG-9012' in 2009). Always return an accurate 4-digit 'releaseYear' integer.\n"
-                    "CRITICAL REQUIREMENT 5: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
+                    "CRITICAL REQUIREMENT 2: Return an accurate 4-digit 'releaseYear' integer.\n"
+                    "CRITICAL REQUIREMENT 3: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
@@ -440,28 +430,10 @@ class GeminiVisionService:
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
                     "12. 'box_2d': Array of 4 integers [ymin, xmin, ymax, xmax] normalized 0-1000.\n"
-                    "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x].\n"
-                    "14. 'listeningGuide': Object with keys:\n"
-                    "   - 'albumBackground': (string, a detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes referencing this specific catalog/label/country if identified, and trivia)\n"
-                    "   - 'tracklist': Array of track objects representing the complete vinyl tracklist. Each track object must have 'position' (e.g. 'A1', 'B1'), 'title' (string), 'duration' (string or null, e.g. '4:12'), 'highlight' (boolean, true if notable audiophile/musical details exist), and 'whatToListenFor' (string or null, if highlight is true, 1-2 sentences of specific mixing, instrument, or vinyl production details)\n"
-                    "   - 'vinylTip': (string, short audiophile pro-tip e.g. tracking weight, dynamic range, inner-groove distortion, or pressing highlights)\n"
-                    "   - 'recommendedMood': (string, brief phrase describing ideal listening atmosphere)"
+                    "13. 'mask': Array of 4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000 in Gemini [ymin, xmin] coordinate order: Top-Left [y,x], Top-Right [y,x], Bottom-Right [y,x], Bottom-Left [y,x]."
                 )
 
                 from pydantic import BaseModel, Field
-
-                class TracklistSchema(BaseModel):
-                    position: Optional[str] = Field(default="A1", description="Track position e.g. A1, B1")
-                    title: str = Field(description="Track title or movement")
-                    duration: Optional[str] = Field(default="", description="Duration e.g. 5:24")
-                    highlight: Optional[bool] = Field(default=False, description="Is key track highlight")
-                    whatToListenFor: Optional[str] = Field(default="", description="Detail to listen for")
-
-                class ListeningGuideSchema(BaseModel):
-                    albumBackground: str = Field(description="Historical backstory, composition origin, and pressing highlights")
-                    tracklist: List[TracklistSchema] = Field(default_factory=list, description="Array of track items")
-                    vinylTip: Optional[str] = Field(default="", description="Audiophile tip for this pressing")
-                    recommendedMood: Optional[str] = Field(default="", description="Recommended listening atmosphere")
 
                 class AlbumScanMetadataSchema(BaseModel):
                     artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
@@ -477,13 +449,12 @@ class GeminiVisionService:
                     crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
                     box_2d: Optional[List[int]] = Field(default=None, description="2D bounding box [ymin, xmin, ymax, xmax] normalized 0-1000")
                     mask: Optional[List[List[int]]] = Field(default=None, description="4 corner points [[y1, x1], [y2, x2], [y3, x3], [y4, x4]] normalized 0-1000")
-                    listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
 
                 try:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=AlbumScanMetadataSchema,
-                        tools=[types.Tool(google_search=types.GoogleSearch())]
+                        thinking_config=types.ThinkingConfig(thinking_level="minimal")
                     )
 
                     response = self.client.models.generate_content(

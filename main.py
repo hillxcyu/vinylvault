@@ -558,8 +558,8 @@ async def scan_duplicate_check(file: UploadFile = File(...)):
 @app.post("/api/scan/deep-metadata")
 async def scan_deep_metadata(file: UploadFile = File(...)):
     contents = await file.read()
-    logger.info("Call C: Running search-grounded deep metadata and listening guide extraction...")
-    deep_meta = await asyncio.to_thread(gemini_service.extract_album_metadata_and_guide, contents)
+    logger.info("Call C: Running fast album release metadata extraction...")
+    deep_meta = await asyncio.to_thread(gemini_service.extract_album_metadata, contents)
     artist = deep_meta.get("artist", "")
     title = deep_meta.get("albumTitle", "")
     catno = deep_meta.get("catalogNumber", "")
@@ -584,12 +584,12 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     contents = await file.read()
     crate_records = db.get_all_records()
 
-    logger.info("Launching 3 concurrent Gemini calls for scan analysis (Call A: Corners, Call B: Fast Duplicate, Call C: Grounded Deep Meta)...")
+    logger.info("Launching 3 concurrent Gemini calls for scan analysis (Call A: Corners, Call B: Fast Duplicate, Call C: Fast Release Meta)...")
 
-    # 1. Issue Call A (Corners), Call B (Fast Duplicate Check), and Call C (Deep Grounded Metadata) concurrently in parallel
+    # 1. Issue Call A (Corners), Call B (Fast Duplicate Check), and Call C (Fast Release Metadata) concurrently in parallel
     corners_task = asyncio.to_thread(deskew_service.detect_corners, contents, gemini_service)
     duplicate_task = asyncio.to_thread(gemini_service.check_album_duplicate, contents, crate_records)
-    deep_meta_task = asyncio.to_thread(gemini_service.extract_album_metadata_and_guide, contents)
+    deep_meta_task = asyncio.to_thread(gemini_service.extract_album_metadata, contents)
 
     detected_corners_res, fast_dup_res, deep_meta_res = await asyncio.gather(
         corners_task, duplicate_task, deep_meta_task, return_exceptions=True

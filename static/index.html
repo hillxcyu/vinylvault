@@ -2899,7 +2899,7 @@
         })
         .catch(err => console.warn('Call B duplicate check error:', err));
 
-      // 3. Call C: Search-Grounded Deep Metadata & Listening Guide (~4.0s)
+      // 3. Call C: Fast Release Metadata (~1.0s)
       fetch('/api/scan/deep-metadata', { method: 'POST', body: formDataC })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
@@ -2911,7 +2911,7 @@
           if (lastDuplicateCheck) {
             renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
           }
-          showToast('✨ Deep release metadata & listening guide loaded!', 'fa-book-open');
+          showToast('✨ Release metadata loaded!', 'fa-book-open');
         })
         .catch(err => console.warn('Call C deep metadata error:', err));
     }
