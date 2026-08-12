@@ -569,20 +569,16 @@ async def scan_deep_metadata(file: UploadFile = File(...)):
     if artist and title:
         opt_raw_bytes = gemini_service.downsample_image_bytes(contents, max_dim=1024, quality=85)
         raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_raw_bytes).decode('utf-8')}"
-        info = await asyncio.to_thread(
-            discogs_service.fetch_release_info,
+        official_img = await asyncio.to_thread(
+            discogs_service.fetch_official_cover,
             artist,
             title,
             cover_url=raw_b64,
             catalog_number=catno,
             country=country
         )
-        if info.get("coverUrl"):
-            deep_meta["officialCoverUrl"] = info["coverUrl"]
-        if not deep_meta.get("releaseYear") and info.get("releaseYear"):
-            deep_meta["releaseYear"] = info["releaseYear"]
-        if not deep_meta.get("catalogNumber") and info.get("catalogNumber"):
-            deep_meta["catalogNumber"] = info["catalogNumber"]
+        if official_img:
+            deep_meta["officialCoverUrl"] = official_img
     logger.info(f"Call C deep-metadata result: releaseYear={deep_meta.get('releaseYear')}, artist='{deep_meta.get('artist')}', title='{deep_meta.get('albumTitle')}', catno='{deep_meta.get('catalogNumber')}'")
     return {"metadata": deep_meta}
 
@@ -631,26 +627,22 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     extracted_metadata["rawCoverUrl"] = raw_b64
     extracted_metadata["deskewed"] = True
 
-    # 3. Store optional Discogs official cover suggestion and fallback releaseYear asynchronously
+    # 3. Store optional Discogs official cover suggestion asynchronously
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     catno = extracted_metadata.get("catalogNumber", "")
     country = extracted_metadata.get("country", "Japan")
     if artist and title:
-        discogs_info = await asyncio.to_thread(
-            discogs_service.fetch_release_info,
+        official_img = await asyncio.to_thread(
+            discogs_service.fetch_official_cover,
             artist,
             title,
             cover_url=deskewed_b64,
             catalog_number=catno,
             country=country
         )
-        if discogs_info.get("coverUrl"):
-            extracted_metadata["officialCoverUrl"] = discogs_info["coverUrl"]
-        if not extracted_metadata.get("releaseYear") and discogs_info.get("releaseYear"):
-            extracted_metadata["releaseYear"] = discogs_info["releaseYear"]
-        if not extracted_metadata.get("catalogNumber") and discogs_info.get("catalogNumber"):
-            extracted_metadata["catalogNumber"] = discogs_info["catalogNumber"]
+        if official_img:
+            extracted_metadata["officialCoverUrl"] = official_img
 
     logger.info(f"Scan analysis complete: releaseYear={extracted_metadata.get('releaseYear')}, artist='{extracted_metadata.get('artist')}', title='{extracted_metadata.get('albumTitle')}'")
 
