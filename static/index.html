@@ -3128,14 +3128,6 @@
         ]));
 
         const cropRes = await fetch('/api/crop-deskew', {
-        formData.append('corners', JSON.stringify([
-          [cornerPoints[0].x, cornerPoints[0].y],
-          [cornerPoints[1].x, cornerPoints[1].y],
-          [cornerPoints[2].x, cornerPoints[2].y],
-          [cornerPoints[3].x, cornerPoints[3].y]
-        ]));
-
-        const cropRes = await fetch('/api/crop-deskew', {
           method: 'POST',
           body: formData
         });
