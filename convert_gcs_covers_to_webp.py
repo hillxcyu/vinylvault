@@ -107,7 +107,7 @@ def convert_gcs_covers_to_webp():
         print(f"  GCS storage saved: {overall_reduction:.1f}%!")
 
     # Now update Firestore database records
-    db_ids = ["vinylvault", "vinylvault-hk"]
+    db_ids = ["vinylvault-hk"]
     print("\n--- Updating Firestore Database URLs ---")
     for db_id in db_ids:
         try:
