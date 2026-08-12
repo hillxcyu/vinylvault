@@ -1121,6 +1121,7 @@
       } else if (tabName === 'nowSpinning') {
         if (tabNow) tabNow.classList.remove('hidden');
         if (btnNow) btnNow.className = activeClass;
+        fetchNowSpinning();
       } else if (tabName === 'chronicle') {
         if (tabChronicle) tabChronicle.classList.remove('hidden');
         if (btnChronicle) btnChronicle.className = activeClass;
@@ -3430,7 +3431,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       initCornerHandles();
       initZoomPanController();
-      setInterval(fetchNowSpinning, 10000);
     });
 
 
