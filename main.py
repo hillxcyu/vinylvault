@@ -569,16 +569,20 @@ async def scan_deep_metadata(file: UploadFile = File(...)):
     if artist and title:
         opt_raw_bytes = gemini_service.downsample_image_bytes(contents, max_dim=1024, quality=85)
         raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_raw_bytes).decode('utf-8')}"
-        official_img = await asyncio.to_thread(
-            discogs_service.fetch_official_cover,
+        info = await asyncio.to_thread(
+            discogs_service.fetch_release_info,
             artist,
             title,
             cover_url=raw_b64,
             catalog_number=catno,
             country=country
         )
-        if official_img:
-            deep_meta["officialCoverUrl"] = official_img
+        if info.get("coverUrl"):
+            deep_meta["officialCoverUrl"] = info["coverUrl"]
+        if not deep_meta.get("releaseYear") and info.get("releaseYear"):
+            deep_meta["releaseYear"] = info["releaseYear"]
+        if not deep_meta.get("catalogNumber") and info.get("catalogNumber"):
+            deep_meta["catalogNumber"] = info["catalogNumber"]
     return {"metadata": deep_meta}
 
 @app.post("/api/scan")
@@ -626,22 +630,26 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     extracted_metadata["rawCoverUrl"] = raw_b64
     extracted_metadata["deskewed"] = True
 
-    # 3. Store optional Discogs official cover suggestion asynchronously
+    # 3. Store optional Discogs official cover suggestion and fallback releaseYear asynchronously
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     catno = extracted_metadata.get("catalogNumber", "")
     country = extracted_metadata.get("country", "Japan")
     if artist and title:
-        official_img = await asyncio.to_thread(
-            discogs_service.fetch_official_cover,
+        discogs_info = await asyncio.to_thread(
+            discogs_service.fetch_release_info,
             artist,
             title,
             cover_url=deskewed_b64,
             catalog_number=catno,
             country=country
         )
-        if official_img:
-            extracted_metadata["officialCoverUrl"] = official_img
+        if discogs_info.get("coverUrl"):
+            extracted_metadata["officialCoverUrl"] = discogs_info["coverUrl"]
+        if not extracted_metadata.get("releaseYear") and discogs_info.get("releaseYear"):
+            extracted_metadata["releaseYear"] = discogs_info["releaseYear"]
+        if not extracted_metadata.get("catalogNumber") and discogs_info.get("catalogNumber"):
+            extracted_metadata["catalogNumber"] = discogs_info["catalogNumber"]
 
     # 4. Automatically run duplicate check on extracted metadata using pre-fetched crate_records
     duplicate_result = build_duplicate_result(

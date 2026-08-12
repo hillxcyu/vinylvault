@@ -319,7 +319,7 @@ class GeminiVisionService:
             "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
             "4. 'label': Exact record label name.\n"
             "5. 'country': Release country or pressing origin.\n"
-            "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). Look closely at the jacket for ℗ or © copyright dates, phonogram dates, obi strip dates, or search Google for the exact pressing release year of this catalog number. DO NOT default to current year (like 2024 or 2026) or guess arbitrarily. Return null if unknown.\n"
+            "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). First check the jacket or obi for printed dates. If no year is printed on the cover image, YOU MUST USE GOOGLE SEARCH OR YOUR MUSICOLOGICAL KNOWLEDGE to look up the official original release year or pressing year for this album title, artist, label, and catalog number (e.g. Discogs or Wikipedia release year). Return the 4-digit integer year. DO NOT return modern webpage fetch timestamps or current default years like 2024 or 2026. Only return null if the album release year cannot be determined after searching.\n"
             "7. 'genre': Musical genre/style.\n"
             "8. 'confidenceScore': Number between 0 and 1."
         )
@@ -438,7 +438,7 @@ class GeminiVisionService:
                     "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
                     "4. 'label': Exact record label name.\n"
                     "5. 'country': Release country or pressing origin.\n"
-                    "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). Look closely at the jacket for ℗ or © copyright dates, phonogram dates, obi strip dates, or search Google for the exact pressing release year of this catalog number. DO NOT default to current year (like 2024 or 2026) or guess arbitrarily. Return null if unknown.\n"
+                    "6. 'releaseYear': Exact 4-digit release year integer (e.g. 1974). First check the jacket or obi for printed dates. If no year is printed on the cover image, YOU MUST USE GOOGLE SEARCH OR YOUR MUSICOLOGICAL KNOWLEDGE to look up the official original release year or pressing year for this album title, artist, label, and catalog number (e.g. Discogs or Wikipedia release year). Return the 4-digit integer year. DO NOT return modern webpage fetch timestamps or current default years like 2024 or 2026. Only return null if the album release year cannot be determined after searching.\n"
                     "7. 'genre': Musical genre/style.\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
