@@ -155,6 +155,182 @@ class GeminiVisionService:
         return None
 
 
+    def check_album_duplicate(self, image_bytes: bytes, crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        """
+        Fast duplicate checker (Call B) via Gemini 3.6 Flash.
+        No Google Search tools, minimal thinking level for maximum speed (~1-2s).
+        Returns basic OCR metadata (artist, albumTitle) and duplicate check status against user's library.
+        """
+        if not self.client:
+            return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "AI client uninitialized"}
+
+        optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
+
+        crate_context = ""
+        if crate_records:
+            crate_lines = []
+            for r in crate_records:
+                if isinstance(r, dict):
+                    rec_id = r.get("id") or ""
+                    title = r.get("title") or ""
+                    artist = r.get("artist") or ""
+                    label = r.get("label") or ""
+                    catno = r.get("catalogNumber") or r.get("catno") or ""
+                    info_parts = []
+                    if label: info_parts.append(f"Label: {label}")
+                    if catno: info_parts.append(f"CatNo: {catno}")
+                    meta_str = f" ({', '.join(info_parts)})" if info_parts else ""
+                    crate_lines.append(f"- ID: {rec_id} | \"{title}\" - {artist}{meta_str}")
+
+            crate_context_str = "\n".join(crate_lines[:200])
+            crate_context = (
+                f"\n\nCRATE COLLECTION INVENTORY:\n{crate_context_str}\n\n"
+                f"MATCHING RULES:\n"
+                f"1. Set 'isAlreadyInCrate': true if user owns ANY release/pressing of this album title or main performers.\n"
+                f"2. Set 'crateMatchId' to matching record ID.\n"
+                f"3. Set 'crateMatchReason' to a 1-2 sentence explanation.\n"
+                f"4. If no match exists, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'."
+            )
+
+        prompt = (
+            "Quickly read the album title and main artist from this vinyl cover image.\n"
+            "Evaluate whether this album matches any item in the user's Crate Collection inventory below.\n"
+            f"{crate_context}\n\n"
+            "Return JSON with 'artist', 'albumTitle', 'isAlreadyInCrate', 'crateMatchId', 'crateMatchReason', 'confidenceScore'."
+        )
+
+        try:
+            from google.genai import types
+            from pydantic import BaseModel, Field
+
+            class FastDuplicateCheckSchema(BaseModel):
+                artist: str = Field(default="", description="Main soloist, conductor, orchestra, or performer(s)")
+                albumTitle: str = Field(default="", description="Full album title or composer/work title")
+                isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
+                crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
+                crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
+                confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score")
+
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=FastDuplicateCheckSchema,
+                thinking_config=types.ThinkingConfig(thinking_level="minimal")
+            )
+
+            response = self.client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=[
+                    types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
+                    prompt
+                ],
+                config=config
+            )
+
+            text = (response.text or "").strip()
+            if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, "text") and part.text:
+                        text += part.text
+            text = text.strip()
+            if not text:
+                return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "Empty response"}
+
+            parsed = json.loads(text)
+            logger.info(f"Gemini Fast Duplicate Check (Call B) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}")
+            return parsed
+        except Exception as e:
+            logger.warning(f"Fast duplicate check warning: {e}")
+            return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": f"Error: {e}"}
+
+
+    def extract_album_metadata_and_guide(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
+        """
+        Deep metadata & listening guide extraction (Call C) via Gemini 3.6 Flash + Google Search Grounding.
+        Returns catalog number, label, release country, release year, genre, and listening guide.
+        """
+        if not self.client:
+            return {}
+
+        optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
+
+        prompt = (
+            "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, and Box Sets.\n"
+            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
+            "CRITICAL REQUIREMENT 1: Perform deep research using Google Search grounding to verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
+            "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label.\n"
+            "CRITICAL REQUIREMENT 2: Use Google Search grounding to look up the official release year for this specific catalog number/pressing. Always return an accurate 4-digit 'releaseYear' integer.\n\n"
+            "Extract and return ONLY a valid JSON object with the following fields:\n"
+            "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
+            "2. 'albumTitle': Full album title or composer/work title.\n"
+            "3. 'catalogNumber': Exact catalog number (e.g. 'EAC-30073', 'SLPM 138 707').\n"
+            "4. 'label': Exact record label name (e.g. 'Deutsche Grammophon', 'Decca').\n"
+            "5. 'country': Release country or pressing origin (e.g. 'Japan', 'Germany', 'US', 'UK').\n"
+            "6. 'releaseYear': Exact 4-digit release year integer.\n"
+            "7. 'genre': Musical genre/style.\n"
+            "8. 'confidenceScore': Number between 0 and 1.\n"
+            "9. 'listeningGuide': Object with 'albumBackground', 'tracklist', 'vinylTip', 'recommendedMood'."
+        )
+
+        try:
+            from google.genai import types
+            from pydantic import BaseModel, Field
+
+            class TracklistSchema(BaseModel):
+                position: Optional[str] = Field(default="A1", description="Track position e.g. A1, B1")
+                title: str = Field(description="Track title or movement")
+                duration: Optional[str] = Field(default="", description="Duration e.g. 5:24")
+                highlight: Optional[bool] = Field(default=False, description="Is key track highlight")
+                whatToListenFor: Optional[str] = Field(default="", description="Detail to listen for")
+
+            class ListeningGuideSchema(BaseModel):
+                albumBackground: str = Field(description="Historical backstory, composition origin, and pressing highlights")
+                tracklist: List[TracklistSchema] = Field(default_factory=list, description="Array of track items")
+                vinylTip: Optional[str] = Field(default="", description="Audiophile tip for this pressing")
+                recommendedMood: Optional[str] = Field(default="", description="Recommended listening atmosphere")
+
+            class AlbumDeepMetadataSchema(BaseModel):
+                artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
+                albumTitle: str = Field(description="Full album title or composer/work title")
+                catalogNumber: Optional[str] = Field(default="", description="Exact catalog number e.g. VIC-28001")
+                label: Optional[str] = Field(default="", description="Exact record label e.g. Deutsche Grammophon")
+                country: Optional[str] = Field(default="Japan", description="Release country")
+                releaseYear: Optional[int] = Field(default=1980, description="4-digit release year integer")
+                genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
+                confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
+                listeningGuide: Optional[ListeningGuideSchema] = Field(default=None, description="Structured listening guide")
+
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=AlbumDeepMetadataSchema,
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            )
+
+            response = self.client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=[
+                    types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
+                    prompt
+                ],
+                config=config
+            )
+
+            text = (response.text or "").strip()
+            if not text and hasattr(response, "candidates") and response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if hasattr(part, "text") and part.text:
+                        text += part.text
+            text = text.strip()
+            if not text:
+                return {}
+
+            parsed = json.loads(text)
+            logger.info(f"Gemini Deep Metadata & Guide (Call C) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
+            return parsed
+        except Exception as e:
+            logger.warning(f"Deep metadata extraction warning: {e}")
+            return {}
+
+
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
         Analyze album cover photo using Gemini 3.6 Flash Vision model with Google Search grounding and Crate inventory duplicate checking

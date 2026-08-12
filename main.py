@@ -534,17 +534,33 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     contents = await file.read()
     crate_records = db.get_all_records()
 
-    # 1. Single unified Gemini 3.6 Flash Vision Call (Metadata + Grounding + 4-Corner Segmentation)
-    extracted_metadata = gemini_service.analyze_album_cover(
-        contents, 
-        filename="scan.jpg", 
-        crate_records=crate_records
+    logger.info("Launching 3 concurrent Gemini calls for scan analysis (Call A: Corners, Call B: Fast Duplicate, Call C: Grounded Deep Meta)...")
+
+    # 1. Issue Call A (Corners), Call B (Fast Duplicate Check), and Call C (Deep Grounded Metadata) concurrently in parallel
+    corners_task = asyncio.to_thread(deskew_service.detect_corners, contents, gemini_service)
+    duplicate_task = asyncio.to_thread(gemini_service.check_album_duplicate, contents, crate_records)
+    deep_meta_task = asyncio.to_thread(gemini_service.extract_album_metadata_and_guide, contents)
+
+    detected_corners_res, fast_dup_res, deep_meta_res = await asyncio.gather(
+        corners_task, duplicate_task, deep_meta_task, return_exceptions=True
     )
 
-    # 2. Detect 4 corners using Gemini Vision 3.6 Flash segmentation
-    detected_corners = deskew_service.detect_corners(contents, gemini_service=gemini_service)
+    detected_corners = detected_corners_res if isinstance(detected_corners_res, list) else None
+    fast_dup = fast_dup_res if isinstance(fast_dup_res, dict) else {}
+    deep_meta = deep_meta_res if isinstance(deep_meta_res, dict) else {}
 
-    # 3. Perspective-warp cover image using detected corners
+    # Combine fast duplicate findings with deep metadata
+    extracted_metadata = {**deep_meta}
+    if not extracted_metadata.get("artist") and fast_dup.get("artist"):
+        extracted_metadata["artist"] = fast_dup.get("artist")
+    if not extracted_metadata.get("albumTitle") and fast_dup.get("albumTitle"):
+        extracted_metadata["albumTitle"] = fast_dup.get("albumTitle")
+
+    extracted_metadata["isAlreadyInCrate"] = fast_dup.get("isAlreadyInCrate", False)
+    extracted_metadata["crateMatchId"] = fast_dup.get("crateMatchId")
+    extracted_metadata["crateMatchReason"] = fast_dup.get("crateMatchReason", "")
+
+    # 2. Perspective-warp cover image using detected corners
     deskewed_bytes = deskew_service.warp_image_from_normalized_corners(contents, detected_corners)
 
     # Downsample preview base64 images to 1024px max dimension for fast transmission (<200KB vs 7MB)
@@ -558,7 +574,7 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
     extracted_metadata["rawCoverUrl"] = raw_b64
     extracted_metadata["deskewed"] = True
 
-    # 4. Store optional Discogs official cover suggestion asynchronously
+    # 3. Store optional Discogs official cover suggestion asynchronously
     artist = extracted_metadata.get("artist", "")
     title = extracted_metadata.get("albumTitle", "")
     catno = extracted_metadata.get("catalogNumber", "")
@@ -575,7 +591,7 @@ async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(Fal
         if official_img:
             extracted_metadata["officialCoverUrl"] = official_img
 
-    # 5. Automatically run duplicate check on extracted metadata using pre-fetched crate_records
+    # 4. Automatically run duplicate check on extracted metadata using pre-fetched crate_records
     duplicate_result = build_duplicate_result(
         extracted_metadata,
         crate_records
