@@ -860,6 +860,13 @@
             <div id="handle-tr" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">TR</div>
             <div id="handle-br" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BR</div>
             <div id="handle-bl" class="deskew-handle absolute w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-[10px] flex items-center justify-center -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white cursor-grab active:cursor-grabbing z-20">BL</div>
+
+            <!-- Floating Magnifying Glass Loupe overlay during handle dragging -->
+            <div id="cornerMagnifierLoupe" class="hidden absolute w-24 h-24 rounded-full border-2 border-amber-400 shadow-2xl overflow-hidden pointer-events-none z-30 bg-stone-900 shadow-black/80 -translate-x-1/2 -translate-y-1/2">
+              <canvas id="loupeCanvas" width="96" height="96" class="w-full h-full object-cover"></canvas>
+              <div class="absolute inset-0 rounded-full border border-white/20 pointer-events-none"></div>
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-amber-400/80 bg-amber-500/30 pointer-events-none"></div>
+            </div>
           </div>
 
         </div>
@@ -3025,6 +3032,48 @@
       });
     }
 
+    function updateMagnifierLoupe(stageX, stageY, w, h) {
+      const loupe = document.getElementById('cornerMagnifierLoupe');
+      const canvas = document.getElementById('loupeCanvas');
+      const img = document.getElementById('scannerPreviewImg');
+      if (!loupe || !canvas || !img || !img.naturalWidth) return;
+
+      loupe.classList.remove('hidden');
+
+      let loupeX = stageX;
+      let loupeY = stageY - 65;
+      if (loupeY < 50) loupeY = stageY + 65;
+      loupe.style.left = `${loupeX}px`;
+      loupe.style.top = `${loupeY}px`;
+
+      const ctx = canvas.getContext('2d');
+      const loupeW = canvas.width;
+      const loupeH = canvas.height;
+      ctx.clearRect(0, 0, loupeW, loupeH);
+
+      const scaleX = img.naturalWidth / w;
+      const scaleY = img.naturalHeight / h;
+
+      const imgX = stageX * scaleX;
+      const imgY = stageY * scaleY;
+
+      const cropW = (loupeW / 2.5) * scaleX;
+      const cropH = (loupeH / 2.5) * scaleY;
+      const srcX = imgX - cropW / 2;
+      const srcY = imgY - cropH / 2;
+
+      try {
+        ctx.drawImage(img, srcX, srcY, cropW, cropH, 0, 0, loupeW, loupeH);
+      } catch (err) {
+        // Fallback gracefully if image source isn't ready
+      }
+    }
+
+    function hideMagnifierLoupe() {
+      const loupe = document.getElementById('cornerMagnifierLoupe');
+      if (loupe) loupe.classList.add('hidden');
+    }
+
     function onDragMove(e) {
       if (activeHandleIdx === null) return;
       e.preventDefault();
@@ -3049,12 +3098,14 @@
 
       cornerPoints[activeHandleIdx] = { x: xPct, y: yPct };
       updateCornerHandlesUI();
+      updateMagnifierLoupe(xPct * w, yPct * h, w, h);
     }
 
     function onDragEnd() {
       activeHandleIdx = null;
       dragOffsetPctX = 0;
       dragOffsetPctY = 0;
+      hideMagnifierLoupe();
       document.removeEventListener('mousemove', onDragMove);
       document.removeEventListener('mouseup', onDragEnd);
       document.removeEventListener('touchmove', onDragMove);

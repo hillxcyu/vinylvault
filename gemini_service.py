@@ -51,10 +51,51 @@ def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int
     return image_bytes
 
 
+def convert_image_to_webp(image_bytes: bytes, max_dim: int = 1024, quality: int = 80) -> bytes:
+    """
+    Convert image bytes to WebP format with high compression efficiency and high visual quality.
+    WebP format reduces file sizes by 60-80% compared to JPEG, accelerating grid load speeds.
+    """
+    if not image_bytes:
+        return image_bytes
+    try:
+        from PIL import Image, ImageOps
+        img = Image.open(io.BytesIO(image_bytes))
+        img = ImageOps.exif_transpose(img)
+
+        if img.mode in ("RGBA", "P", "LA"):
+            img = img.convert("RGB")
+
+        w, h = img.size
+        if max(w, h) > max_dim:
+            if w >= h:
+                new_w = max_dim
+                new_h = int(h * (max_dim / float(w)))
+            else:
+                new_h = max_dim
+                new_w = int(w * (max_dim / float(h)))
+
+            resample_filter = getattr(Image, "Resampling", Image).LANCZOS
+            img = img.resize((new_w, new_h), resample=resample_filter)
+
+        out_buf = io.BytesIO()
+        img.save(out_buf, format="WEBP", quality=quality, method=6)
+        webp_bytes = out_buf.getvalue()
+        logger.info(f"Converted image to WebP: {len(image_bytes)} bytes -> {len(webp_bytes)} bytes (max_dim={max_dim})")
+        return webp_bytes
+    except Exception as e:
+        logger.warning(f"WebP conversion warning (falling back to original): {e}")
+        return image_bytes
+
+
 class GeminiVisionService:
     @staticmethod
     def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int = 85) -> bytes:
         return downsample_image_bytes(image_bytes, max_dim=max_dim, quality=quality)
+
+    @staticmethod
+    def convert_image_to_webp(image_bytes: bytes, max_dim: int = 1024, quality: int = 80) -> bytes:
+        return convert_image_to_webp(image_bytes, max_dim=max_dim, quality=quality)
 
     def __init__(self):
 
