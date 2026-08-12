@@ -300,7 +300,8 @@ class GeminiVisionService:
             "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n"
             "CRITICAL REQUIREMENT 1: Extract and verify the exact 'label', 'catalogNumber', and 'releaseYear'. "
             "For Box Sets (e.g. 2LP, 3LP, multi-disc sets), carefully inspect the box spine, top/bottom corners, or obi strip to extract the master box set catalog number and exact record label.\n"
-            "CRITICAL REQUIREMENT 2: Return an accurate 4-digit 'releaseYear' integer.\n\n"
+            "CRITICAL REQUIREMENT 2: If the catalog number, label, or release year is NOT clearly visible or missing from the uploaded cover photo, USE GOOGLE SEARCH to identify and verify the exact official release catalog number, label, and release details.\n"
+            "CRITICAL REQUIREMENT 3: Return an accurate 4-digit 'releaseYear' integer.\n\n"
             "Extract and return ONLY a valid JSON object with the following fields:\n"
             "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
             "2. 'albumTitle': Full album title or composer/work title.\n"
@@ -329,7 +330,8 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumMetadataSchema,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                thinking_config=types.ThinkingConfig(thinking_level="minimal"),
+                tools=[types.Tool(google_search=types.GoogleSearch())]
             )
 
             response = self.client.models.generate_content(
@@ -1081,7 +1083,7 @@ class GeminiVisionService:
         try:
             from google.genai import types
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-3.6-flash',
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json"
