@@ -529,6 +529,56 @@ def is_missing_or_placeholder_cover(cover_url: Optional[str]) -> bool:
         or "data:image/svg+xml" in cover_url_lower
     )
 
+@app.post("/api/scan/corners")
+async def scan_corners(file: UploadFile = File(...)):
+    contents = await file.read()
+    logger.info("Call A: Running fast album cover corner detection...")
+    detected_corners = await asyncio.to_thread(deskew_service.detect_corners, contents, gemini_service)
+    return {"corners": detected_corners}
+
+@app.post("/api/scan/duplicate-check")
+async def scan_duplicate_check(file: UploadFile = File(...)):
+    contents = await file.read()
+    crate_records = db.get_all_records()
+    logger.info("Call B: Running fast duplicate check against crate inventory...")
+    fast_dup = await asyncio.to_thread(gemini_service.check_album_duplicate, contents, crate_records)
+    metadata = {
+        "artist": fast_dup.get("artist", ""),
+        "albumTitle": fast_dup.get("albumTitle", ""),
+        "isAlreadyInCrate": fast_dup.get("isAlreadyInCrate", False),
+        "crateMatchId": fast_dup.get("crateMatchId"),
+        "crateMatchReason": fast_dup.get("crateMatchReason", "")
+    }
+    duplicate_result = build_duplicate_result(metadata, crate_records)
+    return {
+        "metadata": metadata,
+        "duplicateCheck": duplicate_result
+    }
+
+@app.post("/api/scan/deep-metadata")
+async def scan_deep_metadata(file: UploadFile = File(...)):
+    contents = await file.read()
+    logger.info("Call C: Running search-grounded deep metadata and listening guide extraction...")
+    deep_meta = await asyncio.to_thread(gemini_service.extract_album_metadata_and_guide, contents)
+    artist = deep_meta.get("artist", "")
+    title = deep_meta.get("albumTitle", "")
+    catno = deep_meta.get("catalogNumber", "")
+    country = deep_meta.get("country", "Japan")
+    if artist and title:
+        opt_raw_bytes = gemini_service.downsample_image_bytes(contents, max_dim=1024, quality=85)
+        raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_raw_bytes).decode('utf-8')}"
+        official_img = await asyncio.to_thread(
+            discogs_service.fetch_official_cover,
+            artist,
+            title,
+            cover_url=raw_b64,
+            catalog_number=catno,
+            country=country
+        )
+        if official_img:
+            deep_meta["officialCoverUrl"] = official_img
+    return {"metadata": deep_meta}
+
 @app.post("/api/scan")
 async def scan_cover(file: UploadFile = File(...), skip_deskew: bool = Query(False)):
     contents = await file.read()

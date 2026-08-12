@@ -2870,49 +2870,67 @@
     async function triggerAutoScan() {
       if (!currentRawFile) return;
 
-      showScanLoading(`Analyzing album art, detecting corners & checking Crate via Gemini AI...`);
+      showScanLoading(`⚡ Analyzing album cover via 3 decoupled Gemini AI workers...`);
 
+      const formDataA = new FormData();
+      formDataA.append('file', currentRawFile);
 
-      try {
-        const formData = new FormData();
-        formData.append('file', currentRawFile);
+      const formDataB = new FormData();
+      formDataB.append('file', currentRawFile);
 
-        const res = await fetch('/api/scan', {
-          method: 'POST',
-          body: formData
-        });
-        if (!res.ok) {
-          throw new Error(`Server returned status ${res.status}`);
-        }
-        const data = await res.json();
-        lastScannedMetadata = data.metadata;
-        lastDuplicateCheck = data.duplicateCheck;
+      const formDataC = new FormData();
+      formDataC.append('file', currentRawFile);
 
-
-        if (data.detectedCorners && data.detectedCorners.length === 4) {
-          lastDetectedCorners = data.detectedCorners;
-        }
-
-        if (data.rawCoverUrl || (data.metadata && data.metadata.coverUrl)) {
-          const previewImg = document.getElementById('scannerPreviewImg');
-          if (previewImg) previewImg.src = data.rawCoverUrl || data.metadata.coverUrl;
-          if (data.detectedCorners && data.detectedCorners.length === 4) {
-            resetCornerPoints(data.detectedCorners);
+      // 1. Call A: Corner Detection (Draw corners immediately when ready ~1.0s)
+      fetch('/api/scan/corners', { method: 'POST', body: formDataA })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.corners && data.corners.length === 4) {
+            lastDetectedCorners = data.corners;
+            resetCornerPoints(data.corners);
             toggleCornerHandles(true);
+            showToast('✨ Corners auto-detected! Drag handles to adjust.', 'fa-object-group');
           }
-        }
+        })
+        .catch(err => console.warn('Call A corner detection error:', err));
 
+      // 2. Call B: Fast Duplicate Checker (Enable Add / Spin buttons immediately ~1.2s)
+      fetch('/api/scan/duplicate-check', { method: 'POST', body: formDataB })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) return;
+          lastDuplicateCheck = data.duplicateCheck;
+          if (!lastScannedMetadata) {
+            lastScannedMetadata = data.metadata || {};
+          } else {
+            lastScannedMetadata.artist = lastScannedMetadata.artist || data.metadata?.artist || '';
+            lastScannedMetadata.albumTitle = lastScannedMetadata.albumTitle || data.metadata?.albumTitle || '';
+          }
 
-        if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
-          updateNowSpinningUI(data.duplicateCheck.matchingRecord);
-          switchTab('nowSpinning');
-        }
+          renderDuplicateResult(data.duplicateCheck, lastScannedMetadata);
 
-        renderDuplicateResult(data.duplicateCheck, data.metadata);
-      } catch (err) {
-        console.error('Auto scan error:', err);
-        renderScanError(`Failed to process image: ${err.message}`);
-      }
+          if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
+            updateNowSpinningUI(data.duplicateCheck.matchingRecord);
+          }
+          showToast('⚡ Duplicate check complete! Action buttons enabled.', 'fa-bolt');
+        })
+        .catch(err => console.warn('Call B duplicate check error:', err));
+
+      // 3. Call C: Search-Grounded Deep Metadata & Listening Guide (~4.0s)
+      fetch('/api/scan/deep-metadata', { method: 'POST', body: formDataC })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data || !data.metadata) return;
+          lastScannedMetadata = {
+            ...(lastScannedMetadata || {}),
+            ...data.metadata
+          };
+          if (lastDuplicateCheck) {
+            renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata);
+          }
+          showToast('✨ Deep release metadata & listening guide loaded!', 'fa-book-open');
+        })
+        .catch(err => console.warn('Call C deep metadata error:', err));
     }
 
     let currentRawFile = null;
