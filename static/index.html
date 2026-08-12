@@ -2788,6 +2788,7 @@
 
     function openScannerModalWithFile(file) {
       currentRawFile = file;
+      isDeskewApplied = false;
       openScannerModal();
       
       const reader = new FileReader();
@@ -2805,6 +2806,9 @@
     }
 
     function closeScannerModal() {
+      if (!isDeskewApplied && rescanTargetRecordForDeskew) {
+        ensureDeskewApplied();
+      }
       resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.add('hidden');
       document.getElementById('scanResultContainer').classList.add('hidden');
@@ -2831,6 +2835,7 @@
       const file = e.target.files[0];
       if (!file) return;
       currentRawFile = file;
+      isDeskewApplied = false;
 
       // Render raw uploaded photo immediately so user can drag 4 corner handles over raw image!
       const rawUrl = URL.createObjectURL(file);
@@ -2917,6 +2922,7 @@
     }
 
     let currentRawFile = null;
+    let isDeskewApplied = false;
     let lastDetectedCorners = null;
     let cornerPoints = [
       { x: 0.08, y: 0.08 },
@@ -2925,6 +2931,54 @@
       { x: 0.08, y: 0.92 }
     ];
     let activeHandleIdx = null;
+
+    async function ensureDeskewApplied() {
+      if (isDeskewApplied || !currentRawFile || !cornerPoints || cornerPoints.length !== 4) {
+        return;
+      }
+      showToast('Cropping cover with detected corners...', 'fa-crop-simple');
+      try {
+        const formData = new FormData();
+        formData.append('file', currentRawFile);
+        formData.append('corners', JSON.stringify([
+          [cornerPoints[0].x, cornerPoints[0].y],
+          [cornerPoints[1].x, cornerPoints[1].y],
+          [cornerPoints[2].x, cornerPoints[2].y],
+          [cornerPoints[3].x, cornerPoints[3].y]
+        ]));
+
+        const cropRes = await fetch('/api/crop-deskew', {
+          method: 'POST',
+          body: formData
+        });
+        const cropData = await cropRes.json();
+
+        if (cropData.status === 'success' && cropData.coverUrl) {
+          if (lastScannedMetadata) {
+            lastScannedMetadata.coverUrl = cropData.coverUrl;
+          }
+          if (rescanTargetRecordForDeskew) {
+            const rec = rescanTargetRecordForDeskew;
+            const updateRes = await fetch(`/api/records/${rec.id}/update-cover`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coverUrl: cropData.coverUrl })
+            });
+            if (updateRes.ok) {
+              rec.coverUrl = cropData.coverUrl;
+              if (currentSpinning && currentSpinning.id === rec.id) {
+                currentSpinning.coverUrl = cropData.coverUrl;
+                updateNowSpinningUI(currentSpinning);
+              }
+              await fetchCollection();
+            }
+          }
+          isDeskewApplied = true;
+        }
+      } catch (err) {
+        console.warn('Auto-deskew fallback error:', err);
+      }
+    }
 
     function toggleCornerHandles(show) {
       const handles = ['handle-tl', 'handle-tr', 'handle-br', 'handle-bl'];
@@ -3234,6 +3288,7 @@
         const data = await res.json();
 
         if (data.coverUrl) {
+          isDeskewApplied = true;
           const previewImg = document.getElementById('scannerPreviewImg');
           if (previewImg) previewImg.src = data.coverUrl.startsWith('data:') ? data.coverUrl : (data.coverUrl + '?t=' + Date.now());
           toggleCornerHandles(false);
@@ -3315,6 +3370,7 @@
         if (cropData.status !== 'success' || !cropData.coverUrl) {
           throw new Error(cropData.detail || 'Deskew failed');
         }
+        isDeskewApplied = true;
 
         // PREVIEW UPDATE: Update preview image with deskewed cover URL
         const previewImg = document.getElementById('scannerPreviewImg');
@@ -3503,6 +3559,9 @@
     }
 
     async function viewMatchingRecordSpinning(recId) {
+      if (!isDeskewApplied) {
+        await ensureDeskewApplied();
+      }
       closeScannerModal();
 
       // Refresh collection to ensure client memory is 100% up to date
@@ -3680,6 +3739,10 @@
       if (btnElement) {
         btnElement.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-base"></i> Saving to Database & Firestore...`;
         btnElement.disabled = true;
+      }
+
+      if (!isDeskewApplied) {
+        await ensureDeskewApplied();
       }
 
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
