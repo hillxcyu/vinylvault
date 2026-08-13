@@ -297,7 +297,7 @@ class GeminiVisionService:
                 return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "Empty response"}
 
             parsed = json.loads(text)
-            logger.info(f"✨ [Gemini Call B] Duplicate check finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}")
+            logger.info(f"✨ [Gemini Call B] Duplicate check finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', confidenceScore={parsed.get('confidenceScore')}")
             return parsed
         except Exception as e:
             elapsed = time.time() - start_t
@@ -375,7 +375,7 @@ class GeminiVisionService:
                 return {}
 
             parsed = json.loads(text)
-            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
+            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}")
             return parsed
         except Exception as e:
             elapsed = time.time() - start_t
@@ -521,6 +521,7 @@ class GeminiVisionService:
                     else:
                         raise err
 
+                logger.info(f"✨ [Gemini Vision] Album cover analysis finished: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}, isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', box_2d={parsed.get('box_2d')}, mask={parsed.get('mask')}")
                 return parsed
             except Exception as e:
                 logger.error(f"Error in Gemini Vision API call (gemini-3.6-flash): {e}")
