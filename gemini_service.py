@@ -307,20 +307,19 @@ class GeminiVisionService:
 
         prompt = (
             "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
-            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
-            "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
-            "1. Beware of legacy artwork catalog numbers! International, reissue, or regional pressings frequently reprint original artwork displaying a legacy master catalog number printed on the original jacket design.\n"
-            "2. Look closely at the jacket for regional corner tabs (photo mounts), obi strips, stickers, or local distribution markers.\n"
-            "3. When regional corner tabs or obi strips are present, OR if a legacy artwork master number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT local or domestic pressing catalog number.\n"
-            "4. Extract and return the exact domestic or regional pressing catalog number in 'catalogNumber' and set 'country' to the specific pressing country. DO NOT return the legacy master artwork template number when a specific local release catalog number exists.\n\n"
+            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision to extract known metadata.\n\n"
+            "FAST METADATA EXTRACTION RULES (NO GOOGLE SEARCH):\n"
+            "1. Extract all text printed directly on the album cover, jacket, spine, obi strip, or record label.\n"
+            "2. Use your internal musicological knowledge to infer missing catalog numbers or release details if recognized with high confidence.\n"
+            "3. If a field (such as catalog number, release year, label, country, or genre) is NOT printed on the cover or known with high confidence from your internal knowledge, return null for that field. DO NOT guess, fabricate, or default to current years like 2024 or 2026.\n\n"
             "Extract and return ONLY a valid JSON object with the following fields:\n"
             "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
             "2. 'albumTitle': Full album title or composer/work title.\n"
-            "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
-            "4. 'label': Exact record label name.\n"
-            "5. 'country': Release country or pressing origin.\n"
-            "6. 'releaseYear': Exact 4-digit release year integer. First check the jacket or obi for printed dates. If no year is printed on the cover image, YOU MUST USE GOOGLE SEARCH OR YOUR MUSICOLOGICAL KNOWLEDGE to look up the official release year for this album title, artist, label, and catalog number (such as from Discogs or Wikipedia). Always return the 4-digit integer release year. DO NOT return modern webpage fetch timestamps or current default years like 2024 or 2026.\n"
-            "7. 'genre': Musical genre/style.\n"
+            "3. 'catalogNumber': Exact catalog number assigned to this specific pressing (or null if not visible/known).\n"
+            "4. 'label': Exact record label name (or null if not visible/known).\n"
+            "5. 'country': Release country or pressing origin (or null if not visible/known).\n"
+            "6. 'releaseYear': Exact 4-digit release year integer printed on jacket/obi or known from internal knowledge (or null if unknown).\n"
+            "7. 'genre': Musical genre/style (or null if unknown).\n"
             "8. 'confidenceScore': Number between 0 and 1."
         )
 
@@ -331,18 +330,17 @@ class GeminiVisionService:
             class AlbumMetadataSchema(BaseModel):
                 artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                 albumTitle: str = Field(description="Full album title or composer/work title")
-                catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
-                label: Optional[str] = Field(default="", description="Exact record label name")
-                country: Optional[str] = Field(default="Japan", description="Release country")
-                releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer. Search Google or Discogs if not printed on cover. Do NOT default to current year or guess.")
-                genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
+                catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number assigned to this specific pressing or null")
+                label: Optional[str] = Field(default=None, description="Exact record label name or null")
+                country: Optional[str] = Field(default=None, description="Release country or null")
+                releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer or null if unknown")
+                genre: Optional[str] = Field(default=None, description="Musical genre or style or null")
                 confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumMetadataSchema,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal"),
-                tools=[types.Tool(google_search=types.GoogleSearch())]
+                thinking_config=types.ThinkingConfig(thinking_level="minimal")
             )
 
             response = self.client.models.generate_content(
@@ -424,22 +422,21 @@ class GeminiVisionService:
 
                 prompt = (
                     "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
-                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision.\n\n"
-                    "CRITICAL CATALOG NUMBER & PRESSING RULE:\n"
-                    "1. Beware of legacy artwork catalog numbers! International, reissue, or regional pressings frequently reprint original artwork displaying a legacy master catalog number printed on the original jacket design.\n"
-                    "2. Look closely at the jacket for regional corner tabs (photo mounts), obi strips, stickers, or local distribution markers.\n"
-                    "3. When regional corner tabs or obi strips are present, OR if a legacy artwork master number is shown, YOU MUST USE GOOGLE SEARCH to search Discogs and Google for the EXACT local or domestic pressing catalog number.\n"
-                    "4. Extract and return the exact domestic or regional pressing catalog number in 'catalogNumber' and set 'country' to the specific pressing country. DO NOT return the legacy master artwork template number when a specific local release catalog number exists.\n\n"
+                    "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision to extract known metadata.\n\n"
+                    "FAST METADATA EXTRACTION RULES (NO GOOGLE SEARCH):\n"
+                    "1. Extract all text printed directly on the album cover, jacket, spine, obi strip, or record label.\n"
+                    "2. Use your internal musicological knowledge to infer missing catalog numbers or release details if recognized with high confidence.\n"
+                    "3. If a field (such as catalog number, release year, label, country, or genre) is NOT printed on the cover or known with high confidence from your internal knowledge, return null for that field. DO NOT guess, fabricate, or default to current years like 2024 or 2026.\n\n"
                     "CRITICAL REQUIREMENT 1: Simultaneously perform 2D polygon segmentation to detect both the 2D bounding box 'box_2d' ([ymin, xmin, ymax, xmax] normalized 0-1000) and 4 exact outer boundary corners 'mask' of the album jacket/sleeve.\n"
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
                     "2. 'albumTitle': Full album title or composer/work title.\n"
-                    "3. 'catalogNumber': Exact catalog number assigned to this specific pressing.\n"
-                    "4. 'label': Exact record label name.\n"
-                    "5. 'country': Release country or pressing origin.\n"
-                    "6. 'releaseYear': Exact 4-digit release year integer. First check the jacket or obi for printed dates. If no year is printed on the cover image, YOU MUST USE GOOGLE SEARCH OR YOUR MUSICOLOGICAL KNOWLEDGE to look up the official release year for this album title, artist, label, and catalog number (such as from Discogs or Wikipedia). Always return the 4-digit integer release year. DO NOT return modern webpage fetch timestamps or current default years like 2024 or 2026.\n"
-                    "7. 'genre': Musical genre/style.\n"
+                    "3. 'catalogNumber': Exact catalog number assigned to this specific pressing (or null if not visible/known).\n"
+                    "4. 'label': Exact record label name (or null if not visible/known).\n"
+                    "5. 'country': Release country or pressing origin (or null if not visible/known).\n"
+                    "6. 'releaseYear': Exact 4-digit release year integer printed on jacket/obi or known from internal knowledge (or null if unknown).\n"
+                    "7. 'genre': Musical genre/style (or null if unknown).\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
                     "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
@@ -453,11 +450,11 @@ class GeminiVisionService:
                 class AlbumScanMetadataSchema(BaseModel):
                     artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                     albumTitle: str = Field(description="Full album title or composer/work title")
-                    catalogNumber: Optional[str] = Field(default="", description="Exact catalog number assigned to this specific pressing")
-                    label: Optional[str] = Field(default="", description="Exact record label name")
-                    country: Optional[str] = Field(default="Japan", description="Release country")
-                    releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer. Search Google or Discogs if not printed on cover. Do NOT default to current year or guess.")
-                    genre: Optional[str] = Field(default="Classical", description="Musical genre or style")
+                    catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number assigned to this specific pressing or null")
+                    label: Optional[str] = Field(default=None, description="Exact record label name or null")
+                    country: Optional[str] = Field(default=None, description="Release country or null")
+                    releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer or null if unknown")
+                    genre: Optional[str] = Field(default=None, description="Musical genre or style or null")
                     confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
                     isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
                     crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
@@ -469,8 +466,7 @@ class GeminiVisionService:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=AlbumScanMetadataSchema,
-                        thinking_config=types.ThinkingConfig(thinking_level="minimal"),
-                        tools=[types.Tool(google_search=types.GoogleSearch())]
+                        thinking_config=types.ThinkingConfig(thinking_level="minimal")
                     )
 
                     response = self.client.models.generate_content(
@@ -553,6 +549,7 @@ class GeminiVisionService:
                     f"You are an expert musicologist, audiophile vinyl curator, and record historian. "
                     f"Create a deep-dive, comprehensive vinyl listening guide for the album '{clean_title}' by {clean_artist}{spec_str}.\n"
                     f"Use Google Search grounding to gather rich historical details, recording session anecdotes, pressing details (specifically focusing on this release/catalog number/label/country if provided), mastering engineering notes, and full tracklists.\n"
+                    f"In addition, leverage Google Search grounding and high musicological reasoning to research and complete any missing album release metadata fields ('releaseYear', 'catalogNumber', 'label', 'country', 'genre'). Return these under 'enrichedMetadata'. Always verify and return the exact 4-digit 'releaseYear' integer.\n\n"
                     f"Return ONLY a valid JSON object with the following keys:\n"
                     f"1. \"albumBackground\": A detailed 2-3 paragraph backstory covering the album's origin, production, studio equipment, mastering, pressing notes (referencing this specific pressing/catalog/label/country if known), and trivia.\n"
                     f"2. \"tracklist\": An array of track objects representing the complete track list of the vinyl release. Each track object must have:\n"
@@ -562,7 +559,8 @@ class GeminiVisionService:
                     f"   - \"highlight\": (boolean, true if this track has notable audiophile/musical details to listen for, false otherwise)\n"
                     f"   - \"whatToListenFor\": (string or null, if highlight is true, provide 1-2 sentences of specific mixing, instrument, or production details to pay attention to on vinyl).\n"
                     f"3. \"vinylTip\": A short pro-tip for vinyl listeners (e.g. tracking weight, dynamic range, inner-groove distortion, pressing highlights for this release/catalog).\n"
-                    f"4. \"recommendedMood\": A brief phrase describing the ideal atmosphere (e.g. 'Late night dim lights with headphones and single-malt whisky')."
+                    f"4. \"recommendedMood\": A brief phrase describing the ideal atmosphere (e.g. 'Late night dim lights with headphones and single-malt whisky').\n"
+                    f"5. \"enrichedMetadata\": Object with keys 'releaseYear' (4-digit integer e.g. 1978), 'catalogNumber' (string), 'label' (string), 'country' (string), and 'genre' (string)."
                 )
 
                 from pydantic import BaseModel, Field
@@ -574,16 +572,25 @@ class GeminiVisionService:
                     highlight: Optional[bool] = Field(default=False, description="True if audiophile highlight")
                     whatToListenFor: Optional[str] = Field(default=None, description="Specific mixing or performance details to pay attention to")
 
+                class EnrichedMetadataSchema(BaseModel):
+                    releaseYear: Optional[int] = Field(default=None, description="Verified 4-digit release year integer discovered via Google Search research (e.g. 1978)")
+                    catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number for this pressing")
+                    label: Optional[str] = Field(default=None, description="Exact record label name")
+                    country: Optional[str] = Field(default=None, description="Release country or pressing origin")
+                    genre: Optional[str] = Field(default=None, description="Primary musical genre or style")
+
                 class ListeningGuideResponseSchema(BaseModel):
                     albumBackground: str = Field(description="Detailed 2-3 paragraph backstory covering origin, production, studio equipment, mastering, and pressing notes")
                     tracklist: List[TrackItemSchema] = Field(default_factory=list, description="Array of track items")
                     vinylTip: Optional[str] = Field(default="", description="Pro-tip for vinyl listeners")
                     recommendedMood: Optional[str] = Field(default="", description="Ideal listening atmosphere")
+                    enrichedMetadata: Optional[EnrichedMetadataSchema] = Field(default=None, description="Completed metadata fields (releaseYear, catalogNumber, label, country, genre) discovered via search research")
 
                 try:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=ListeningGuideResponseSchema,
+                        thinking_config=types.ThinkingConfig(thinking_level="high"),
                         tools=[types.Tool(google_search=types.GoogleSearch())]
                     )
 

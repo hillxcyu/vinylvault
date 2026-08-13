@@ -1141,6 +1141,48 @@ async def get_listening_guide(req: ListeningGuideRequest):
         except Exception:
             pass
 
+        # Complete any missing record metadata fields using enrichedMetadata from search grounding
+        if isinstance(guide, dict) and guide.get("enrichedMetadata"):
+            enriched = guide.get("enrichedMetadata")
+            if isinstance(enriched, dict):
+                target_rec_id = req.recordId
+                if not target_rec_id:
+                    # Look up record in database by title/artist
+                    all_recs = db.get_all_records()
+                    norm_title = (req.albumTitle or "").strip().lower()
+                    norm_artist = (req.artist or "").strip().lower()
+                    for r in all_recs:
+                        r_t = (r.get("title") or "").strip().lower()
+                        r_a = (r.get("artist") or "").strip().lower()
+                        if norm_title and (norm_title == r_t or norm_title in r_t) and norm_artist and (norm_artist == r_a or norm_artist in r_a):
+                            target_rec_id = r.get("id")
+                            break
+
+                if target_rec_id:
+                    rec = db.get_record_by_id(target_rec_id)
+                    if rec:
+                        updated = False
+                        if not rec.get("releaseYear") and enriched.get("releaseYear"):
+                            rec["releaseYear"] = enriched.get("releaseYear")
+                            updated = True
+                        if not rec.get("catalogNumber") and enriched.get("catalogNumber"):
+                            rec["catalogNumber"] = enriched.get("catalogNumber")
+                            rec["catno"] = enriched.get("catalogNumber")
+                            updated = True
+                        if not rec.get("label") and enriched.get("label"):
+                            rec["label"] = enriched.get("label")
+                            updated = True
+                        if not rec.get("country") and enriched.get("country"):
+                            rec["country"] = enriched.get("country")
+                            updated = True
+                        if not rec.get("genre") and enriched.get("genre"):
+                            rec["genre"] = enriched.get("genre")
+                            updated = True
+
+                        if updated:
+                            db.save_record(rec)
+                            logger.info(f"✨ Auto-enriched record '{target_rec_id}' in Firestore with discovered metadata: {enriched}")
+
     return {"status": "success", "guide": guide, "cached": False}
 
 def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
