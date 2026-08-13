@@ -2380,6 +2380,52 @@
       } else {
         tracklistContainer.innerHTML = '<div class="text-xs text-stone-400">No tracklist found.</div>';
       }
+
+      // 4. Update Current Spinning display with enriched metadata if present
+      if (guide && guide.enrichedMetadata && currentSpinning) {
+        applyEnrichedMetadataToCurrentSpinning(guide.enrichedMetadata);
+      }
+    }
+
+    function applyEnrichedMetadataToCurrentSpinning(enrichedMetadata) {
+      if (!enrichedMetadata || !currentSpinning) return;
+      const em = enrichedMetadata;
+      let updatedFields = [];
+
+      if (em.releaseYear && currentSpinning.releaseYear !== em.releaseYear) {
+        currentSpinning.releaseYear = em.releaseYear;
+        updatedFields.push('Year');
+      }
+      if (em.catalogNumber && (currentSpinning.catalogNumber !== em.catalogNumber || currentSpinning.catno !== em.catalogNumber)) {
+        currentSpinning.catalogNumber = em.catalogNumber;
+        currentSpinning.catno = em.catalogNumber;
+        updatedFields.push('Cat#');
+      }
+      if (em.label && currentSpinning.label !== em.label) {
+        currentSpinning.label = em.label;
+        updatedFields.push('Label');
+      }
+      if (em.country && currentSpinning.country !== em.country) {
+        currentSpinning.country = em.country;
+        updatedFields.push('Country');
+      }
+      if (em.genre && currentSpinning.genre !== em.genre) {
+        currentSpinning.genre = em.genre;
+        updatedFields.push('Genre');
+      }
+
+      if (updatedFields.length > 0) {
+        const localRec = (typeof allRecords !== 'undefined' && Array.isArray(allRecords)) 
+          ? allRecords.find(r => r.id === currentSpinning.id) 
+          : null;
+        if (localRec) {
+          Object.assign(localRec, currentSpinning);
+        }
+        updateNowSpinningUI(currentSpinning);
+        if (typeof showToast === 'function') {
+          showToast(`Enriched metadata (${updatedFields.join(', ')}) updated for currently spinning record!`, 'fa-sparkles');
+        }
+      }
     }
 
 
