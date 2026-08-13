@@ -261,6 +261,99 @@ class ClassicalService:
             "source": "rule_based_fallback"
         }
 
+    def _reconcile_composer_stats(self, records: List[Dict[str, Any]], ai_chronicle: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Reconciles Gemini/Fallback composerStats with actual records in the user's crate.
+        Ensures 'records', 'albums', and 'count' under each composer are 100% accurate and consistent.
+        """
+        all_era_recs = []
+        for era in ai_chronicle.get("eras", []):
+            all_era_recs.extend(era.get("records", []))
+
+        raw_composers = ai_chronicle.get("composerStats", [])
+        if not raw_composers or not isinstance(raw_composers, list):
+            raw_composers = self._compute_composer_stats(records)
+
+        reconciled = []
+        processed_names = set()
+
+        for comp in raw_composers:
+            if not isinstance(comp, dict) or not comp.get("name"):
+                continue
+            cname = comp.get("name")
+            if cname.lower() in processed_names:
+                continue
+            processed_names.add(cname.lower())
+
+            matched_records = self._match_records_for_composer(cname, records, all_era_recs)
+            if not matched_records:
+                continue
+
+            comp["records"] = matched_records
+            comp["albums"] = [r.get("title") for r in matched_records if r.get("title")]
+            comp["count"] = len(matched_records)
+            reconciled.append(comp)
+
+        base_composers = self._compute_composer_stats(records)
+        for bc in base_composers:
+            bc_name = bc.get("name")
+            if bc_name and bc_name.lower() not in processed_names:
+                matched_records = self._match_records_for_composer(bc_name, records, all_era_recs)
+                if matched_records:
+                    bc["records"] = matched_records
+                    bc["albums"] = [r.get("title") for r in matched_records if r.get("title")]
+                    bc["count"] = len(matched_records)
+                    reconciled.append(bc)
+                    processed_names.add(bc_name.lower())
+
+        reconciled.sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
+        return reconciled
+
+    def _match_records_for_composer(self, composer_name: str, records: List[Dict[str, Any]], era_records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Matches actual records in crate/era_records to a specific composer name."""
+        parts = composer_name.strip().split()
+        surname = parts[-1] if parts else composer_name
+        if surname.lower() in ["ii", "iii", "jr", "sr"] and len(parts) >= 2:
+            surname = parts[-2]
+
+        clean_surname = re.sub(r'[^\w\s]', '', surname).lower()
+        clean_fullname = re.sub(r'[^\w\s]', '', composer_name).lower()
+
+        matched = []
+        seen_ids = set()
+
+        for er in era_records:
+            er_comp = er.get("detectedComposer", "").lower()
+            er_text = f"{er.get('artist', '')} {er.get('title', '')}".lower()
+            if (clean_fullname in er_comp or clean_surname in er_comp or clean_surname in er_text):
+                rec_id = er.get("id")
+                if rec_id and rec_id not in seen_ids:
+                    seen_ids.add(rec_id)
+                    matched.append({
+                        "id": er.get("id"),
+                        "title": er.get("title"),
+                        "artist": er.get("artist"),
+                        "coverUrl": er.get("coverUrl"),
+                        "releaseYear": er.get("releaseYear")
+                    })
+
+        for r in records:
+            r_id = r.get("id")
+            if not r_id or r_id in seen_ids:
+                continue
+            r_text = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
+            if clean_surname and re.search(r'\b' + re.escape(clean_surname) + r'\b', r_text):
+                seen_ids.add(r_id)
+                matched.append({
+                    "id": r.get("id"),
+                    "title": r.get("title"),
+                    "artist": r.get("artist"),
+                    "coverUrl": r.get("coverUrl"),
+                    "releaseYear": r.get("releaseYear")
+                })
+
+        return matched
+
     def _rebuild_ai_chronicle_bg(self, records: List[Dict[str, Any]]):
 
         from database import db
@@ -272,7 +365,6 @@ class ClassicalService:
             if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
                 ai_chronicle["source"] = "gemini_3.6_flash"
 
-                # Recalculate unique classical record count and total crate count
                 unique_classical_ids = set()
                 for era in ai_chronicle.get("eras", []):
                     for rec in era.get("records", []):
@@ -283,11 +375,7 @@ class ClassicalService:
                 ai_chronicle["totalClassicalRecords"] = len(unique_classical_ids)
                 ai_chronicle["totalRecordsInCrate"] = len(records)
                 
-                # Sort Gemini's dynamic composerStats chronologically by birth year
-                if ai_chronicle.get("composerStats"):
-                    ai_chronicle["composerStats"].sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
-                else:
-                    ai_chronicle["composerStats"] = self._compute_composer_stats(records)
+                ai_chronicle["composerStats"] = self._reconcile_composer_stats(records, ai_chronicle)
 
                 db.save_chronicle(ai_chronicle)
                 logger.info(f"Saved fresh Gemini 3.6 Flash AI Chronicle ({len(unique_classical_ids)} classical / {len(records)} total records) to Database/Disk in background.")
@@ -311,8 +399,7 @@ class ClassicalService:
             logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
             cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
-            if not cached.get("composerStats") or len(cached.get("composerStats", [])) == 0:
-                cached["composerStats"] = self._compute_composer_stats(records)
+            cached["composerStats"] = self._reconcile_composer_stats(records, cached)
             return cached
 
         if not self.is_rebuilding:
@@ -321,11 +408,11 @@ class ClassicalService:
         if cached and isinstance(cached, dict) and "eras" in cached:
             cached["isRebuilding"] = True
             cached["totalRecordsInCrate"] = len(records)
-            if not cached.get("composerStats") or len(cached.get("composerStats", [])) == 0:
-                cached["composerStats"] = self._compute_composer_stats(records)
+            cached["composerStats"] = self._reconcile_composer_stats(records, cached)
             return cached
 
         fallback = self._rule_based_chronicle_data(records)
+        fallback["composerStats"] = self._reconcile_composer_stats(records, fallback)
         db.save_chronicle(fallback)
         fallback["isRebuilding"] = True
         return fallback
