@@ -577,23 +577,6 @@ async def scan_deep_metadata(file: UploadFile = File(...)):
     contents = await file.read()
     logger.info("Call C: Running fast album release metadata extraction...")
     deep_meta = await asyncio.to_thread(gemini_service.extract_album_metadata, contents)
-    artist = deep_meta.get("artist", "")
-    title = deep_meta.get("albumTitle", "")
-    catno = deep_meta.get("catalogNumber", "")
-    country = deep_meta.get("country", "Japan")
-    if artist and title:
-        opt_raw_bytes = gemini_service.downsample_image_bytes(contents, max_dim=1024, quality=85)
-        raw_b64 = f"data:image/jpeg;base64,{base64.b64encode(opt_raw_bytes).decode('utf-8')}"
-        official_img = await asyncio.to_thread(
-            discogs_service.fetch_official_cover,
-            artist,
-            title,
-            cover_url=raw_b64,
-            catalog_number=catno,
-            country=country
-        )
-        if official_img:
-            deep_meta["officialCoverUrl"] = official_img
     logger.info(f"Call C deep-metadata result: releaseYear={deep_meta.get('releaseYear')}, artist='{deep_meta.get('artist')}', title='{deep_meta.get('albumTitle')}', catno='{deep_meta.get('catalogNumber')}'")
     return {"metadata": deep_meta}
 
