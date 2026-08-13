@@ -532,6 +532,7 @@ class GeminiVisionService:
         Returns detailed backstory/pressing notes, full tracklist with Side A/B positions, and foldable highlights.
         """
         if self.client:
+            start_t = time.time()
             try:
                 from google.genai import types
 
