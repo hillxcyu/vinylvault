@@ -10,18 +10,8 @@ import logging
 from typing import Dict, Any, List, Optional
 
 
-def _setup_logger(name: str) -> logging.Logger:
-    l = logging.getLogger(name)
-    l.setLevel(logging.INFO)
-    l.propagate = False
-    if not l.handlers:
-        h = logging.StreamHandler(sys.stdout)
-        h.setLevel(logging.INFO)
-        h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"))
-        l.addHandler(h)
-    return l
-
-logger = _setup_logger("gemini_service")
+logger = logging.getLogger("gemini_service")
+logger.setLevel(logging.INFO)
 
 
 
