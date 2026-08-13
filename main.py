@@ -24,18 +24,25 @@ import urllib.request
 import asyncio
 from datetime import datetime, timezone
 
-# Configure application-wide logging to sys.stdout for Docker and Cloud Run
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ],
-    force=True
-)
+# Attach direct sys.stdout StreamHandlers to bypass Uvicorn root logger filtering
+def setup_app_logger(name: str) -> logging.Logger:
+    l = logging.getLogger(name)
+    l.setLevel(logging.INFO)
+    l.propagate = False
+    if not l.handlers:
+        h = logging.StreamHandler(sys.stdout)
+        h.setLevel(logging.INFO)
+        h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"))
+        l.addHandler(h)
+    return l
 
-logger = logging.getLogger("vinyl_vault")
-logger.setLevel(logging.INFO)
+logger = setup_app_logger("vinyl_vault")
+setup_app_logger("gemini_service")
+setup_app_logger("discogs_service")
+setup_app_logger("classical_service")
+setup_app_logger("gcs_service")
+setup_app_logger("cache_service")
+setup_app_logger("deskew_service")
 
 
 

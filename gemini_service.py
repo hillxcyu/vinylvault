@@ -1,15 +1,27 @@
 import os
 import io
 import re
+import time
 import wave
 import json
 import base64
+import sys
 import logging
 from typing import Dict, Any, List, Optional
 
 
-logger = logging.getLogger("gemini_service")
-logger.setLevel(logging.INFO)
+def _setup_logger(name: str) -> logging.Logger:
+    l = logging.getLogger(name)
+    l.setLevel(logging.INFO)
+    l.propagate = False
+    if not l.handlers:
+        h = logging.StreamHandler(sys.stdout)
+        h.setLevel(logging.INFO)
+        h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"))
+        l.addHandler(h)
+    return l
+
+logger = _setup_logger("gemini_service")
 
 
 
@@ -148,6 +160,8 @@ class GeminiVisionService:
         # Downsample high-res photo to 1024px max dimension for fast execution
         optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
 
+        logger.info("🤖 [Gemini Vision] Requesting corner segmentation polygon (gemini-3.6-flash)...")
+        start_t = time.time()
         try:
             from google.genai import types
             from pydantic import BaseModel, Field
@@ -175,8 +189,6 @@ class GeminiVisionService:
                 thinking_config=types.ThinkingConfig(thinking_level="minimal")
             )
 
-
-
             response = self.client.models.generate_content(
                 model="gemini-3.6-flash",
                 contents=[
@@ -192,17 +204,20 @@ class GeminiVisionService:
                     if hasattr(part, "text") and part.text:
                         text += part.text
             text = text.strip()
+            elapsed = time.time() - start_t
             if not text:
+                logger.warning(f"Gemini Vision segmentation returned empty text in {elapsed:.2f}s")
                 return None
 
             parsed = json.loads(text)
             mask = parsed.get("mask", [])
             box_2d = parsed.get("box_2d", [])
             if len(mask) == 4 and all(isinstance(pt, list) and len(pt) == 2 for pt in mask):
-                logger.info(f"Gemini Vision Segmentation Corners detected: mask={mask}, box_2d={box_2d}")
+                logger.info(f"✨ [Gemini Vision] Corner segmentation detected in {elapsed:.2f}s: mask={mask}")
                 return mask
         except Exception as e:
-            logger.warning(f"Gemini Vision segmentation corner detection warning: {e}")
+            elapsed = time.time() - start_t
+            logger.warning(f"Gemini Vision segmentation corner detection warning after {elapsed:.2f}s: {e}")
 
         return None
 
@@ -251,6 +266,8 @@ class GeminiVisionService:
             "Return JSON with 'artist', 'albumTitle', 'isAlreadyInCrate', 'crateMatchId', 'crateMatchReason', 'confidenceScore'."
         )
 
+        logger.info("🤖 [Gemini Call B] Requesting duplicate inventory check (gemini-3.6-flash)...")
+        start_t = time.time()
         try:
             from google.genai import types
             from pydantic import BaseModel, Field
@@ -284,14 +301,17 @@ class GeminiVisionService:
                     if hasattr(part, "text") and part.text:
                         text += part.text
             text = text.strip()
+            elapsed = time.time() - start_t
             if not text:
+                logger.warning(f"Gemini Call B returned empty text in {elapsed:.2f}s")
                 return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "Empty response"}
 
             parsed = json.loads(text)
-            logger.info(f"Gemini Fast Duplicate Check (Call B) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}")
+            logger.info(f"✨ [Gemini Call B] Duplicate check finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}")
             return parsed
         except Exception as e:
-            logger.warning(f"Fast duplicate check warning: {e}")
+            elapsed = time.time() - start_t
+            logger.warning(f"Fast duplicate check warning after {elapsed:.2f}s: {e}")
             return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": f"Error: {e}"}
 
 
@@ -299,7 +319,6 @@ class GeminiVisionService:
         """
         Fast album metadata extraction (Call C) via Gemini 3.6 Flash.
         Returns catalog number, label, release country, release year, genre, and confidence score.
-        Thinking level is set to minimal for maximum response speed (~1s).
         """
         if not self.client:
             return {}
@@ -324,6 +343,8 @@ class GeminiVisionService:
             "8. 'confidenceScore': Number between 0 and 1."
         )
 
+        logger.info("🤖 [Gemini Call C] Requesting fast metadata extraction (gemini-3.6-flash)...")
+        start_t = time.time()
         try:
             from google.genai import types
             from pydantic import BaseModel, Field
@@ -358,14 +379,17 @@ class GeminiVisionService:
                     if hasattr(part, "text") and part.text:
                         text += part.text
             text = text.strip()
+            elapsed = time.time() - start_t
             if not text:
+                logger.warning(f"Gemini Call C returned empty text in {elapsed:.2f}s")
                 return {}
 
             parsed = json.loads(text)
-            logger.info(f"Gemini Fast Metadata (Call C) finished: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
+            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('albumTitle')}', catno='{parsed.get('catalogNumber')}'")
             return parsed
         except Exception as e:
-            logger.warning(f"Fast metadata extraction warning: {e}")
+            elapsed = time.time() - start_t
+            logger.warning(f"Fast metadata extraction warning after {elapsed:.2f}s: {e}")
             return {}
 
     def extract_album_metadata_and_guide(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
@@ -646,10 +670,14 @@ class GeminiVisionService:
                         parsed = json.loads(match.group(0))
                     else:
                         raise
+                
+                elapsed = time.time() - start_t
+                logger.info(f"✨ [Gemini Guide] Listening guide generated in {elapsed:.2f}s for '{artist} - {title}'")
                 return parsed
 
             except Exception as e:
-                logger.error(f"Error generating listening guide via Gemini API: {e}")
+                elapsed = time.time() - start_t
+                logger.error(f"Error generating listening guide via Gemini API after {elapsed:.2f}s: {e}")
 
         # Smart fallback listening guide for demo/offline
         title_lower = title.lower()
@@ -768,6 +796,9 @@ class GeminiVisionService:
 
                 contents.append(prompt)
 
+                logger.info(f"🤖 [Gemini Chat] Sending message to gemini-3.6-flash (images={len(images or [])})...")
+                start_t = time.time()
+
                 config = types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
@@ -777,11 +808,14 @@ class GeminiVisionService:
                     contents=contents,
                     config=config
                 )
+                elapsed = time.time() - start_t
                 if response and response.text:
+                    logger.info(f"✨ [Gemini Chat] Chat response generated in {elapsed:.2f}s")
                     return response.text.strip()
 
             except Exception as e:
-                logger.error(f"Error in Gemini chat API call: {e}")
+                elapsed = time.time() - start_t
+                logger.error(f"Error in Gemini chat API call after {elapsed:.2f}s: {e}")
 
         return f"Regarding '{title}' by {artist}: This record is renowned for its distinct vinyl pressing dynamics and musical production. '{message}' touches on great details for audiophiles enjoying this album!"
 
@@ -1107,6 +1141,8 @@ class GeminiVisionService:
                 "pairingNote": "Best enjoyed in a cozy listening room with a warm cup of coffee or dark roast tea."
             }
 
+        logger.info(f"🤖 [Gemini Daily Pick] Requesting blog article for '{title}' (gemini-3.6-flash)...")
+        start_t = time.time()
         try:
             from google.genai import types
             response = self.client.models.generate_content(
@@ -1122,12 +1158,15 @@ class GeminiVisionService:
                     if hasattr(part, "text") and part.text:
                         text += part.text
             text = text.strip()
+            elapsed = time.time() - start_t
             if not text:
                 raise ValueError("Empty response from Gemini")
             data = json.loads(text)
+            logger.info(f"✨ [Gemini Daily Pick] Blog feature article generated in {elapsed:.2f}s for '{title}'")
             return data
         except Exception as e:
-            logger.warning(f"Gemini daily poster insights fallback: {e}")
+            elapsed = time.time() - start_t
+            logger.warning(f"Gemini daily poster insights fallback after {elapsed:.2f}s: {e}")
             return {
                 "headline": f"Today's Vault Feature: {title}",
                 "listeningHighlight": f"There is an undeniable grace to {title} by {artist} that demands your undivided attention. Pulling this album from its sleeve feels like uncovering a timeless musical landscape.\n\nListen closely to the phrasing and timber across each movement. The record balances expressive lyricism with structural power, offering fresh nuances with every listen.\n\nThe analog warmth of vinyl brings out the ambient resonance of the recording hall. Sit back, adjust your volume, and enjoy an unforgettable session.",
