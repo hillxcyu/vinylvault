@@ -209,13 +209,13 @@
             </div>
 
             <!-- Curated Listening Highlight Card -->
-            <div class="bg-stone-900/80 backdrop-blur-md p-4 rounded-2xl border border-stone-800/80 space-y-1.5 shadow-lg">
+            <div class="bg-stone-900/80 backdrop-blur-md p-4 rounded-2xl border border-stone-800/80 space-y-2 shadow-lg">
               <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-headphones"></i> Listening Highlight
+                <i class="fa-solid fa-feather-pointed"></i> Daily Curator's Feature
               </h4>
-              <p id="dailyPosterHighlight" class="text-xs sm:text-sm text-stone-200 leading-relaxed font-medium">
-                Loading curated listening highlight...
-              </p>
+              <div id="dailyPosterHighlight" class="text-xs sm:text-sm text-stone-200 leading-relaxed font-normal space-y-2.5">
+                Loading curated listening feature...
+              </div>
             </div>
 
             <!-- Interesting Trivia & Pairing Note -->
@@ -4183,7 +4183,15 @@
       if (yrEl) yrEl.innerText = rec.releaseYear ? `RELEASE: ${rec.releaseYear}` : 'ANALOG PRESSING';
 
       const highlightEl = document.getElementById('dailyPosterHighlight');
-      if (highlightEl) highlightEl.innerText = data.listeningHighlight || 'An extraordinary album selected for today\'s listening session.';
+      if (highlightEl) {
+        const text = data.listeningHighlight || 'An extraordinary album selected for today\'s listening session.';
+        const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+        if (paragraphs.length > 1) {
+          highlightEl.innerHTML = paragraphs.map(p => `<p class="leading-relaxed">${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
+        } else {
+          highlightEl.innerText = text;
+        }
+      }
 
       const triviaEl = document.getElementById('dailyPosterTrivia');
       if (triviaEl) triviaEl.innerText = data.trivia || 'First pressed during the golden analog era.';

@@ -1067,8 +1067,8 @@ class GeminiVisionService:
 
     def generate_daily_poster_insights(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Generates curated listening highlights, interesting trivia, and pairing notes
-        for the Daily Poster feature using Gemini AI.
+        Generates a blog-style free-flowing article, interesting trivia, and pairing notes
+        for the Daily Pick feature using Gemini AI.
         """
         title = record_data.get("title", "Unknown Album")
         artist = record_data.get("artist", "Unknown Artist")
@@ -1077,29 +1077,35 @@ class GeminiVisionService:
         catalog = record_data.get("catalogNumber", "")
 
         prompt = f"""
-        You are an expert vinyl curator and classical/audiophile musicologist for "Vinyl Vault".
-        Generate an elegant, engaging Daily Record Showcase Poster card for this album:
+        You are a passionate, highly articulate music essayist, audiophile, and master vinyl curator writing a daily feature blog post for "Vinyl Vault".
+        Write an inspiring, free-flowing blog-style article about today's featured vinyl record to motivate readers to drop the needle and listen, while helping them deeply understand and appreciate the music, composition, performance, and recording.
+
+        Album Details:
         Title: {title}
         Artist: {artist}
-        Year: {year}
+        Release Year: {year}
         Genre: {genre}
         Catalog Number: {catalog}
 
-        Provide a JSON response with the following keys:
-        1. "headline": A poetic, catchy 4-8 word tag line for today's poster (e.g., "A Timeless Masterpiece of Baroque Elegance").
-        2. "listeningHighlight": 2 concise sentences describing why this album is essential today, highlighting its acoustic timbre, key movement, or emotional warmth.
-        3. "trivia": 2 fascinating sentences sharing a lesser-known historical fact, master tape context, or pressing rarity detail.
-        4. "pairingNote": A cozy 1-sentence atmosphere or beverage pairing recommendation.
+        Write with genuine enthusiasm, evocative prose, and musicological authority. Respond in JSON format with the following keys:
+
+        1. "headline": A compelling, blog-style title or tagline (6-10 words) that piques curiosity and invites the reader in (e.g., "Why Dropping the Needle on This Masterpiece Will Transform Your Evening").
+        2. "listeningHighlight": A free-flowing blog-style article (3 well-written, engaging paragraphs separated by double newlines, ~180-260 words total):
+           - Paragraph 1: An inviting, atmospheric opening that sets the mood and warmly motivates the reader to pull this record from the shelf today.
+           - Paragraph 2: A thoughtful musical exploration — illuminating the composition, key movements or tracks, historical significance, or artistic interpretation so the reader understands what makes this recording remarkable.
+           - Paragraph 3: A vivid reflection on the acoustic timbre, dynamic range, or spatial soundstage when listening on vinyl.
+        3. "trivia": 1-2 sentences sharing a fascinating, lesser-known historical fact, master tape lore, or pressing detail.
+        4. "pairingNote": A cozy 1-sentence atmospheric or beverage pairing recommendation to complement the album's vibe.
 
         Respond strictly in valid JSON format without markdown code blocks.
         """
 
         if not self.client:
             return {
-                "headline": f"Featured Vinyl Highlight: {title}",
-                "listeningHighlight": f"An exquisite recording of {title} by {artist}. Immerse yourself in the warm analog soundstage and expressive dynamics.",
-                "trivia": f"First pressed in {year or 'the golden analog era'}, this release remains a cherished piece in audiophile pressings.",
-                "pairingNote": "Best enjoyed with a warm cup of espresso or tea during an evening listening session."
+                "headline": f"Discovering {title}: A Journey in Analog Sound",
+                "listeningHighlight": f"There is an unmistakable magic in placing {title} on the turntable and letting the music unfold. Performed by {artist}, this record stands as an essential pillar of {genre}.\n\nAs the needle tracks through the grooves, notice the extraordinary interplay between instruments and the delicate balance of dynamics. The performance carries a rare blend of emotional clarity and architectural strength that invites repeated listening.\n\nCaptured with rich analog warmth, this pressing delivers an expansive soundstage and physical presence that digital formats simply cannot replicate. Take a moment to sit back, lower the tonearm, and immerse yourself completely.",
+                "trivia": f"First pressed in {year or 'the golden analog era'}, catalog number {catalog or 'N/A'} is celebrated among collectors for its dynamic mastering.",
+                "pairingNote": "Best enjoyed in a cozy listening room with a warm cup of coffee or dark roast tea."
             }
 
         try:
@@ -1124,9 +1130,9 @@ class GeminiVisionService:
         except Exception as e:
             logger.warning(f"Gemini daily poster insights fallback: {e}")
             return {
-                "headline": f"Featured Vault Pick: {title}",
-                "listeningHighlight": f"An outstanding performance of {title} by {artist}. Experience its full dynamic range and analog warmth on vinyl.",
-                "trivia": f"Catalog number {catalog or 'N/A'} is renowned among collectors for its distinct soundstage engineering.",
+                "headline": f"Today's Vault Feature: {title}",
+                "listeningHighlight": f"There is an undeniable grace to {title} by {artist} that demands your undivided attention. Pulling this album from its sleeve feels like uncovering a timeless musical landscape.\n\nListen closely to the phrasing and timber across each movement. The record balances expressive lyricism with structural power, offering fresh nuances with every listen.\n\nThe analog warmth of vinyl brings out the ambient resonance of the recording hall. Sit back, adjust your volume, and enjoy an unforgettable session.",
+                "trivia": f"Catalog number {catalog or 'N/A'} is renowned for its spatial separation and vivid pressings.",
                 "pairingNote": "Perfect for a quiet ambient listening session."
             }
 
