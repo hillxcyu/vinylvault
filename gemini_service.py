@@ -779,7 +779,6 @@ class GeminiVisionService:
                 start_t = time.time()
 
                 config = types.GenerateContentConfig(
-                    thinking_config=types.ThinkingConfig(thinking_level="high"),
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
 
@@ -880,7 +879,6 @@ class GeminiVisionService:
             try:
                 from google.genai import types
                 config = types.GenerateContentConfig(
-                    thinking_config=types.ThinkingConfig(thinking_level="high"),
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
                 response_stream = self.client.models.generate_content_stream(
@@ -983,6 +981,7 @@ class GeminiVisionService:
 
 
             config = types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(thinking_level="high"),
                 response_mime_type="application/json"
             )
 
