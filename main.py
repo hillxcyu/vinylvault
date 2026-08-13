@@ -1195,7 +1195,7 @@ async def get_listening_guide(req: ListeningGuideRequest):
                             updated = True
 
                         if updated:
-                            db.save_record(rec)
+                            db.update_record(rec)
                             logger.info(f"✨ Auto-enriched record '{target_rec_id}' in Firestore with discovered metadata: {enriched}")
 
     return {"status": "success", "guide": guide, "cached": False}
