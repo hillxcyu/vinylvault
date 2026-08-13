@@ -338,7 +338,8 @@ class GeminiVisionService:
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_schema=AlbumMetadataSchema
+                response_schema=AlbumMetadataSchema,
+                thinking_config=types.ThinkingConfig(thinking_level="minimal")
             )
 
             response = self.client.models.generate_content(
