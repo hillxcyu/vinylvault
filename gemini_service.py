@@ -316,21 +316,9 @@ class GeminiVisionService:
         optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
 
         prompt = (
-            "You are an expert vinyl record archivist, musicologist, and cataloger specializing in Classical, Jazz, Rock, Japanese Pressings, Obi Strips, and Box Sets.\n"
-            "Analyze this image of a vinyl album cover, box set, spine, or obi strip with extreme precision to extract known metadata.\n\n"
-            "FAST METADATA EXTRACTION RULES (NO GOOGLE SEARCH):\n"
-            "1. Extract all text printed directly on the album cover, jacket, spine, obi strip, or record label.\n"
-            "2. Use your internal musicological knowledge to infer missing catalog numbers or release details if recognized with high confidence.\n"
-            "3. If a field (such as catalog number, release year, label, country, or genre) is NOT printed on the cover or known with high confidence from your internal knowledge, return null for that field. DO NOT guess, fabricate, or default to current years like 2024 or 2026.\n\n"
-            "Extract and return ONLY a valid JSON object with the following fields:\n"
-            "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
-            "2. 'albumTitle': Full album title or composer/work title.\n"
-            "3. 'catalogNumber': Exact catalog number assigned to this specific pressing (or null if not visible/known).\n"
-            "4. 'label': Exact record label name (or null if not visible/known).\n"
-            "5. 'country': Release country or pressing origin (or null if not visible/known).\n"
-            "6. 'releaseYear': Exact 4-digit release year integer printed on jacket/obi or known from internal knowledge (or null if unknown).\n"
-            "7. 'genre': Musical genre/style (or null if unknown).\n"
-            "8. 'confidenceScore': Number between 0 and 1."
+            "Read artist, albumTitle, catalogNumber, label, country, releaseYear, and genre "
+            "from the provided image of a vinyl album cover, box set, spine, or obi strip. "
+            "Infer any missing fields if you can, else return null."
         )
 
         logger.info("🤖 [Gemini Call C] Requesting fast metadata extraction (gemini-3.6-flash)...")
@@ -342,12 +330,11 @@ class GeminiVisionService:
             class AlbumMetadataSchema(BaseModel):
                 artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
                 albumTitle: str = Field(description="Full album title or composer/work title")
-                catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number assigned to this specific pressing or null")
-                label: Optional[str] = Field(default=None, description="Exact record label name or null")
+                catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number or null")
+                label: Optional[str] = Field(default=None, description="Record label name or null")
                 country: Optional[str] = Field(default=None, description="Release country or null")
-                releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer or null if unknown")
-                genre: Optional[str] = Field(default=None, description="Musical genre or style or null")
-                confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
+                releaseYear: Optional[int] = Field(default=None, description="4-digit release year integer or null")
+                genre: Optional[str] = Field(default=None, description="Musical genre/style or null")
 
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -375,7 +362,7 @@ class GeminiVisionService:
                 return {}
 
             parsed = json.loads(text)
-            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}")
+            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}'")
             return parsed
         except Exception as e:
             elapsed = time.time() - start_t
