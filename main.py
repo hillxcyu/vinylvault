@@ -149,7 +149,22 @@ async def serve_index():
 
 @app.get("/api/records")
 async def get_records():
-    return {"records": db.get_all_records(sync_if_needed=True)}
+    recs, fs_ok, fs_err = db.get_all_records_with_status(sync_if_needed=True)
+    if not fs_ok:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": fs_err or "Failed to connect to Cloud Firestore database",
+                "records": recs,
+                "firestore_connected": False
+            }
+        )
+    return {
+        "status": "success",
+        "records": recs,
+        "firestore_connected": True
+    }
 
 @app.get("/api/covers/{filename}")
 async def serve_cover_image(filename: str):

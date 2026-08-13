@@ -1901,11 +1901,16 @@
     }
 
     function showDbConnectionError(msg) {
+      const overlay = document.getElementById('initialDbConnectingOverlay');
       const statusText = document.getElementById('dbConnectionStatusText');
       const retryBox = document.getElementById('dbConnectionRetryContainer');
+      
+      if (overlay) {
+        overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      }
       if (statusText) {
-        statusText.className = 'text-xs text-rose-400 font-medium mb-4 flex items-center justify-center gap-2';
-        statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-xs"></i> ${msg || 'Connection failed'}`;
+        statusText.className = 'text-xs text-rose-400 font-medium mb-4 flex items-center justify-center gap-2 px-3 py-1.5 bg-rose-950/40 border border-rose-800/50 rounded-xl max-w-xs break-words';
+        statusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-xs text-rose-400 shrink-0"></i> <span>${msg || 'Unable to connect to Cloud Firestore'}</span>`;
       }
       if (retryBox) {
         retryBox.classList.remove('hidden');
@@ -1928,11 +1933,18 @@
     async function fetchCollection() {
       try {
         const res = await fetch('/api/records');
-        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.firestore_connected === false) {
+          const errMsg = (data && data.error) ? data.error : `Database connection failure (${res.status})`;
+          console.error('Firestore connection/auth error:', errMsg);
+          showDbConnectionError(`Firestore connection error: ${errMsg}`);
+          return;
+        }
+
         allRecords = data.records || [];
 
-        // Hide connection overlay immediately upon receiving response from Firestore
+        // Hide connection overlay ONLY upon verified successful connection to Firestore
         hideDbConnectingOverlay();
 
         const badge = document.getElementById('recordCountBadge');
@@ -4402,11 +4414,6 @@
     fetchListeningJournal();
     fetchStats();
     fetchChronicle();
-
-    // Safety fallback: ensure initial connecting overlay is always dismissed within 2.5s
-    setTimeout(() => {
-      hideDbConnectingOverlay();
-    }, 2500);
 
   </script>
 

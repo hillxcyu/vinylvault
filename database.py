@@ -1144,6 +1144,7 @@ class FirestoreManager:
         self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
         self.database_id = os.environ.get("FIRESTORE_DATABASE_ID") or os.environ.get("FIRESTORE_DATABASE", "vinylvault-hk")
         self.db = None
+        self.last_error = None
         self._init_firestore()
 
 
@@ -1152,21 +1153,27 @@ class FirestoreManager:
             from google.cloud import firestore
             self.db = firestore.Client(project=self.project_id, database=self.database_id)
             print(f"GCP Firestore client successfully connected to project: {self.project_id}, database: {self.database_id}")
+            self.last_error = None
         except Exception as e:
-            print(f"GCP Firestore client init error for database {self.database_id}: {e}")
+            err_str = str(e)
+            print(f"GCP Firestore client init error for database {self.database_id}: {err_str}")
             self.db = None
+            self.last_error = f"Client Init Error: {err_str}"
 
-    def get_records(self, timeout: float = 3.0) -> Optional[List[Dict[str, Any]]]:
+    def get_records(self, timeout: float = 3.0) -> Tuple[Optional[List[Dict[str, Any]]], Optional[str]]:
         if not self.db:
-            return None
+            return None, self.last_error or "Firestore client is not initialized"
         try:
             docs = self.db.collection("records").get(timeout=timeout)
             records = [d.to_dict() for d in docs if d.exists and d.to_dict()]
             print(f"Loaded {len(records)} records from GCP Firestore.")
-            return records
+            self.last_error = None
+            return records, None
         except Exception as e:
-            print(f"Firestore get_records warning/timeout (using local fallback): {e}")
-            return None
+            err_str = str(e)
+            print(f"Firestore get_records warning/timeout: {err_str}")
+            self.last_error = f"Fetch Error: {err_str}"
+            return None, err_str
 
 
 
@@ -1328,10 +1335,6 @@ class VinylDatabase:
             import threading
             threading.Thread(target=self.sync_firestore_on_startup, daemon=True).start()
 
-
-
-
-
     def ensure_firestore_synced(self):
         """Lazy-syncs Firestore in a non-blocking background thread when /api/records is called."""
         if self._has_synced_firestore:
@@ -1347,27 +1350,26 @@ class VinylDatabase:
             return
 
         try:
-            fs_recs = self.firestore.get_records()
+            fs_recs, err = self.firestore.get_records()
             if fs_recs is None:
-                print("Firestore get_records returned None (connection timeout or error); preserving existing records.")
+                print(f"Firestore get_records returned None ({err}); preserving existing records.")
                 return
 
             if len(fs_recs) > 0:
                 print(f"Firestore active with {len(fs_recs)} records.")
                 # Merge local-only records that were saved locally but missing from Firestore
                 fs_ids = {r.get("id") for r in fs_recs if r.get("id")}
-                local_only = [r for r in self.records if r.get("id") and r.get("id") not in fs_ids]
-                if local_only:
-                    print(f"Preserving & syncing {len(local_only)} locally-created records to Cloud Firestore...")
-                    for loc_rec in local_only:
+                missing_local = [r for r in self.records if r.get("id") and r.get("id") not in fs_ids]
+
+                if missing_local:
+                    print(f"Found {len(missing_local)} local records missing from Firestore; syncing to cloud...")
+                    for loc_rec in missing_local:
                         try:
                             self.firestore.save_record(loc_rec)
-                            fs_recs.insert(0, loc_rec)
-                        except Exception as err:
-                            print(f"Error syncing local record '{loc_rec.get('id')}' to Firestore: {err}")
+                        except Exception as sync_err:
+                            print(f"Failed to sync local record '{loc_rec.get('title')}' to Firestore: {sync_err}")
 
                 self.records = fs_recs
-                self.save_records()
                 print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
             else:
                 print("Firestore collection returned 0 records. Preserving local disk records.")
@@ -1534,15 +1536,49 @@ class VinylDatabase:
         self._save_json(SPINS_FILE, self.spins_log)
 
     def get_all_records(self, sync_if_needed: bool = False) -> List[Dict[str, Any]]:
-        if sync_if_needed and self.firestore.db:
-            try:
-                fs_recs = self.firestore.get_records()
-                if fs_recs is not None and len(fs_recs) > 0:
-                    self.records = fs_recs
-                    self._save_json(RECORDS_FILE, fs_recs)
-            except Exception as e:
-                print(f"Error fetching direct records from Firestore: {e}")
+        if sync_if_needed:
+            if not self.firestore or not self.firestore.db:
+                if self.firestore:
+                    self.firestore._init_firestore()
+
+            if self.firestore and self.firestore.db:
+                try:
+                    fs_recs, err = self.firestore.get_records()
+                    if fs_recs is not None and len(fs_recs) > 0:
+                        self.records = fs_recs
+                        self._save_json(RECORDS_FILE, fs_recs)
+                        self._rebuild_record_map()
+                except Exception as e:
+                    print(f"Error fetching direct records from Firestore: {e}")
         return self.records
+
+    def get_all_records_with_status(self, sync_if_needed: bool = True) -> Tuple[List[Dict[str, Any]], bool, Optional[str]]:
+        fs_connected = True
+        fs_error = None
+
+        if sync_if_needed:
+            if not self.firestore or not self.firestore.db:
+                if self.firestore:
+                    self.firestore._init_firestore()
+
+            if self.firestore and self.firestore.db:
+                try:
+                    fs_recs, err = self.firestore.get_records()
+                    if fs_recs is not None:
+                        self.records = fs_recs
+                        self._save_json(RECORDS_FILE, fs_recs)
+                        self._rebuild_record_map()
+                    else:
+                        fs_connected = False
+                        fs_error = err or (self.firestore.last_error if self.firestore else "Firestore query returned None")
+                except Exception as e:
+                    fs_connected = False
+                    fs_error = str(e)
+            else:
+                fs_connected = False
+                fs_error = self.firestore.last_error if self.firestore else "Firestore client not initialized"
+
+        return self.records, fs_connected, fs_error
 
 
 
