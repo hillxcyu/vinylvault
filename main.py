@@ -14,6 +14,7 @@ elif os.path.exists(host_adc):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = host_adc
 
 
+import sys
 import uuid
 import json
 import re
@@ -22,6 +23,19 @@ import logging
 import urllib.request
 import asyncio
 from datetime import datetime, timezone
+
+# Configure application-wide logging to sys.stdout for Docker and Cloud Run
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ],
+    force=True
+)
+
+logger = logging.getLogger("vinyl_vault")
+logger.setLevel(logging.INFO)
 
 
 
@@ -44,8 +58,6 @@ from gcs_service import gcs_service
 from fastapi.responses import RedirectResponse
 
 from fastapi.middleware.gzip import GZipMiddleware
-
-logger = logging.getLogger("vinyl_vault")
 
 app = FastAPI(title="Vinyl Vault - Collection & Anti-Duplicate Assistant")
 app.add_middleware(GZipMiddleware, minimum_size=1000)

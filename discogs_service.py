@@ -5,6 +5,7 @@ import re
 from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger("discogs_service")
+logger.setLevel(logging.INFO)
 
 class DiscogsService:
     def __init__(self):

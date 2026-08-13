@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional
 
 
 logger = logging.getLogger("gemini_service")
+logger.setLevel(logging.INFO)
 
 
 

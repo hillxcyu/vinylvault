@@ -3,6 +3,7 @@ import logging
 from typing import List, Dict, Any, Tuple, Optional
 
 logger = logging.getLogger("classical_service")
+logger.setLevel(logging.INFO)
 
 CLASSICAL_ERAS = [
     {
