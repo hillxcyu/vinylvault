@@ -1,5 +1,6 @@
 import re
 import logging
+import unicodedata
 from typing import List, Dict, Any, Tuple, Optional
 
 logger = logging.getLogger("classical_service")
@@ -13,7 +14,7 @@ CLASSICAL_ERAS = [
         "icon": "🎻",
         "description": "Counterpoint, fugues, harpsichord suites, and ornate polyphonic structures.",
         "keywords": [
-            "bach", "vivladi", "vivaldi", "handel", "telemann", "scarlatti", "corelli", "purcell",
+            "bach", "vivladi", "vivaldi", "handel", "händel", "haendel", "telemann", "scarlatti", "corelli", "purcell",
             "rameau", "couperin", "van eyck", "brüggen", "bruggen", "baroque", "harpsichord", "bwv"
         ]
     },
@@ -24,7 +25,7 @@ CLASSICAL_ERAS = [
         "icon": "🎼",
         "description": "Sonata-allegro forms, balance, clarity, and the birth of the symphonic orchestra.",
         "keywords": [
-            "mozart", "haydn", "salieri", "boccherini", "clementi", "gluck", "c.p.e. bach", "hummel"
+            "mozart", "haydn", "salieri", "boccherini", "clementi", "gluck", "c.p.e. bach", "cpe bach", "hummel"
         ]
     },
     {
@@ -35,8 +36,8 @@ CLASSICAL_ERAS = [
         "description": "Expressive emotion, virtuosity, nationalism, expanded chromaticism, and grand opera.",
         "keywords": [
             "schubert", "beethoven", "brahms", "tchaikovsky", "dvořák", "dvorak", "chopin", "liszt", "wagner",
-            "mahler", "rachmaninoff", "mendelssohn", "verdi", "schumann", "sibelius", "bruch",
-            "grieg", "saint-saëns", "saint-saens", "paganini", "strauss", "puccini", "bizet",
+            "mahler", "rachmaninoff", "rachmaninov", "mendelssohn", "verdi", "schumann", "sibelius", "bruch",
+            "grieg", "saint-saëns", "saint-saens", "saint saens", "paganini", "strauss", "puccini", "bizet",
             "berlioz", "rimsky-korsakov", "mussorgsky", "elgar", "franck", "lalo", "stern", "klemperer",
             "rubinstein", "cziffra", "lipatti", "boskovsky", "levine", "haebler", "maazel"
         ]
@@ -168,29 +169,50 @@ class ClassicalService:
         classical_recs = [r for r in records if self.is_classical_record(r)]
         
         composer_patterns = [
-            ("Hector Berlioz", r"\b(berlioz|symphonie fantastique)\b", "1803 – 1869", "France", "🇫🇷", "Romantic"),
+            ("Camille Saint-Saëns", r"\b(saint-saëns|saint-saens|saint saens)\b", "1835 – 1921", "France", "🇫🇷", "Romantic"),
+            ("Antonio Vivaldi", r"\bvivaldi\b", "1678 – 1741", "Italy", "🇮🇹", "Baroque"),
             ("Johann Sebastian Bach", r"\b(bach|bwv)\b", "1685 – 1750", "Germany", "🇩🇪", "Baroque"),
+            ("George Frideric Handel", r"\b(handel|händel|haendel)\b", "1685 – 1759", "Germany / UK", "🇬🇧", "Baroque"),
             ("Wolfgang Amadeus Mozart", r"\b(mozart|k\.\s*\d+)\b", "1756 – 1791", "Austria", "🇦🇹", "Classical"),
             ("Ludwig van Beethoven", r"\bbeethoven\b", "1770 – 1827", "Germany", "🇩🇪", "Classical / Romantic"),
-            ("Antonín Dvořák", r"\b(dvořák|dvorak)\b", "1841 – 1904", "Czechia", "🇨🇿", "Romantic"),
-            ("Pyotr Ilyich Tchaikovsky", r"\btchaikovsky\b", "1840 – 1893", "Russia", "🇷🇺", "Romantic"),
-            ("Johannes Brahms", r"\bbrahms\b", "1833 – 1897", "Germany", "🇩🇪", "Romantic"),
-            ("Franz Schubert", r"\bschubert\b", "1797 – 1828", "Austria", "🇦🇹", "Romantic"),
-            ("Frédéric Chopin", r"\bchopin\b", "1810 – 1849", "Poland / France", "🇵🇱", "Romantic"),
             ("Joseph Haydn", r"\bhaydn\b", "1732 – 1809", "Austria", "🇦🇹", "Classical"),
-            ("Claude Debussy", r"\bdebussy\b", "1862 – 1918", "France", "🇫🇷", "Impressionist"),
-            ("Maurice Ravel", r"\bravel\b", "1875 – 1937", "France", "🇫🇷", "Impressionist"),
-            ("Igor Stravinsky", r"\bstravinsky\b", "1882 – 1971", "Russia", "🇷🇺", "Modern"),
-            ("Dmitri Shostakovich", r"\bshostakovich\b", "1906 – 1975", "Russia", "🇷🇺", "Modern"),
-            ("Sergei Prokofiev", r"\bprokofiev\b", "1891 – 1953", "Russia", "🇷🇺", "Modern"),
-            ("Béla Bartók", r"\b(bartók|bartok)\b", "1881 – 1945", "Hungary", "🇭🇺", "Modern"),
-            ("Jean Sibelius", r"\bsibelius\b", "1865 – 1957", "Finland", "🇫🇮", "Romantic"),
+            ("Carl Philipp Emanuel Bach", r"\b(c\.p\.e\.\s*bach|cpe\s*bach)\b", "1714 – 1788", "Germany", "🇩🇪", "Classical"),
+            ("Johann Nepomuk Hummel", r"\bhummel\b", "1778 – 1837", "Austria", "🇦🇹", "Classical"),
+            ("Franz Schubert", r"\bschubert\b", "1797 – 1828", "Austria", "🇦🇹", "Romantic"),
+            ("Hector Berlioz", r"\b(berlioz|symphonie fantastique)\b", "1803 – 1869", "France", "🇫🇷", "Romantic"),
             ("Felix Mendelssohn", r"\bmendelssohn\b", "1809 – 1847", "Germany", "🇩🇪", "Romantic"),
+            ("Frédéric Chopin", r"\bchopin\b", "1810 – 1849", "Poland / France", "🇵🇱", "Romantic"),
             ("Robert Schumann", r"\bschumann\b", "1810 – 1856", "Germany", "🇩🇪", "Romantic"),
             ("Franz Liszt", r"\bliszt\b", "1811 – 1886", "Hungary", "🇭🇺", "Romantic"),
             ("Giuseppe Verdi", r"\bverdi\b", "1813 – 1901", "Italy", "🇮🇹", "Romantic"),
+            ("Richard Wagner", r"\bwagner\b", "1813 – 1883", "Germany", "🇩🇪", "Romantic"),
+            ("César Franck", r"\bfranck\b", "1822 – 1890", "Belgium / France", "🇫🇷", "Romantic"),
+            ("Édouard Lalo", r"\blalo\b", "1823 – 1892", "France", "🇫🇷", "Romantic"),
+            ("Johann Strauss II", r"\b(johann strauss|strauss ii)\b", "1825 – 1899", "Austria", "🇦🇹", "Romantic"),
+            ("Johannes Brahms", r"\bbrahms\b", "1833 – 1897", "Germany", "🇩🇪", "Romantic"),
+            ("Max Bruch", r"\bbruch\b", "1838 – 1920", "Germany", "🇩🇪", "Romantic"),
+            ("Georges Bizet", r"\bbizet\b", "1838 – 1875", "France", "🇫🇷", "Romantic"),
+            ("Modest Mussorgsky", r"\bmussorgsky\b", "1839 – 1881", "Russia", "🇷🇺", "Romantic"),
+            ("Pyotr Ilyich Tchaikovsky", r"\btchaikovsky\b", "1840 – 1893", "Russia", "🇷🇺", "Romantic"),
+            ("Antonín Dvořák", r"\b(dvořák|dvorak)\b", "1841 – 1904", "Czechia", "🇨🇿", "Romantic"),
+            ("Edvard Grieg", r"\bgrieg\b", "1843 – 1907", "Norway", "🇳🇴", "Romantic"),
+            ("Nikolai Rimsky-Korsakov", r"\b(rimsky-korsakov|rimsky korsakov)\b", "1844 – 1908", "Russia", "🇷🇺", "Romantic"),
+            ("Edward Elgar", r"\belgar\b", "1857 – 1934", "UK", "🇬🇧", "Romantic"),
+            ("Giacomo Puccini", r"\bpuccini\b", "1858 – 1924", "Italy", "🇮🇹", "Romantic"),
             ("Gustav Mahler", r"\bmahler\b", "1860 – 1911", "Austria", "🇦🇹", "Romantic"),
-            ("Max Bruch", r"\bbruch\b", "1838 – 1920", "Germany", "🇩🇪", "Romantic")
+            ("Claude Debussy", r"\bdebussy\b", "1862 – 1918", "France", "🇫🇷", "Impressionist"),
+            ("Richard Strauss", r"\brichard strauss\b", "1864 – 1949", "Germany", "🇩🇪", "Romantic"),
+            ("Jean Sibelius", r"\bsibelius\b", "1865 – 1957", "Finland", "🇫🇮", "Romantic"),
+            ("Alexander Scriabin", r"\bscriabin\b", "1872 – 1915", "Russia", "🇷🇺", "Modern"),
+            ("Sergei Rachmaninoff", r"\b(rachmaninoff|rachmaninov)\b", "1873 – 1943", "Russia", "🇷🇺", "Romantic"),
+            ("Maurice Ravel", r"\bravel\b", "1875 – 1937", "France", "🇫🇷", "Impressionist"),
+            ("Béla Bartók", r"\b(bartók|bartok)\b", "1881 – 1945", "Hungary", "🇭🇺", "Modern"),
+            ("Igor Stravinsky", r"\bstravinsky\b", "1882 – 1971", "Russia", "🇷🇺", "Modern"),
+            ("Alban Berg", r"\balban berg\b", "1885 – 1935", "Austria", "🇦🇹", "Modern"),
+            ("Sergei Prokofiev", r"\bprokofiev\b", "1891 – 1953", "Russia", "🇷🇺", "Modern"),
+            ("Dmitri Shostakovich", r"\bshostakovich\b", "1906 – 1975", "Russia", "🇷🇺", "Modern"),
+            ("Leonard Bernstein", r"\bbernstein\b", "1918 – 1990", "USA", "🇺🇸", "Modern"),
+            ("Philip Glass", r"\bphilip glass\b", "1937 – Present", "USA", "🇺🇸", "Contemporary")
         ]
 
         for r in classical_recs:
@@ -352,51 +374,81 @@ class ClassicalService:
         return matched
 
     def _is_composer_match(self, comp_name: str, record: Dict[str, Any], detected_comp: Optional[str]) -> bool:
-        """Determines if a record belongs to a specific composer without cross-matching unrelated composers."""
-        comp_clean = re.sub(r'[^\w\s]', '', comp_name).lower().strip()
-        
-        comp_parts = comp_name.strip().split()
-        comp_surname = comp_parts[-1] if comp_parts else comp_name
-        if comp_surname.lower() in ["ii", "iii", "jr", "sr"] and len(comp_parts) >= 2:
-            comp_surname = comp_parts[-2]
-        clean_comp_surname = re.sub(r'[^\w\s]', '', comp_surname).lower()
+        """
+        Determines if a record belongs to a specific composer without cross-matching unrelated composers.
+        Handles diacritics (Saint-Saëns / Saint-Saens) and hyphens safely.
+        """
+        if not comp_name:
+            return False
+
+        def _norm(s: str) -> str:
+            if not s:
+                return ""
+            s_deaccent = "".join(c for c in unicodedata.normalize('NFD', str(s)) if unicodedata.category(c) != 'Mn')
+            return s_deaccent.lower().strip()
+
+        norm_comp = _norm(comp_name)
 
         if detected_comp:
-            det_clean = re.sub(r'[^\w\s]', '', detected_comp).lower().strip()
-            if comp_clean in det_clean or det_clean in comp_clean:
+            norm_det = _norm(detected_comp)
+            if norm_comp in norm_det or norm_det in norm_comp:
                 return True
-            
-            det_parts = detected_comp.strip().split()
-            det_surname = det_parts[-1] if det_parts else detected_comp
-            if det_surname.lower() in ["ii", "iii", "jr", "sr"] and len(det_parts) >= 2:
-                det_surname = det_parts[-2]
-            clean_det_surname = re.sub(r'[^\w\s]', '', det_surname).lower()
 
-            if clean_comp_surname and clean_comp_surname == clean_det_surname:
-                if "strauss" in clean_comp_surname:
-                    if "johann" in comp_clean and "richard" in det_clean:
-                        return False
-                    if "richard" in comp_clean and "johann" in det_clean:
-                        return False
-                if "bach" in clean_comp_surname:
-                    if ("carl" in det_clean or "cpe" in det_clean) and ("sebastian" in comp_clean or "js" in comp_clean):
-                        return False
-                return True
-            
+            comp_tokens = [t for t in re.split(r'[\s\-_,.]+', norm_comp) if t]
+            det_tokens = [t for t in re.split(r'[\s\-_,.]+', norm_det) if t]
+
+            if comp_tokens and det_tokens:
+                comp_surname = comp_tokens[-1]
+                det_surname = det_tokens[-1]
+                if comp_surname.lower() in ["ii", "iii", "jr", "sr"] and len(comp_tokens) >= 2:
+                    comp_surname = comp_tokens[-2]
+                if det_surname.lower() in ["ii", "iii", "jr", "sr"] and len(det_tokens) >= 2:
+                    det_surname = det_tokens[-2]
+
+                if comp_surname == det_surname:
+                    if "strauss" in comp_surname:
+                        if "johann" in norm_comp and "richard" in norm_det:
+                            return False
+                        if "richard" in norm_comp and "johann" in norm_det:
+                            return False
+                    if "bach" in comp_surname:
+                        if ("carl" in norm_det or "cpe" in norm_det) and ("sebastian" in norm_comp or "js" in norm_comp):
+                            return False
+                        if ("sebastian" in norm_det or "js" in norm_det) and ("carl" in norm_comp or "cpe" in norm_comp):
+                            return False
+                    return True
+
+        r_artist = _norm(record.get("artist") or "")
+        r_title = _norm(record.get("title") or "")
+        corpus = f"{r_artist} {r_title}"
+
+        comp_tokens = [t for t in re.split(r'[\s\-_,.]+', norm_comp) if t]
+        if comp_tokens and comp_tokens[-1] in ["ii", "iii", "jr", "sr"] and len(comp_tokens) >= 2:
+            comp_tokens.pop()
+
+        if not comp_tokens:
             return False
 
-        r_artist = (record.get("artist") or "").lower()
-        r_title = (record.get("title") or "").lower()
-        r_text = f"{r_artist} {r_title}"
+        surname = comp_tokens[-1]
+        if len(comp_tokens) >= 2 and comp_tokens[-2] in ["saint", "rimsky", "castelnuovo", "vaughan"]:
+            surname_phrase = f"{comp_tokens[-2]} {comp_tokens[-1]}"
+        else:
+            surname_phrase = surname
 
-        if not clean_comp_surname:
-            return False
+        parts = surname_phrase.split()
+        regex_parts = [re.escape(p) for p in parts]
+        pattern = r'\b' + r'[\s\-_]+'.join(regex_parts) + r'\b'
 
-        if re.search(r'\b' + re.escape(clean_comp_surname) + r'\b', r_text):
-            if "strauss" in clean_comp_surname:
-                if "johann" in comp_clean and ("richard" in r_text and "johann" not in r_text):
+        if re.search(pattern, corpus):
+            if "strauss" in surname:
+                if "johann" in norm_comp and ("richard" in corpus and "johann" not in corpus):
                     return False
-                if "richard" in comp_clean and ("johann" in r_text and "richard" not in r_text):
+                if "richard" in norm_comp and ("johann" in corpus and "richard" not in corpus):
+                    return False
+            if "bach" in surname:
+                if ("cpe" in norm_comp or "carl" in norm_comp) and ("js" in corpus or "johann sebastian" in corpus or "bwv" in corpus):
+                    return False
+                if ("johann sebastian" in norm_comp or "js" in norm_comp) and ("cpe" in corpus or "carl philipp" in corpus):
                     return False
             return True
 

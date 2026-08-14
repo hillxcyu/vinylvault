@@ -412,8 +412,8 @@ async def get_wishlist():
 
 
 @app.get("/api/chronicle")
-async def get_chronicle():
-    data = classical_service.get_chronicle_data(db.get_all_records())
+async def get_chronicle(refresh: bool = False):
+    data = classical_service.get_chronicle_data(db.get_all_records(), force_ai_refresh=refresh)
     data["isRebuilding"] = classical_service.is_rebuilding
     return data
 
