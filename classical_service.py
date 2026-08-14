@@ -497,9 +497,30 @@ class ClassicalService:
                 unique_classical_ids = set()
                 for era in ai_chronicle.get("eras", []):
                     for rec in era.get("records", []):
-                        if rec.get("id"):
-                            unique_classical_ids.add(rec["id"])
+                        rec_id = rec.get("id")
+                        if not rec_id:
+                            # Match against records in crate by title/artist
+                            norm_t = (rec.get("title") or "").strip().lower()
+                            norm_a = (rec.get("artist") or "").strip().lower()
+                            for r in records:
+                                crate_t = (r.get("title") or "").strip().lower()
+                                crate_a = (r.get("artist") or "").strip().lower()
+                                if norm_t and (norm_t == crate_t or norm_t in crate_t or crate_t in norm_t):
+                                    rec_id = r.get("id")
+                                    rec["id"] = rec_id
+                                    rec["coverUrl"] = r.get("coverUrl")
+                                    rec["releaseYear"] = r.get("releaseYear")
+                                    break
+                        if rec_id:
+                            unique_classical_ids.add(str(rec_id))
                     era["count"] = len(era.get("records", []))
+
+                # Fallback to classical detector count if no specific record IDs matched
+                if not unique_classical_ids:
+                    classical_recs = [r for r in records if self.is_classical_record(r)]
+                    for r in classical_recs:
+                        if r.get("id"):
+                            unique_classical_ids.add(str(r.get("id")))
 
                 ai_chronicle["totalClassicalRecords"] = len(unique_classical_ids)
                 ai_chronicle["totalRecordsInCrate"] = len(records)
@@ -524,7 +545,7 @@ class ClassicalService:
         from database import db
 
         cached = db.get_chronicle()
-        if cached and isinstance(cached, dict) and "eras" in cached and cached.get("totalClassicalRecords", 0) > 0 and not force_ai_refresh:
+        if cached and isinstance(cached, dict) and "eras" in cached and not force_ai_refresh:
             logger.info("Serving persisted AI/Fallback Chronicle from Database/Disk.")
             cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
@@ -535,7 +556,7 @@ class ClassicalService:
             threading.Thread(target=self._rebuild_ai_chronicle_bg, args=(records,), daemon=True).start()
 
         if cached and isinstance(cached, dict) and "eras" in cached:
-            cached["isRebuilding"] = True
+            cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
             cached["composerStats"] = self._reconcile_composer_stats(records, cached)
             return cached
@@ -543,7 +564,7 @@ class ClassicalService:
         fallback = self._rule_based_chronicle_data(records)
         fallback["composerStats"] = self._reconcile_composer_stats(records, fallback)
         db.save_chronicle(fallback)
-        fallback["isRebuilding"] = True
+        fallback["isRebuilding"] = self.is_rebuilding
         return fallback
 
 
