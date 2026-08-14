@@ -1001,6 +1001,8 @@ class GeminiVisionService:
             from pydantic import BaseModel, Field
 
             class ChronicleEraSchema(BaseModel):
+                id: str = Field(description="Era ID: baroque, classical, romantic, modern_20th, contemporary")
+                name: str = Field(description="Era display name e.g. Baroque Era, Classical Era, Romantic Era, Modern & 20th Century, Contemporary Classical")
                 era: str = Field(description="Era name e.g. Classical, Romantic, Baroque")
                 count: int = Field(description="Record count")
                 percentage: float = Field(description="Percentage")

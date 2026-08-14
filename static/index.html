@@ -1278,22 +1278,32 @@
         legendContainer.innerHTML = '';
 
         chronicleData.eras.forEach(era => {
-          if (era.count > 0) {
-            const pct = Math.round((era.count / totalRecs) * 100);
-            const style = eraColors[era.id] || { bg: 'bg-amber-500', text: 'text-amber-400', label: era.name };
+          const rawId = (era.id || era.era || era.name || 'classical').toLowerCase();
+          let eraKey = 'classical';
+          if (rawId.includes('baroque')) eraKey = 'baroque';
+          else if (rawId.includes('romantic')) eraKey = 'romantic';
+          else if (rawId.includes('modern') || rawId.includes('20th')) eraKey = 'modern_20th';
+          else if (rawId.includes('contemporary')) eraKey = 'contemporary';
+          else if (rawId.includes('classical')) eraKey = 'classical';
+
+          const count = (era.count !== undefined && era.count !== null) ? era.count : (era.records ? era.records.length : 0);
+          if (count > 0) {
+            const pct = Math.max(1, Math.round((count / totalRecs) * 100));
+            const style = eraColors[eraKey] || { bg: 'bg-amber-500', text: 'text-amber-400', label: era.era || era.name || eraKey };
+            const labelText = style.label || era.era || era.name || 'Classical';
             
             const seg = document.createElement('div');
             seg.className = `${style.bg} h-full transition-all duration-500`;
             seg.style.width = `${pct}%`;
-            seg.title = `${era.name}: ${era.count} records (${pct}%)`;
+            seg.title = `${labelText}: ${count} records (${pct}%)`;
             progressBar.appendChild(seg);
 
             const leg = document.createElement('div');
             leg.className = 'flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity';
-            leg.onclick = () => { selectedEraFilter = era.id; renderChronicle(); };
+            leg.onclick = () => { selectedEraFilter = eraKey; renderChronicle(); };
             leg.innerHTML = `
               <span class="w-2.5 h-2.5 rounded-full ${style.bg}"></span>
-              <span class="font-semibold text-stone-200">${style.label}</span>
+              <span class="font-semibold text-stone-200">${labelText}</span>
               <span class="text-stone-500 font-mono">(${pct}%)</span>
             `;
             legendContainer.appendChild(leg);

@@ -496,7 +496,19 @@ class ClassicalService:
 
                 unique_classical_ids = set()
                 for era in ai_chronicle.get("eras", []):
-                    for rec in era.get("records", []):
+                    raw_name = era.get("era") or era.get("name") or era.get("id") or "Classical"
+                    norm_k = raw_name.lower()
+                    if "baroque" in norm_k: era_id = "baroque"
+                    elif "romantic" in norm_k: era_id = "romantic"
+                    elif "modern" in norm_k or "20th" in norm_k: era_id = "modern_20th"
+                    elif "contemporary" in norm_k: era_id = "contemporary"
+                    else: era_id = "classical"
+
+                    era["id"] = era_id
+                    era["name"] = era.get("name") or f"{raw_name.title()} Era"
+
+                    rec_list = era.get("records") or []
+                    for rec in rec_list:
                         rec_id = rec.get("id")
                         if not rec_id:
                             # Match against records in crate by title/artist
@@ -513,7 +525,8 @@ class ClassicalService:
                                     break
                         if rec_id:
                             unique_classical_ids.add(str(rec_id))
-                    era["count"] = len(era.get("records", []))
+                    
+                    era["count"] = max(era.get("count", 0), len(rec_list))
 
                 # Fallback to classical detector count if no specific record IDs matched
                 if not unique_classical_ids:
