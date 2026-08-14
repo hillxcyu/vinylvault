@@ -317,8 +317,8 @@
 
         <!-- Top Left Status Indicator - Text Only with Glow Effect -->
         <div class="relative z-10 mb-4 flex items-center justify-start">
-          <div id="nowSpinningBadge" class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#34d399] animate-ping shadow-[0_0_8px_#34d399]"></span> ((•)) CURRENTLY SPINNING
+          <div id="nowSpinningBadge" class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]">
+            ((<span class="inline-block w-2 h-2 mx-0.5 rounded-full bg-[#34d399] animate-ping align-middle shadow-[0_0_6px_#34d399]"></span>)) CURRENTLY SPINNING
           </div>
         </div>
 
@@ -2038,8 +2038,8 @@
         if (catNoEl) catNoEl.classList.add('hidden');
 
         if (badge) {
-          badge.className = 'inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-400';
-          badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> STANDBY MODE';
+          badge.className = 'inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-400';
+          badge.innerHTML = '((<span class="inline-block w-2 h-2 mx-0.5 rounded-full bg-stone-500 align-middle"></span>)) STANDBY MODE';
         }
         if (assetBadge) {
           assetBadge.innerText = 'Awaiting Album Selection';
@@ -2074,8 +2074,8 @@
       if (chatSubtitle) chatSubtitle.innerText = `Discussing: "${rec.title}" by ${rec.artist}`;
 
       if (badge) {
-        badge.className = 'inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]';
-        badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-[#34d399] animate-ping shadow-[0_0_8px_#34d399]"></span> ((•)) CURRENTLY SPINNING';
+        badge.className = 'inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]';
+        badge.innerHTML = '((<span class="inline-block w-2 h-2 mx-0.5 rounded-full bg-[#34d399] animate-ping align-middle shadow-[0_0_6px_#34d399]"></span>)) CURRENTLY SPINNING';
       }
 
 
