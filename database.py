@@ -1357,19 +1357,9 @@ class VinylDatabase:
 
             if len(fs_recs) > 0:
                 print(f"Firestore active with {len(fs_recs)} records.")
-                # Merge local-only records that were saved locally but missing from Firestore
-                fs_ids = {r.get("id") for r in fs_recs if r.get("id")}
-                missing_local = [r for r in self.records if r.get("id") and r.get("id") not in fs_ids]
-
-                if missing_local:
-                    print(f"Found {len(missing_local)} local records missing from Firestore; syncing to cloud...")
-                    for loc_rec in missing_local:
-                        try:
-                            self.firestore.save_record(loc_rec)
-                        except Exception as sync_err:
-                            print(f"Failed to sync local record '{loc_rec.get('title')}' to Firestore: {sync_err}")
-
                 self.records = fs_recs
+                self._save_json(RECORDS_FILE, fs_recs)
+                self._rebuild_record_map()
                 print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
             else:
                 print("Firestore collection returned 0 records. Preserving local disk records.")
