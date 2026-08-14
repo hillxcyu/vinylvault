@@ -2183,7 +2183,7 @@
       // Fetch official multi-asset image gallery with client caching
       fetchReleaseAssets(rec);
 
-      fetchListeningGuide(rec.artist, rec.title);
+      fetchListeningGuide(rec.artist, rec.title, false, rec);
     }
 
     function refreshCurrentAssets() {
@@ -2196,7 +2196,7 @@
     function refreshCurrentGuide() {
       if (currentSpinning) {
         showToast('Generating fresh AI Listening Guide...', 'fa-rotate-right');
-        fetchListeningGuide(currentSpinning.artist, currentSpinning.title, true);
+        fetchListeningGuide(currentSpinning.artist, currentSpinning.title, true, currentSpinning);
       }
     }
 
@@ -2281,16 +2281,21 @@
       });
     }
 
-    async function fetchListeningGuide(artist, title, forceRefresh = false) {
+    const activeGuideFetches = {};
+
+    async function fetchListeningGuide(artist, title, forceRefresh = false, targetRecord = null) {
+      if (!artist || !title) return;
       const cacheKey = `guide_cache_${artist}::${title}`;
+
+      const rec = targetRecord || (currentSpinning && (currentSpinning.artist === artist || currentSpinning.title === title) ? currentSpinning : null);
 
       if (forceRefresh) {
         sessionStorage.removeItem(cacheKey);
       } else {
-        // 0. Check if currentSpinning has listeningGuide on record object directly
-        if (currentSpinning && currentSpinning.listeningGuide) {
-          sessionStorage.setItem(cacheKey, JSON.stringify(currentSpinning.listeningGuide));
-          renderListeningGuide(currentSpinning.listeningGuide);
+        // 0. Check if target record has listeningGuide on record object directly
+        if (rec && rec.listeningGuide) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(rec.listeningGuide));
+          renderListeningGuide(rec.listeningGuide);
           return;
         }
 
@@ -2304,9 +2309,16 @@
         }
       }
 
+      // Avoid duplicate parallel requests for the exact same album
+      if (activeGuideFetches[cacheKey] && !forceRefresh) {
+        return;
+      }
+      activeGuideFetches[cacheKey] = true;
 
-      document.getElementById('guideBackground').innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Generating AI listening guide & tracklist...';
-      document.getElementById('tracklistContainer').innerHTML = '<div class="text-xs text-stone-500 italic"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Fetching vinyl tracklist...</div>';
+      const bgEl = document.getElementById('guideBackground');
+      const tlContainer = document.getElementById('tracklistContainer');
+      if (bgEl) bgEl.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Generating AI listening guide & tracklist...';
+      if (tlContainer) tlContainer.innerHTML = '<div class="text-xs text-stone-500 italic"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Fetching vinyl tracklist...</div>';
 
       try {
         const res = await fetch('/api/listening-guide', {
@@ -2315,22 +2327,29 @@
           body: JSON.stringify({ 
             artist, 
             albumTitle: title, 
-            catalogNumber: (currentSpinning ? (currentSpinning.catalogNumber || currentSpinning.catno || null) : null),
-            label: (currentSpinning ? (currentSpinning.label || null) : null),
-            country: (currentSpinning ? (currentSpinning.country || null) : null),
-            recordId: (currentSpinning ? currentSpinning.id : null),
+            catalogNumber: rec ? (rec.catalogNumber || rec.catno || null) : null,
+            label: rec ? (rec.label || null) : null,
+            country: rec ? (rec.country || null) : null,
+            recordId: rec ? rec.id : null,
             forceRefresh 
           })
-
         });
+
         const data = await res.json();
-        if (data.status === 'success' && data.guide) {
+        if (data && data.status === 'success' && data.guide) {
           sessionStorage.setItem(cacheKey, JSON.stringify(data.guide));
+          if (rec) rec.listeningGuide = data.guide;
           renderListeningGuide(data.guide);
+        } else {
+          if (bgEl) bgEl.innerText = (data && data.message) || 'Unable to generate listening guide at this time.';
+          if (tlContainer) tlContainer.innerHTML = '<div class="text-xs text-stone-500 italic text-center py-4">No tracklist available.</div>';
         }
       } catch (err) {
         console.error('Error fetching guide:', err);
-        document.getElementById('guideBackground').innerText = 'Unable to load listening guide at this time.';
+        if (bgEl) bgEl.innerText = 'Unable to load listening guide at this time.';
+        if (tlContainer) tlContainer.innerHTML = '<div class="text-xs text-stone-500 italic text-center py-4">Error loading tracklist.</div>';
+      } finally {
+        activeGuideFetches[cacheKey] = false;
       }
     }
 
