@@ -3130,9 +3130,10 @@
       lastDuplicateCheck = null;
       lastDetectedCorners = null;
       currentRawFile = null;
+      isDeepMetaFetching = false;
       const resultContainer = document.getElementById('scanResultContainer');
       if (resultContainer) resultContainer.classList.add('hidden');
-      renderScanMetadataBox(null, true);
+      renderScanMetadataBox(null, false);
     }
 
     function openScannerModal() {
@@ -3266,6 +3267,8 @@
       });
     }
 
+    let isDeepMetaFetching = false;
+
     async function triggerAutoScan() {
       if (!currentRawFile) return;
 
@@ -3273,6 +3276,7 @@
       lastScannedMetadata = null;
       lastDuplicateCheck = null;
       lastDetectedCorners = null;
+      isDeepMetaFetching = true;
 
       showScanLoading(`⚡ Analyzing album cover via 3 decoupled Gemini AI workers...`);
 
@@ -3311,7 +3315,7 @@
             lastScannedMetadata.albumTitle = lastScannedMetadata.albumTitle || data.metadata?.albumTitle || '';
           }
 
-          renderDuplicateResult(data.duplicateCheck, lastScannedMetadata, true);
+          renderDuplicateResult(data.duplicateCheck, lastScannedMetadata, isDeepMetaFetching);
 
           if (data.duplicateCheck && data.duplicateCheck.matchingRecord) {
             updateNowSpinningUI(data.duplicateCheck.matchingRecord);
@@ -3324,21 +3328,31 @@
       fetch('/api/scan/deep-metadata', { method: 'POST', body: formDataC })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          if (!data || !data.metadata) return;
-          console.log('✨ [Call C] Deep metadata received:', data.metadata);
-          lastScannedMetadata = {
-            ...(lastScannedMetadata || {}),
-            ...data.metadata
-          };
-          console.log('✨ [Updated lastScannedMetadata]:', lastScannedMetadata);
+          isDeepMetaFetching = false;
+          if (data && data.metadata) {
+            console.log('✨ [Call C] Deep metadata received:', data.metadata);
+            lastScannedMetadata = {
+              ...(lastScannedMetadata || {}),
+              ...data.metadata
+            };
+            console.log('✨ [Updated lastScannedMetadata]:', lastScannedMetadata);
+            showToast('✨ Release metadata loaded!', 'fa-book-open');
+          }
           if (lastDuplicateCheck) {
             renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
-          } else {
+          } else if (lastScannedMetadata) {
             renderScanMetadataBox(lastScannedMetadata, false);
           }
-          showToast('✨ Release metadata loaded!', 'fa-book-open');
         })
-        .catch(err => console.warn('Call C deep metadata error:', err));
+        .catch(err => {
+          console.warn('Call C deep metadata error:', err);
+          isDeepMetaFetching = false;
+          if (lastDuplicateCheck) {
+            renderDuplicateResult(lastDuplicateCheck, lastScannedMetadata, false);
+          } else if (lastScannedMetadata) {
+            renderScanMetadataBox(lastScannedMetadata, false);
+          }
+        });
     }
 
     let currentRawFile = null;
