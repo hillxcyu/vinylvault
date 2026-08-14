@@ -1,0 +1,119 @@
+{
+  "albumBackground": "Released in 1982 by Deutsche Grammophon Japan (manufactured by Polydor K.K. under catalog number 20MG 0304), 'Chopin Famous Works for Piano' is a premier classical anthology bringing together an extraordinary roster of 20th-century virtuosos: Martha Argerich, Sviatoslav Richter, Tamás Vásáry, Christoph Eschenbach, Roberto Szidon, and Shura Cherkassky. Rather than capturing a single unified performance, the album compiles highlights from Deutsche Grammophon's legendary Chopin discography recorded across the 1960s and 1970s. It offers a fascinating comparative study in pianistic styles, juxtaposing Tamás Vásáry's poetically fluid waltzes and nocturnes against the fiery, tempestuous interpretations of Martha Argerich and Sviatoslav Richter.\n\nProduction of the source recordings spanned iconic European venues famed for their acoustic brilliance, including Munich's Herkulessaal and Hanover's Beethovensaal. DG's balance engineers—such as Klaus Hiemann—employed vintage Neumann tube and solid-state condenser microphones (including M49 and KM84 capsules) piped into custom DG mixing consoles and recorded onto high-grade Telefunken master tape machines. For this Japanese domestic pressing, Polydor K.K. utilized master copy tapes transferred directly from Hannover, pressing the vinyl on pristine virgin vinyl formulas renowned for their dead-quiet noise floor.\n\nAudiophiles particularly prize the Japanese 20MG series for its immaculate pressing quality and exceptional pitch stability. Solo piano recordings on vinyl present a rigorous test for cartridge tracking due to intense transient attacks and sustained decay. Thanks to the whisper-quiet Japanese vinyl formulation and master cutting precision, subtle pedal resonances, hammer strikes, and hall acoustics are rendered with lifelike clarity without mid-groove distortion or mistracking.",
+  "tracklist": [
+    {
+      "position": "A1",
+      "title": "Waltz No. 1 in E-Flat Major, Op. 18 'Grande Valse Brillante' (Tamás Vásáry)",
+      "duration": "5:15",
+      "highlight": true,
+      "whatToListenFor": "Listen for Vásáry's crisp rhythmic articulation in the opening flourishes and the subtle reverberation of the Hanover Beethovensaal acoustic decay."
+    },
+    {
+      "position": "A2",
+      "title": "Waltz No. 6 in D-Flat Major, Op. 64 No. 1 'Minute Waltz' (Tamás Vásáry)",
+      "duration": "1:52",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "A3",
+      "title": "Waltz No. 7 in C-Sharp Minor, Op. 64 No. 2 (Tamás Vásáry)",
+      "duration": "3:18",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "A4",
+      "title": "Nocturne No. 2 in E-Flat Major, Op. 9 No. 2 (Tamás Vásáry)",
+      "duration": "4:32",
+      "highlight": true,
+      "whatToListenFor": "Pay close attention to the delicate, singing tone of the melody in the right hand and how the Japanese pressing's silent surfaces reveal subtle sustain pedal releases."
+    },
+    {
+      "position": "A5",
+      "title": "Nocturne No. 5 in F-Sharp Major, Op. 15 No. 2 (Tamás Vásáry)",
+      "duration": "3:25",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "A6",
+      "title": "Mazurka No. 5 in B-Flat Major, Op. 7 No. 1 (Tamás Vásáry)",
+      "duration": "2:20",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "A7",
+      "title": "Mazurka No. 36 in F-Sharp Minor, Op. 59 No. 3 (Martha Argerich)",
+      "duration": "3:42",
+      "highlight": true,
+      "whatToListenFor": "Notice Argerich's signature lightning-fast dynamic shifts and rubato, captured with exceptional transient snap in the upper frequencies."
+    },
+    {
+      "position": "A8",
+      "title": "Impromptu No. 4 in C-Sharp Minor, Op. 66 'Fantaisie-Impromptu' (Roberto Szidon)",
+      "duration": "5:12",
+      "highlight": true,
+      "whatToListenFor": "Listen to the rapid semi-quaver arpeggios that test high-frequency tracking toward the inner groove of Side A."
+    },
+    {
+      "position": "B1",
+      "title": "Etude in E Major, Op. 10 No. 3 'Tristesse' (Tamás Vásáry)",
+      "duration": "4:12",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "B2",
+      "title": "Etude in G-Flat Major, Op. 10 No. 5 'Black Key' (Tamás Vásáry)",
+      "duration": "1:40",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "B3",
+      "title": "Etude in C Minor, Op. 10 No. 12 'Revolutionary' (Sviatoslav Richter)",
+      "duration": "2:32",
+      "highlight": true,
+      "whatToListenFor": "Listen for Richter's ferocious left-hand runs; the low-frequency weight and visceral impact of the piano demonstrate DG's full-bodied master tape capture."
+    },
+    {
+      "position": "B4",
+      "title": "Prelude in A Major, Op. 28 No. 7 (Christoph Eschenbach)",
+      "duration": "0:48",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "B5",
+      "title": "Prelude in D-Flat Major, Op. 28 No. 15 'Raindrop' (Christoph Eschenbach)",
+      "duration": "5:22",
+      "highlight": true,
+      "whatToListenFor": "Focus on the relentless repeated ostinato motif in the middle section—this pressing reveals rock-solid pitch stability with zero pitch wavering."
+    },
+    {
+      "position": "B6",
+      "title": "Polonaise No. 3 in A Major, Op. 40 No. 1 'Military' (Shura Cherkassky)",
+      "duration": "3:52",
+      "highlight": false,
+      "whatToListenFor": null
+    },
+    {
+      "position": "B7",
+      "title": "Polonaise No. 6 in A-Flat Major, Op. 53 'Heroic' (Martha Argerich)",
+      "duration": "6:45",
+      "highlight": true,
+      "whatToListenFor": "Listen for Argerich's explosive octave passages in the central section, demonstrating incredible dynamic headroom and clean tracking right up to the run-out groove."
+    }
+  ],
+  "vinylTip": "Classical solo piano pressings demand flawless turntable setup. Align your cartridge using an Baerwald/IEC protractor and set vertical tracking force to the higher end of your stylus specification to prevent mistracking during high-energy crescendo passages on track B7.",
+  "recommendedMood": "A dimly lit room late at night with open-back audiophile headphones and a neat glass of single-malt whisky.",
+  "enrichedMetadata": {
+    "releaseYear": 1982,
+    "catalogNumber": "20MG 0304",
+    "label": "Deutsche Grammophon",
+    "country": "Japan",
+    "genre": "Classical"
+  }
+}

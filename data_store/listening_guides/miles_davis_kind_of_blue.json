@@ -1,0 +1,42 @@
+{
+  "albumBackground": "Recorded across two historic sessions on March 2 and April 22, 1959, at Columbia Records' 30th Street Studio in New York City, 'Kind of Blue' stands as a paramount achievement in jazz history. Miles Davis assembled a legendary sextet featuring saxophonists John Coltrane and Julian 'Cannonball' Adderley, pianist Bill Evans, bassist Paul Chambers, and drummer Jimmy Cobb, with Wynton Kelly replacing Evans on 'Freddie Freeloader'. Embracing modal jazz over traditional chord progressions, Davis provided the musicians with only raw sketches and scale frameworks, encouraging spontaneous first-take improvisation. The result was a masterpiece of emotional depth, spatial elegance, and unmatched ensemble chemistry. Studio production was handled by Irving Townsend and engineered by Fred Plaut inside a converted church known for its high ceilings and rich acoustic natural reverb. Recorded onto three-track magnetic tape using custom tube mixing consoles, the sessions captured incredible dynamic range and ambient spatial detail. However, a motor defect on the primary tape machine during the March 2 session caused the three tracks on Side A to be recorded slightly slow, resulting in a slightly sharp playback pitch on vinyl releases for over thirty years until corrected in 1992. Modern audiophile pressings, including cuts for Analogue Productions UHQR and Mobile Fidelity Sound Lab, restore the correct pitch directly from the safety tapes, offering pristine stereo clarity, rich instrumental timbre, and a three-dimensional soundstage that makes it a definitive turntable reference record.",
+  "tracklist": [
+    {
+      "position": "A1",
+      "title": "So What",
+      "duration": "9:22",
+      "highlight": true,
+      "whatToListenFor": "Listen to Paul Chambers' iconic opening double bass theme intertwined with Bill Evans' delicate piano chords, followed by Miles Davis' muted trumpet cutting cleanly through the lush ambient reverb of the studio."
+    },
+    {
+      "position": "A2",
+      "title": "Freddie Freeloader",
+      "duration": "9:46",
+      "highlight": false,
+      "whatToListenFor": "Notice Wynton Kelly taking over piano duties with a bluesier, swing-heavy groove that contrasts sharply with Bill Evans' impressionistic touch on the rest of the album."
+    },
+    {
+      "position": "A3",
+      "title": "Blue in Green",
+      "duration": "5:37",
+      "highlight": true,
+      "whatToListenFor": "Focus on Jimmy Cobb's delicate brushwork across the snare drum and the lingering decay of Evans' chords fading smoothly into the natural acoustic space."
+    },
+    {
+      "position": "B1",
+      "title": "All Blues",
+      "duration": "11:33",
+      "highlight": true,
+      "whatToListenFor": "Pay attention to the distinct stereo separation between John Coltrane's tenor saxophone on the right channel and Cannonball Adderley's alto saxophone on the left, grounded by Cobb's hypnotic 6/8 rhythm."
+    },
+    {
+      "position": "B2",
+      "title": "Flamenco Sketches",
+      "duration": "9:26",
+      "highlight": true,
+      "whatToListenFor": "Listen for the subtle physical nuances of the performance, including Davis' lip contact on his trumpet mouthpiece and the quiet room noise during the fragile transitions between modal sections."
+    }
+  ],
+  "vinylTip": "For the ultimate listening experience, seek out speed-corrected reissues cut from the original three-track tapes (such as Analogue Productions or Mobile Fidelity). Ensure your cartridge VTF (tracking force) and azimuth are properly calibrated to reduce inner-groove distortion on Side B's longer cuts like 'All Blues'.",
+  "recommendedMood": "Late night dim lighting with low ambient noise, audiophile headphones or centered speakers, and a fine glass of bourbon."
+}
