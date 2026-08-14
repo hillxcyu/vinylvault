@@ -79,6 +79,50 @@ NON_CLASSICAL_EXCLUSIONS = [
     "ventures", "doobie brothers", "billy joel", "three degrees"
 ]
 
+COMPOSER_SURNAME_EQUIVALENTS = {
+    "haendel": "handel",
+    "händel": "handel",
+    "handel": "handel",
+    "tschaikowsky": "tchaikovsky",
+    "tschaikowski": "tchaikovsky",
+    "tchaikovski": "tchaikovsky",
+    "tchaikovsky": "tchaikovsky",
+    "rachmaninov": "rachmaninoff",
+    "rachmaninow": "rachmaninoff",
+    "rachmaninoff": "rachmaninoff",
+    "moussorgsky": "mussorgsky",
+    "mussorgski": "mussorgsky",
+    "mussorgsky": "mussorgsky",
+    "prokofieff": "prokofiev",
+    "prokofjew": "prokofiev",
+    "prokofiev": "prokofiev",
+    "strawinsky": "stravinsky",
+    "stravinski": "stravinsky",
+    "stravinsky": "stravinsky",
+    "skryabin": "scriabin",
+    "skriabin": "scriabin",
+    "scriabin": "scriabin",
+    "dvořák": "dvorak",
+    "dvorac": "dvorak",
+    "dvorak": "dvorak",
+    "bartók": "bartok",
+    "bartok": "bartok"
+}
+
+def get_canonical_surname(s: str) -> str:
+    if not s:
+        return ""
+    norm_s = "".join(c for c in unicodedata.normalize("NFD", str(s)) if unicodedata.category(c) != "Mn").lower().strip()
+    return COMPOSER_SURNAME_EQUIVALENTS.get(norm_s, norm_s)
+
+def get_surname_variants(surname: str) -> List[str]:
+    canon = get_canonical_surname(surname)
+    variants = [k for k, v in COMPOSER_SURNAME_EQUIVALENTS.items() if v == canon]
+    norm_surname = "".join(c for c in unicodedata.normalize("NFD", str(surname)) if unicodedata.category(c) != "Mn").lower().strip()
+    if norm_surname not in variants:
+        variants.append(norm_surname)
+    return variants
+
 
 class ClassicalService:
     def __init__(self):
@@ -306,6 +350,7 @@ class ClassicalService:
             surname = tokens[-1]
             if len(tokens) >= 2 and tokens[-2] in ["saint", "rimsky", "castelnuovo", "vaughan"]:
                 surname = f"{tokens[-2]}_{tokens[-1]}"
+            surname = get_canonical_surname(surname)
             if surname == "strauss":
                 if "richard" in tokens:
                     return "strauss_richard"
@@ -429,7 +474,7 @@ class ClassicalService:
                 if det_surname.lower() in ["ii", "iii", "jr", "sr"] and len(det_tokens) >= 2:
                     det_surname = det_tokens[-2]
 
-                if comp_surname == det_surname:
+                if get_canonical_surname(comp_surname) == get_canonical_surname(det_surname):
                     if "strauss" in comp_surname:
                         if "johann" in norm_comp and "richard" in norm_det:
                             return False
@@ -459,11 +504,16 @@ class ClassicalService:
         else:
             surname_phrase = surname
 
-        parts = surname_phrase.split()
-        regex_parts = [re.escape(p) for p in parts]
-        pattern = r'\b' + r'[\s\-_]+'.join(regex_parts) + r'\b'
+        variants = get_surname_variants(surname_phrase)
+        regex_patterns = []
+        for v in variants:
+            parts = v.split()
+            regex_parts = [re.escape(p) for p in parts]
+            regex_patterns.append(r'\b' + r'[\s\-_]+'.join(regex_parts) + r'\b')
 
-        if re.search(pattern, corpus):
+        combined_pattern = "(" + "|".join(regex_patterns) + ")"
+
+        if re.search(combined_pattern, corpus):
             if "strauss" in surname:
                 if "johann" in norm_comp and ("richard" in corpus and "johann" not in corpus):
                     return False
