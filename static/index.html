@@ -314,28 +314,26 @@
           <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-stone-950/30"></div>
         </div>
 
+        <div class="flex flex-col md:flex-row items-center gap-6 md:gap-8 relative z-10">
 
-        <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
-
-          <!-- Interactive Spinning Vinyl Record - Click to Launch Camera Scan -->
-          <div onclick="openScannerModal()" class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center cursor-pointer group" title="Click to snap photo of currently playing vinyl record!">
-            <img id="spinningCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
-
-            <div class="absolute inset-0 rounded-full bg-stone-900 border-8 border-stone-800 shadow-inner flex items-center justify-center">
-              <div class="w-14 h-14 rounded-full bg-amber-500 border-4 border-stone-900 z-20"></div>
-            </div>
-            <!-- Click to Scan Overlay Badge -->
-            <div class="absolute bottom-1 bg-stone-900/90 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 z-30 shadow-lg opacity-90 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
-              <i class="fa-solid fa-camera"></i> Snap Currently Playing
+          <!-- Ambient Glow Hero & Vinyl Display -->
+          <div class="relative flex-shrink-0 flex items-center justify-center my-2 md:my-0">
+            <div class="absolute -inset-4 rounded-full bg-amber-500/20 blur-2xl opacity-60"></div>
+            <div onclick="openScannerModal()" class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center cursor-pointer group" title="Click to open camera scanner">
+              <img id="spinningCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" onerror="handleImageError(this)" class="w-40 h-40 sm:w-48 sm:h-48 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-stone-900 object-cover transition-all duration-500 group-hover:scale-105" />
+              <div class="absolute inset-0 rounded-full bg-stone-900 border-8 border-stone-800 shadow-inner flex items-center justify-center pointer-events-none">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-amber-500 border-4 border-stone-900 z-20"></div>
+              </div>
             </div>
           </div>
 
-          <!-- Track Info & Controls with Audio Pronunciation Buttons -->
-          <div class="flex-1 text-center md:text-left space-y-3">
+          <!-- Track Info & Controls -->
+          <div class="flex-1 w-full text-center md:text-left space-y-3.5">
+            
+            <!-- Live Status & Discogs Badge -->
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
               <div id="nowSpinningBadge" class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 bg-stone-800/60 px-3 py-1 rounded-full border border-stone-700/60">
-                <span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span>
-                Standby Mode
+                <span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> Standby Mode
               </div>
               <button id="stopSpinningBtn" onclick="stopSpinning()" class="hidden inline-flex items-center gap-1.5 text-xs font-bold text-rose-300 hover:text-white bg-rose-950/80 hover:bg-rose-800 px-3 py-1 rounded-full border border-rose-700/60 transition-colors shadow-sm cursor-pointer" title="Stop Spinning & Reset Turntable">
                 <i class="fa-solid fa-circle-stop text-rose-400"></i> Stop Spinning
@@ -345,44 +343,55 @@
               </div>
             </div>
 
-
-            <!-- Title + Pronounce Button -->
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <h2 id="spinningTitle" class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">No Record Spinning</h2>
-              <button onclick="pronounceText(currentSpinning?.title, this)" class="text-stone-400 hover:text-amber-400 p-1.5 rounded-full bg-stone-900/80 border border-stone-800 transition-colors shadow-sm" title="Listen to pronunciation of album title">
-                <i class="fa-solid fa-volume-high text-sm"></i>
+            <!-- Title & Pronounce Button -->
+            <div class="flex items-center justify-center md:justify-start gap-2.5">
+              <h2 id="spinningTitle" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">No Record Spinning</h2>
+              <button onclick="pronounceText(currentSpinning?.title, this)" class="text-stone-400 hover:text-amber-400 p-1.5 rounded-full bg-stone-900/80 border border-stone-800 transition-colors shadow-sm shrink-0" title="Listen to pronunciation of album title">
+                <i class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
               </button>
             </div>
 
-            <!-- Artist + Pronounce Button -->
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-0.5">
-              <p id="spinningArtist" class="text-lg md:text-xl text-stone-300 font-medium">Select an album from your Crate or Chronicle to start spinning</p>
-              <button onclick="pronounceText(currentSpinning?.artist, this)" class="text-stone-400 hover:text-amber-400 p-1 rounded-full bg-stone-900/60 transition-colors shadow-sm" title="Listen to pronunciation of artist/composer">
+            <!-- Artist & Pronounce Button -->
+            <div class="flex items-center justify-center md:justify-start gap-2">
+              <p id="spinningArtist" class="text-base sm:text-lg text-amber-300/90 font-medium">Select an album from your Crate or Chronicle to start spinning</p>
+              <button onclick="pronounceText(currentSpinning?.artist, this)" class="text-stone-400 hover:text-amber-400 p-1 rounded-full bg-stone-900/60 transition-colors shadow-sm shrink-0" title="Listen to pronunciation of artist/composer">
                 <i class="fa-solid fa-volume-high text-xs"></i>
               </button>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-sm text-gray-300 pt-1">
-              <span id="spinningGenre" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby</span>
-              <span id="spinningSpins" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready</span>
-              <span id="spinningLabel" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-record-vinyl text-purple-400 mr-1.5"></i> <span id="spinningLabelText"></span></span>
-              <span id="spinningCountry" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-globe text-emerald-400 mr-1.5"></i> <span id="spinningCountryText"></span></span>
-              <span id="spinningCatNo" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-barcode text-sky-400 mr-1.5"></i> <span id="spinningCatNoText"></span></span>
+            <!-- Consolidated Glassmorphism Metadata Container -->
+            <div id="nowSpinningMetaCard" class="ios-liquid-glass rounded-2xl p-4 border border-amber-500/20 shadow-lg space-y-2 text-xs font-semibold text-stone-200 text-left">
+              <div id="spinningLabel" class="flex items-center gap-2.5 py-1 border-b border-white/5 hidden">
+                <i class="fa-solid fa-record-vinyl text-amber-400 w-5 text-center"></i>
+                <span id="spinningLabelText" class="text-stone-200"></span>
+              </div>
+              <div id="spinningCountry" class="flex items-center gap-2.5 py-1 border-b border-white/5 hidden">
+                <i class="fa-solid fa-globe text-emerald-400 w-5 text-center"></i>
+                <span id="spinningCountryText" class="text-stone-200"></span>
+              </div>
+              <div id="spinningGenre" class="flex items-center gap-2.5 py-1 border-b border-white/5">
+                <i class="fa-solid fa-compact-disc text-sky-400 w-5 text-center"></i>
+                <span id="spinningGenreText" class="text-stone-200">Standby</span>
+              </div>
+              <div id="spinningSpins" class="flex items-center gap-2.5 py-1">
+                <i class="fa-solid fa-fire text-rose-400 w-5 text-center"></i>
+                <span id="spinningSpinsText" class="text-stone-200">Ready</span>
+              </div>
             </div>
 
-
-
-            <div class="pt-4 flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <button onclick="logCurrentSpin()" class="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm font-semibold rounded-xl border border-stone-700 transition-all flex items-center gap-2 shadow-md">
+            <!-- Cohesive Action Bar -->
+            <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              <button onclick="logCurrentSpin()" class="flex-1 sm:flex-none px-4 py-2.5 bg-stone-800/80 hover:bg-stone-700 text-white text-xs font-bold rounded-xl border border-stone-700 transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer">
                 <i class="fa-solid fa-rotate-right text-amber-400"></i> Log Spin
               </button>
-              <button onclick="reanalyzeCurrentSpinningRecord(this)" class="px-4 py-2.5 bg-purple-900/80 hover:bg-purple-800 text-purple-200 text-sm font-semibold rounded-xl border border-purple-700/80 transition-all flex items-center gap-2 shadow-md">
-                <i class="fa-solid fa-arrows-rotate text-amber-300"></i> Refresh
+              <button onclick="reanalyzeCurrentSpinningRecord(this)" class="flex-1 sm:flex-none px-4 py-2.5 bg-stone-800/80 hover:bg-stone-700 text-white text-xs font-bold rounded-xl border border-stone-700 transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-arrows-rotate text-purple-400"></i> Refresh
               </button>
-
-
-              <button onclick="openChatModal()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
-                <i class="fa-solid fa-comments"></i> AI Chat
+              <button onclick="openChatModal()" class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-extrabold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-comments text-black"></i> AI Listening Guide
+              </button>
+              <button onclick="openScannerModal()" class="p-2.5 bg-stone-800/80 hover:bg-stone-700 text-amber-400 text-xs font-bold rounded-xl border border-stone-700 transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer" title="Scan Album Cover">
+                <i class="fa-solid fa-camera"></i>
               </button>
             </div>
 
@@ -2039,8 +2048,10 @@
 
         document.getElementById('spinningTitle').innerText = 'No Record Spinning';
         document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
-        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
-        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready';
+        const genreText = document.getElementById('spinningGenreText');
+        if (genreText) genreText.innerText = 'Standby';
+        const spinsText = document.getElementById('spinningSpinsText');
+        if (spinsText) spinsText.innerText = 'Ready';
 
 
         const countryEl = document.getElementById('spinningCountry');
@@ -2109,8 +2120,10 @@
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
-      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
-      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
+      const actGenreText = document.getElementById('spinningGenreText');
+      if (actGenreText) actGenreText.innerText = rec.genre || 'Vinyl';
+      const actSpinsText = document.getElementById('spinningSpinsText');
+      if (actSpinsText) actSpinsText.innerText = `${rec.spinsCount || 0} Spins`;
 
 
       // Update Label Badge
