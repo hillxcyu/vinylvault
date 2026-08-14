@@ -530,8 +530,14 @@
             </h2>
             <p class="text-xs text-stone-400 mt-1">Explore your classical vinyl collection categorized chronologically by musical era & composer.</p>
           </div>
-          <div class="inline-flex items-center gap-2 text-xs font-semibold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
-            <i class="fa-solid fa-music"></i> <span id="chronicleClassicalCount">0</span> Classical Records
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="chronicleRefreshBtn" onclick="triggerChronicleRefresh()" class="inline-flex items-center gap-2 text-xs font-semibold text-amber-300 hover:text-white bg-amber-500/20 hover:bg-amber-500/30 px-3.5 py-1.5 rounded-full border border-amber-500/30 transition shadow-sm active:scale-95 cursor-pointer" title="Regenerate AI Chronicle with Gemini 3.7 Flash">
+              <i id="chronicleRefreshIcon" class="fa-solid fa-arrows-rotate"></i>
+              <span>Refresh AI Chronicle</span>
+            </button>
+            <div class="inline-flex items-center gap-2 text-xs font-semibold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
+              <i class="fa-solid fa-music"></i> <span id="chronicleClassicalCount">0</span> Classical Records
+            </div>
           </div>
         </div>
 
@@ -1197,14 +1203,24 @@
     }
 
 
-    async function fetchChronicle() {
+    async function fetchChronicle(refresh = false) {
       try {
-        const res = await fetch('/api/chronicle');
+        const url = refresh ? '/api/chronicle?refresh=true' : '/api/chronicle';
+        const res = await fetch(url);
         chronicleData = await res.json();
         renderChronicle();
       } catch (err) {
         console.error('Error fetching chronicle:', err);
       }
+    }
+
+    async function triggerChronicleRefresh() {
+      const btnIcon = document.getElementById('chronicleRefreshIcon');
+      if (btnIcon) btnIcon.classList.add('animate-spin');
+      await fetchChronicle(true);
+      setTimeout(() => {
+        if (btnIcon) btnIcon.classList.remove('animate-spin');
+      }, 1200);
     }
 
     function renderChronicle() {
