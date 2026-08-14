@@ -317,16 +317,12 @@
 
         <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
 
-          <!-- Interactive Spinning Vinyl Record - Click to Launch Camera Scan -->
-          <div onclick="openScannerModal()" class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center cursor-pointer group" title="Click to snap photo of currently playing vinyl record!">
-            <img id="spinningCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500 group-hover:brightness-75" />
+          <!-- Interactive Spinning Vinyl Record -->
+          <div class="relative w-52 h-52 flex-shrink-0 flex items-center justify-center group">
+            <img id="spinningCover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'><rect width='500' height='500' fill='%23111111'/><circle cx='250' cy='250' r='230' fill='%231a1a1a' stroke='%23222222' stroke-width='3'/><circle cx='250' cy='250' r='200' fill='none' stroke='%232a2a2a' stroke-width='1.5'/><circle cx='250' cy='250' r='170' fill='none' stroke='%23282828' stroke-width='1'/><circle cx='250' cy='250' r='140' fill='none' stroke='%23222222' stroke-width='1.5'/><circle cx='250' cy='250' r='110' fill='%23d97706' stroke='%23b45309' stroke-width='3'/><circle cx='250' cy='250' r='90' fill='%23f59e0b'/><circle cx='250' cy='250' r='20' fill='%23111111'/><text x='250' y='235' font-family='sans-serif' font-size='16' font-weight='bold' fill='%2378350f' text-anchor='middle'>VINYL VAULT</text><text x='250' y='270' font-family='sans-serif' font-size='12' font-weight='600' fill='%2392400e' text-anchor='middle'>STANDBY MODE</text></svg>" onerror="handleImageError(this)" class="w-40 h-40 rounded-full vinyl-spin shadow-2xl z-10 border-4 border-black object-cover transition-all duration-500" />
 
             <div class="absolute inset-0 rounded-full bg-stone-900 border-8 border-stone-800 shadow-inner flex items-center justify-center">
               <div class="w-14 h-14 rounded-full bg-amber-500 border-4 border-stone-900 z-20"></div>
-            </div>
-            <!-- Click to Scan Overlay Badge -->
-            <div class="absolute bottom-1 bg-stone-900/90 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 z-30 shadow-lg opacity-90 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
-              <i class="fa-solid fa-camera"></i> Snap Currently Playing
             </div>
           </div>
 
