@@ -16,6 +16,37 @@ logger.setLevel(logging.INFO)
 DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash")
 
 
+def safe_parse_json(text: str) -> Optional[Any]:
+    """
+    Safely parse JSON output from Gemini models with strict=False to handle control characters,
+    unescaped newlines, tabs, and markdown code fence wrappers without throwing JSONDecodeError.
+    """
+    if not text or not text.strip():
+        return None
+    cleaned = text.strip()
+    if cleaned.startswith("```json"):
+        cleaned = cleaned[7:]
+    elif cleaned.startswith("```"):
+        cleaned = cleaned[3:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]
+    cleaned = cleaned.strip()
+
+    try:
+        return json.loads(cleaned, strict=False)
+    except Exception:
+        pass
+
+    match = re.search(r'(\{.*\}|\[.*\])', cleaned, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(0), strict=False)
+        except Exception:
+            pass
+
+    return None
+
+
 
 def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int = 85) -> bytes:
     """
@@ -592,6 +623,7 @@ class GeminiVisionService:
                     recommendedMood: Optional[str] = Field(default="", description="Ideal listening atmosphere")
                     enrichedMetadata: Optional[EnrichedMetadataSchema] = Field(default=None, description="Completed metadata fields (releaseYear, catalogNumber, label, country, genre) discovered via search research")
 
+                parsed = None
                 try:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
@@ -611,14 +643,16 @@ class GeminiVisionService:
                             if hasattr(part, "text") and part.text:
                                 text += part.text
                     text = text.strip()
+                    parsed = safe_parse_json(text)
                 except Exception as search_err:
                     logger.warning(f"Google Search grounded call encountered error/timeout ({search_err}); retrying without search grounding tools...")
-                    text = ""
+                    parsed = None
 
-                if not text:
-                    logger.warning("Search-grounded call returned empty text; retrying with ungrounded Gemini Flash generation...")
+                if not parsed:
+                    logger.warning("Search-grounded call returned empty or unparseable text; retrying with ungrounded Gemini Flash generation...")
                     fallback_config = types.GenerateContentConfig(
-                        response_mime_type="application/json"
+                        response_mime_type="application/json",
+                        response_schema=ListeningGuideResponseSchema
                     )
                     fallback_resp = self.client.models.generate_content(
                         model=DEFAULT_MODEL,
@@ -631,26 +665,10 @@ class GeminiVisionService:
                             if hasattr(part, "text") and part.text:
                                 text += part.text
                     text = text.strip()
+                    parsed = safe_parse_json(text)
 
-                if not text:
-                    raise ValueError("Gemini API returned empty text response")
-
-                if text.startswith("```json"):
-                    text = text[7:]
-                if text.startswith("```"):
-                    text = text[3:]
-                if text.endswith("```"):
-                    text = text[:-3]
-
-                text = text.strip()
-                try:
-                    parsed = json.loads(text)
-                except Exception:
-                    match = re.search(r'\{.*\}', text, re.DOTALL)
-                    if match:
-                        parsed = json.loads(match.group(0))
-                    else:
-                        raise
+                if not parsed or not isinstance(parsed, dict):
+                    raise ValueError("Gemini API returned unparseable text response")
                 
                 elapsed = time.time() - start_t
                 logger.info(f"✨ [Gemini Guide] Listening guide generated in {elapsed:.2f}s for '{artist} - {title}'")
@@ -996,12 +1014,13 @@ class GeminiVisionService:
 
             text_output = response.text.strip()
 
-            if text_output.startswith("```"):
-                text_output = re.sub(r"^```(?:json)?\n|\n```$", "", text_output, flags=re.MULTILINE).strip()
-
-            parsed_data = json.loads(text_output)
-            logger.info(f"Successfully generated AI Chronicle via {DEFAULT_MODEL}.")
-            return parsed_data
+            parsed_data = safe_parse_json(text_output)
+            if parsed_data:
+                logger.info(f"Successfully generated AI Chronicle via {DEFAULT_MODEL}.")
+                return parsed_data
+            else:
+                logger.error(f"Failed to parse JSON output from generate_chronicle_ai.")
+                return None
 
         except Exception as e:
             logger.error(f"{DEFAULT_MODEL} generate_chronicle_ai error: {e}")
