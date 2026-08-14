@@ -998,9 +998,34 @@ class GeminiVisionService:
             )
 
 
+            from pydantic import BaseModel, Field
+
+            class ChronicleEraSchema(BaseModel):
+                era: str = Field(description="Era name e.g. Classical, Romantic, Baroque")
+                count: int = Field(description="Record count")
+                percentage: float = Field(description="Percentage")
+
+            class ChronicleComposerSchema(BaseModel):
+                name: str = Field(description="Full composer name")
+                lifespan: Optional[str] = Field(default="", description="Lifespan e.g. 1803 – 1869")
+                country: Optional[str] = Field(default="", description="Country e.g. France")
+                flag: Optional[str] = Field(default="🎼", description="Flag emoji e.g. 🇫🇷")
+                era: Optional[str] = Field(default="Classical", description="Musical era")
+                highlights: Optional[str] = Field(default="", description="1 short sentence summary")
+                bio: Optional[str] = Field(default="", description="2-3 sentence biography")
+                innovations: Optional[str] = Field(default="", description="Notable musical contributions")
+                keyWorks: List[str] = Field(default_factory=list, description="List of key works")
+
+            class AIChronicleResponseSchema(BaseModel):
+                totalClassicalRecords: int = Field(description="Total classical records count")
+                totalRecordsInCrate: int = Field(description="Total records in crate count")
+                eras: List[ChronicleEraSchema] = Field(default_factory=list, description="Array of era stats")
+                composerStats: List[ChronicleComposerSchema] = Field(default_factory=list, description="Array of composer stats")
+
             config = types.GenerateContentConfig(
-                thinking_config=types.ThinkingConfig(thinking_level="HIGH"),
-                response_mime_type="application/json"
+                response_mime_type="application/json",
+                response_schema=AIChronicleResponseSchema,
+                thinking_config=types.ThinkingConfig(thinking_level="HIGH")
             )
 
             response = self.client.models.generate_content(
@@ -1144,11 +1169,21 @@ class GeminiVisionService:
         start_t = time.time()
         try:
             from google.genai import types
+            from pydantic import BaseModel, Field
+
+            class DailyPosterResponseSchema(BaseModel):
+                headline: str = Field(description="Short, poetic, captivating title for the feature article")
+                subtitle: str = Field(description="1 sentence sub-header summarizing significance")
+                articleMarkdown: str = Field(description="3-paragraph feature article written in rich musical journalist tone")
+                audiophileHighlight: str = Field(description="1-2 sentences highlighting pressing/mastering/mixing quality")
+                pairingNote: str = Field(description="Suggested listening pairing or atmosphere")
+
             response = self.client.models.generate_content(
                 model=DEFAULT_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
+                    response_mime_type="application/json",
+                    response_schema=DailyPosterResponseSchema
                 )
             )
             text = (response.text or "").strip()
@@ -1158,9 +1193,9 @@ class GeminiVisionService:
                         text += part.text
             text = text.strip()
             elapsed = time.time() - start_t
-            if not text:
-                raise ValueError("Empty response from Gemini")
-            data = json.loads(text)
+            data = safe_parse_json(text)
+            if not data:
+                raise ValueError("Empty or unparseable response from Gemini")
             logger.info(f"✨ [Gemini Daily Pick] Blog feature article generated in {elapsed:.2f}s for '{title}'")
             return data
         except Exception as e:
