@@ -450,6 +450,11 @@ class ClassicalService:
                     return False
                 if ("johann sebastian" in norm_comp or "js" in norm_comp) and ("cpe" in corpus or "carl philipp" in corpus):
                     return False
+                if "bach" not in r_title and re.search(r'\bbach[\s\-_]*(chor|choir|orchester|orchestra|collegium|ensemble|verein|solisten)\b', r_artist):
+                    return False
+            if surname in ["bernstein", "boulez", "furtwangler", "furtwaengler"]:
+                if surname not in r_title and (not detected_comp or surname not in _norm(detected_comp)):
+                    return False
             return True
 
         return False
