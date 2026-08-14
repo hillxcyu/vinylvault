@@ -315,6 +315,13 @@
         </div>
 
 
+        <!-- Top Left Status Indicator - Text Only with Glow Effect -->
+        <div class="relative z-10 mb-4 flex items-center justify-start">
+          <div id="nowSpinningBadge" class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#34d399] animate-ping shadow-[0_0_8px_#34d399]"></span> ((•)) CURRENTLY SPINNING
+          </div>
+        </div>
+
         <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
 
           <!-- Interactive Spinning Vinyl Record -->
@@ -328,12 +335,6 @@
 
           <!-- Track Info & Controls with Audio Pronunciation Buttons -->
           <div class="flex-1 text-center md:text-left space-y-3">
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <div id="nowSpinningBadge" class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 bg-stone-800/60 px-3 py-1 rounded-full border border-stone-700/60">
-                <span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span>
-                Standby Mode
-              </div>
-            </div>
 
 
             <!-- Title + Pronounce Button -->
@@ -2037,8 +2038,8 @@
         if (catNoEl) catNoEl.classList.add('hidden');
 
         if (badge) {
-          badge.className = 'inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-stone-400 bg-stone-800/60 px-3 py-1 rounded-full border border-stone-700/60';
-          badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> Standby Mode';
+          badge.className = 'inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-400';
+          badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-stone-500"></span> STANDBY MODE';
         }
         if (assetBadge) {
           assetBadge.innerText = 'Awaiting Album Selection';
@@ -2073,8 +2074,8 @@
       if (chatSubtitle) chatSubtitle.innerText = `Discussing: "${rec.title}" by ${rec.artist}`;
 
       if (badge) {
-        badge.className = 'inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20';
-        badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span> Currently Spinning';
+        badge.className = 'inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#34d399] drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]';
+        badge.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-[#34d399] animate-ping shadow-[0_0_8px_#34d399]"></span> ((•)) CURRENTLY SPINNING';
       }
 
 
