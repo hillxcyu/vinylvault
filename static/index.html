@@ -340,7 +340,7 @@
             <!-- Title + Pronounce Button -->
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
               <h2 id="spinningTitle" class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">No Record Spinning</h2>
-              <button onclick="pronounceText(currentSpinning?.title, this)" class="text-stone-400 hover:text-amber-400 p-1.5 rounded-full bg-stone-900/80 border border-stone-800 transition-colors shadow-sm" title="Listen to pronunciation of album title">
+              <button onclick="pronounceText(currentSpinning?.title, this)" class="text-stone-400 hover:text-amber-400 p-1 transition-colors focus:outline-none" title="Listen to pronunciation of album title">
                 <i class="fa-solid fa-volume-high text-sm"></i>
               </button>
             </div>
@@ -348,7 +348,7 @@
             <!-- Artist + Pronounce Button -->
             <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-0.5">
               <p id="spinningArtist" class="text-lg md:text-xl text-[#fbbf24] font-medium">Select an album from your Crate or Chronicle to start spinning</p>
-              <button onclick="pronounceText(currentSpinning?.artist, this)" class="text-stone-400 hover:text-amber-400 p-1 rounded-full bg-stone-900/60 transition-colors shadow-sm" title="Listen to pronunciation of artist/composer">
+              <button onclick="pronounceText(currentSpinning?.artist, this)" class="text-stone-400 hover:text-amber-400 p-1 transition-colors focus:outline-none" title="Listen to pronunciation of artist/composer">
                 <i class="fa-solid fa-volume-high text-xs"></i>
               </button>
             </div>
