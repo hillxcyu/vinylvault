@@ -310,42 +310,39 @@ class ClassicalService:
         return reconciled
 
     def _match_records_for_composer(self, composer_name: str, records: List[Dict[str, Any]], era_records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Matches actual records in crate/era_records to a specific composer name."""
-        parts = composer_name.strip().split()
-        surname = parts[-1] if parts else composer_name
-        if surname.lower() in ["ii", "iii", "jr", "sr"] and len(parts) >= 2:
-            surname = parts[-2]
-
-        clean_surname = re.sub(r'[^\w\s]', '', surname).lower()
-        clean_fullname = re.sub(r'[^\w\s]', '', composer_name).lower()
+        """Matches actual records in crate/era_records to a specific composer name with strict accuracy."""
+        era_detected_map = {}
+        for er in era_records:
+            if er.get("id"):
+                era_detected_map[str(er["id"])] = er.get("detectedComposer")
 
         matched = []
         seen_ids = set()
 
         for er in era_records:
-            er_comp = er.get("detectedComposer", "").lower()
-            er_text = f"{er.get('artist', '')} {er.get('title', '')}".lower()
-            if (clean_fullname in er_comp or clean_surname in er_comp or clean_surname in er_text):
-                rec_id = er.get("id")
-                if rec_id and rec_id not in seen_ids:
-                    seen_ids.add(rec_id)
-                    matched.append({
-                        "id": er.get("id"),
-                        "title": er.get("title"),
-                        "artist": er.get("artist"),
-                        "coverUrl": er.get("coverUrl"),
-                        "releaseYear": er.get("releaseYear")
-                    })
+            rec_id = er.get("id")
+            if not rec_id or str(rec_id) in seen_ids:
+                continue
+            detected_comp = er.get("detectedComposer")
+            if self._is_composer_match(composer_name, er, detected_comp):
+                seen_ids.add(str(rec_id))
+                matched.append({
+                    "id": rec_id,
+                    "title": er.get("title"),
+                    "artist": er.get("artist"),
+                    "coverUrl": er.get("coverUrl"),
+                    "releaseYear": er.get("releaseYear")
+                })
 
         for r in records:
-            r_id = r.get("id")
-            if not r_id or r_id in seen_ids:
+            rec_id = r.get("id")
+            if not rec_id or str(rec_id) in seen_ids:
                 continue
-            r_text = f"{r.get('artist', '')} {r.get('title', '')} {r.get('genre', '')}".lower()
-            if clean_surname and re.search(r'\b' + re.escape(clean_surname) + r'\b', r_text):
-                seen_ids.add(r_id)
+            detected_comp = era_detected_map.get(str(rec_id))
+            if self._is_composer_match(composer_name, r, detected_comp):
+                seen_ids.add(str(rec_id))
                 matched.append({
-                    "id": r.get("id"),
+                    "id": rec_id,
                     "title": r.get("title"),
                     "artist": r.get("artist"),
                     "coverUrl": r.get("coverUrl"),
@@ -353,6 +350,57 @@ class ClassicalService:
                 })
 
         return matched
+
+    def _is_composer_match(self, comp_name: str, record: Dict[str, Any], detected_comp: Optional[str]) -> bool:
+        """Determines if a record belongs to a specific composer without cross-matching unrelated composers."""
+        comp_clean = re.sub(r'[^\w\s]', '', comp_name).lower().strip()
+        
+        comp_parts = comp_name.strip().split()
+        comp_surname = comp_parts[-1] if comp_parts else comp_name
+        if comp_surname.lower() in ["ii", "iii", "jr", "sr"] and len(comp_parts) >= 2:
+            comp_surname = comp_parts[-2]
+        clean_comp_surname = re.sub(r'[^\w\s]', '', comp_surname).lower()
+
+        if detected_comp:
+            det_clean = re.sub(r'[^\w\s]', '', detected_comp).lower().strip()
+            if comp_clean in det_clean or det_clean in comp_clean:
+                return True
+            
+            det_parts = detected_comp.strip().split()
+            det_surname = det_parts[-1] if det_parts else detected_comp
+            if det_surname.lower() in ["ii", "iii", "jr", "sr"] and len(det_parts) >= 2:
+                det_surname = det_parts[-2]
+            clean_det_surname = re.sub(r'[^\w\s]', '', det_surname).lower()
+
+            if clean_comp_surname and clean_comp_surname == clean_det_surname:
+                if "strauss" in clean_comp_surname:
+                    if "johann" in comp_clean and "richard" in det_clean:
+                        return False
+                    if "richard" in comp_clean and "johann" in det_clean:
+                        return False
+                if "bach" in clean_comp_surname:
+                    if ("carl" in det_clean or "cpe" in det_clean) and ("sebastian" in comp_clean or "js" in comp_clean):
+                        return False
+                return True
+            
+            return False
+
+        r_artist = (record.get("artist") or "").lower()
+        r_title = (record.get("title") or "").lower()
+        r_text = f"{r_artist} {r_title}"
+
+        if not clean_comp_surname:
+            return False
+
+        if re.search(r'\b' + re.escape(clean_comp_surname) + r'\b', r_text):
+            if "strauss" in clean_comp_surname:
+                if "johann" in comp_clean and ("richard" in r_text and "johann" not in r_text):
+                    return False
+                if "richard" in comp_clean and ("johann" in r_text and "richard" not in r_text):
+                    return False
+            return True
+
+        return False
 
     def _rebuild_ai_chronicle_bg(self, records: List[Dict[str, Any]]):
 

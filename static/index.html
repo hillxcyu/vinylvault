@@ -1407,7 +1407,7 @@
       let matched = [];
       if (comp.records && Array.isArray(comp.records) && comp.records.length > 0) {
         matched = comp.records.map(cr => {
-          const found = allRecords.find(r => r.id === cr.id);
+          const found = allRecords.find(r => String(r.id) === String(cr.id));
           return found || cr;
         });
       } else {
@@ -1428,16 +1428,22 @@
       } else {
         matched.forEach(rec => {
           const row = document.createElement('div');
-          row.className = 'bg-stone-900/90 hover:bg-stone-900 border border-stone-800 p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors';
+          row.className = 'bg-stone-900/90 hover:bg-stone-900 border border-stone-800 p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors cursor-pointer group hover:border-amber-500/60';
+          row.onclick = () => {
+            if (rec && rec.id) {
+              spinRecord(rec.id);
+              closeComposerModal();
+            }
+          };
           row.innerHTML = `
             <div class="flex items-center gap-3 min-w-0 flex-1">
               ${rec.coverUrl ? `<img src="${rec.coverUrl}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-stone-800" onerror="handleImageError(this)" />` : ''}
               <div class="space-y-0.5 min-w-0 flex-1">
-                <div class="font-extrabold text-xs text-white leading-snug break-words">${rec.title || 'Untitled Album'}</div>
+                <div class="font-extrabold text-xs text-white group-hover:text-amber-300 transition-colors leading-snug break-words">${rec.title || 'Untitled Album'}</div>
                 <div class="text-[11px] text-stone-400 truncate">${rec.artist || 'Classical Performer'}</div>
               </div>
             </div>
-            <button onclick="spinRecord('${rec.id}'); closeComposerModal();" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full flex items-center gap-1 shadow-sm flex-shrink-0 cursor-pointer transition-transform active:scale-95">
+            <button onclick="event.stopPropagation(); spinRecord('${rec.id}'); closeComposerModal();" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full flex items-center gap-1 shadow-sm flex-shrink-0 cursor-pointer transition-transform active:scale-95">
               <i class="fa-solid fa-play text-[10px]"></i> Spin
             </button>
           `;
@@ -1455,10 +1461,13 @@
     }
 
     function updateNowSpinningUI_byID(id) {
-      const rec = allRecords.find(r => r.id === id);
+      if (!id) return;
+      const targetId = String(id);
+      const rec = allRecords.find(r => String(r.id) === targetId);
       if (rec) {
-        updateNowSpinningUI(rec);
-        switchTab('nowSpinning');
+        spinRecord(rec.id);
+      } else {
+        console.warn('Record not found for ID:', id);
       }
     }
 
@@ -2996,7 +3005,8 @@
     let lastSpinActionTime = 0;
 
     async function spinRecord(id) {
-      const rec = allRecords.find(r => r.id === id);
+      const targetId = String(id);
+      const rec = allRecords.find(r => String(r.id) === targetId);
       lastSpinActionTime = Date.now();
 
       if (rec) {
