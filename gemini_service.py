@@ -969,9 +969,7 @@ class GeminiVisionService:
                 "   - \"highlights\": string (1 short sentence summary)\n"
                 "   - \"bio\": string (2-3 sentence biography)\n"
                 "   - \"innovations\": string (notable musical contributions)\n"
-                "   - \"keyWorks\": array of string key works\n"
-                "   - \"count\": integer count of albums owned for this composer\n"
-                "   - \"albums\": array of album title strings owned in crate\n\n"
+                "   - \"keyWorks\": array of string key works\n\n"
                 "Return ONLY a valid JSON object matching this structure:\n"
                 "{\n"
                 '  "totalClassicalRecords": 71,\n'
