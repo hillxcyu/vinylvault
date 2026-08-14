@@ -178,7 +178,7 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumCornerSegmentation,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                thinking_config=types.ThinkingConfig(thinking_level="LOW")
             )
 
             response = self.client.models.generate_content(
@@ -275,7 +275,7 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=FastDuplicateCheckSchema,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                thinking_config=types.ThinkingConfig(thinking_level="LOW")
             )
 
             response = self.client.models.generate_content(
@@ -341,7 +341,7 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AlbumMetadataSchema,
-                thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                thinking_config=types.ThinkingConfig(thinking_level="LOW")
             )
 
             response = self.client.models.generate_content(
@@ -470,7 +470,7 @@ class GeminiVisionService:
                     config = types.GenerateContentConfig(
                         response_mime_type="application/json",
                         response_schema=AlbumScanMetadataSchema,
-                        thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                        thinking_config=types.ThinkingConfig(thinking_level="LOW")
                     )
 
                     response = self.client.models.generate_content(
@@ -981,7 +981,7 @@ class GeminiVisionService:
 
 
             config = types.GenerateContentConfig(
-                thinking_config=types.ThinkingConfig(thinking_level="high"),
+                thinking_config=types.ThinkingConfig(thinking_level="HIGH"),
                 response_mime_type="application/json"
             )
 
