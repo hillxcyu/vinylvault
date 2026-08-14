@@ -1,7 +1,7 @@
 # Gemini Vision 2D Spatial & Image Processing Rules
 
 ## 1. Gemini Vision 2D Spatial Coordinate Mapping
-- When requesting 2D bounding boxes or polygon masks from Gemini Vision models (`gemini-3.6-flash`):
+- When requesting 2D bounding boxes or polygon masks from Gemini Vision models (`gemini-3.7-flash`):
   - `box_2d` coordinates follow `[ymin, xmin, ymax, xmax]` on a 0-1000 normalized integer scale.
   - For polygon corner masks, explicitly specify `[x, y]` order in top-left, top-right, bottom-right, bottom-left sequence.
   - Convert 0-1000 scale to pixel coordinates:

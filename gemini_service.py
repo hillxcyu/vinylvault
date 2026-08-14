@@ -13,6 +13,8 @@ from typing import Dict, Any, List, Optional
 logger = logging.getLogger("gemini_service")
 logger.setLevel(logging.INFO)
 
+DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.7-flash")
+
 
 
 def downsample_image_bytes(image_bytes: bytes, max_dim: int = 1024, quality: int = 85) -> bytes:
@@ -150,7 +152,7 @@ class GeminiVisionService:
         # Downsample high-res photo to 1024px max dimension for fast execution
         optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
 
-        logger.info("🤖 [Gemini Vision] Requesting corner segmentation polygon (gemini-3.6-flash)...")
+        logger.info(f"🤖 [Gemini Vision] Requesting corner segmentation polygon ({DEFAULT_MODEL})...")
         start_t = time.time()
         try:
             from google.genai import types
@@ -180,7 +182,7 @@ class GeminiVisionService:
             )
 
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model=DEFAULT_MODEL,
                 contents=[
                     types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
                     prompt
@@ -214,7 +216,7 @@ class GeminiVisionService:
 
     def check_album_duplicate(self, image_bytes: bytes, crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
-        Fast duplicate checker (Call B) via Gemini 3.6 Flash.
+        Fast duplicate checker (Call B) via Gemini 3.7 Flash.
         No Google Search tools, minimal thinking level for maximum speed (~1-2s).
         Returns basic OCR metadata (artist, albumTitle) and duplicate check status against user's library.
         """
@@ -256,7 +258,7 @@ class GeminiVisionService:
             "Return JSON with 'artist', 'albumTitle', 'isAlreadyInCrate', 'crateMatchId', 'crateMatchReason', 'confidenceScore'."
         )
 
-        logger.info("🤖 [Gemini Call B] Requesting duplicate inventory check (gemini-3.6-flash)...")
+        logger.info(f"🤖 [Gemini Call B] Requesting duplicate inventory check ({DEFAULT_MODEL})...")
         start_t = time.time()
         try:
             from google.genai import types
@@ -277,7 +279,7 @@ class GeminiVisionService:
             )
 
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model=DEFAULT_MODEL,
                 contents=[
                     types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
                     prompt
@@ -307,7 +309,7 @@ class GeminiVisionService:
 
     def extract_album_metadata(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
         """
-        Fast album metadata extraction (Call C) via Gemini 3.6 Flash.
+        Fast album metadata extraction (Call C) via Gemini 3.7 Flash.
         Returns catalog number, label, release country, release year, genre, and confidence score.
         """
         if not self.client:
@@ -321,7 +323,7 @@ class GeminiVisionService:
             "Infer any missing fields if you can, else return null."
         )
 
-        logger.info("🤖 [Gemini Call C] Requesting fast metadata extraction (gemini-3.6-flash)...")
+        logger.info(f"🤖 [Gemini Call C] Requesting fast metadata extraction ({DEFAULT_MODEL})...")
         start_t = time.time()
         try:
             from google.genai import types
@@ -343,7 +345,7 @@ class GeminiVisionService:
             )
 
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model=DEFAULT_MODEL,
                 contents=[
                     types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
                     prompt
@@ -472,7 +474,7 @@ class GeminiVisionService:
                     )
 
                     response = self.client.models.generate_content(
-                        model="gemini-3.6-flash",
+                        model=DEFAULT_MODEL,
                         contents=[
                             types.Part.from_bytes(data=optimized_image_bytes, mime_type="image/jpeg"),
                             prompt
@@ -512,8 +514,8 @@ class GeminiVisionService:
                 logger.info(f"✨ [Gemini Vision] Album cover analysis finished: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}, isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', box_2d={parsed.get('box_2d')}, mask={parsed.get('mask')}")
                 return parsed
             except Exception as e:
-                logger.error(f"Error in Gemini Vision API call (gemini-3.6-flash): {e}")
-                raise RuntimeError(f"Gemini Vision API error (gemini-3.6-flash): {e}")
+                logger.error(f"Error in Gemini Vision API call ({DEFAULT_MODEL}): {e}")
+                raise RuntimeError(f"Gemini Vision API error ({DEFAULT_MODEL}): {e}")
 
 
         raise RuntimeError("Gemini AI client is not initialized")
@@ -598,7 +600,7 @@ class GeminiVisionService:
                     )
 
                     response = self.client.models.generate_content(
-                        model="gemini-3.6-flash",
+                        model=DEFAULT_MODEL,
                         contents=prompt,
                         config=config
                     )
@@ -619,7 +621,7 @@ class GeminiVisionService:
                         response_mime_type="application/json"
                     )
                     fallback_resp = self.client.models.generate_content(
-                        model="gemini-3.6-flash",
+                        model=DEFAULT_MODEL,
                         contents=prompt,
                         config=fallback_config
                     )
@@ -775,7 +777,7 @@ class GeminiVisionService:
 
                 contents.append(prompt)
 
-                logger.info(f"🤖 [Gemini Chat] Sending message to gemini-3.6-flash (images={len(images or [])})...")
+                logger.info(f"🤖 [Gemini Chat] Sending message to {DEFAULT_MODEL} (images={len(images or [])})...")
                 start_t = time.time()
 
                 config = types.GenerateContentConfig(
@@ -783,7 +785,7 @@ class GeminiVisionService:
                 )
 
                 response = self.client.models.generate_content(
-                    model="gemini-3.6-flash",
+                    model=DEFAULT_MODEL,
                     contents=contents,
                     config=config
                 )
@@ -834,7 +836,7 @@ class GeminiVisionService:
         images: Optional[List[str]] = None
     ):
         """
-        Streams Gemini 3.6 Flash chat response tokens in real time with Google Search Grounding,
+        Streams Gemini 3.7 Flash chat response tokens in real time with Google Search Grounding,
         multimodal image inspection, and complete Vinyl Vault Crate awareness.
         """
         title = record_context.get("title", "Vinyl Record") if record_context else "Vinyl Record"
@@ -882,7 +884,7 @@ class GeminiVisionService:
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
                 response_stream = self.client.models.generate_content_stream(
-                    model="gemini-3.6-flash",
+                    model=DEFAULT_MODEL,
                     contents=contents,
                     config=config
                 )
@@ -986,7 +988,7 @@ class GeminiVisionService:
             )
 
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model=DEFAULT_MODEL,
                 contents=prompt,
                 config=config
             )
@@ -1000,11 +1002,11 @@ class GeminiVisionService:
                 text_output = re.sub(r"^```(?:json)?\n|\n```$", "", text_output, flags=re.MULTILINE).strip()
 
             parsed_data = json.loads(text_output)
-            logger.info("Successfully generated AI Chronicle via Gemini 3.6 Flash.")
+            logger.info(f"Successfully generated AI Chronicle via {DEFAULT_MODEL}.")
             return parsed_data
 
         except Exception as e:
-            logger.error(f"Gemini 3.6 Flash generate_chronicle_ai error: {e}")
+            logger.error(f"{DEFAULT_MODEL} generate_chronicle_ai error: {e}")
             return None
 
     def generate_pronunciation(self, text: str) -> Optional[Dict[str, Any]]:
@@ -1121,12 +1123,12 @@ class GeminiVisionService:
                 "pairingNote": "Best enjoyed in a cozy listening room with a warm cup of coffee or dark roast tea."
             }
 
-        logger.info(f"🤖 [Gemini Daily Pick] Requesting blog article for '{title}' (gemini-3.6-flash)...")
+        logger.info(f"🤖 [Gemini Daily Pick] Requesting blog article for '{title}' ({DEFAULT_MODEL})...")
         start_t = time.time()
         try:
             from google.genai import types
             response = self.client.models.generate_content(
-                model='gemini-3.6-flash',
+                model=DEFAULT_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json"
