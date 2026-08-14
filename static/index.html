@@ -353,39 +353,36 @@
               </button>
             </div>
 
-            <!-- Metadata Info Panel (One Panel, One Item Per Line, Left Aligned) -->
-            <div class="flex justify-center md:justify-start">
-              <div class="bg-stone-900/80 border border-stone-800/90 rounded-xl py-1.5 px-3 space-y-1 max-w-sm w-full shadow-lg text-xs">
-                <!-- Line 1: Genre / Category -->
-                <div id="spinningGenre" class="flex items-center justify-start text-stone-300 font-medium">
-                  <i class="fa-solid fa-compact-disc mr-2.5 text-stone-500 w-4 text-center"></i>
-                  <span>Standby</span>
-                </div>
+            <!-- Metadata Horizontal Badges/Tags (Optimized Pill Style) -->
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-0.5">
+              <!-- Tag 1: Genre / Category -->
+              <span id="spinningGenre" class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/25 rounded-full text-xs font-semibold shadow-sm backdrop-blur-md">
+                <i class="fa-solid fa-compact-disc text-stone-500 text-[11px]"></i>
+                <span>Standby</span>
+              </span>
 
-                <!-- Line 2: Spins Count -->
-                <div id="spinningSpins" class="flex items-center justify-start text-stone-300 font-medium">
-                  <i class="fa-solid fa-circle-pause mr-2.5 text-stone-500 w-4 text-center"></i>
-                  <span>Ready</span>
-                </div>
+              <!-- Tag 2: Spins Count -->
+              <span id="spinningSpins" class="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-900/90 text-stone-300 border border-stone-800 rounded-full text-xs font-medium shadow-sm backdrop-blur-md">
+                <i class="fa-solid fa-circle-pause text-stone-500 text-[11px]"></i>
+                <span>Ready</span>
+              </span>
 
-                <!-- Line 3: Record Label -->
-                <div id="spinningLabel" class="flex items-center justify-start text-stone-300 font-medium hidden">
-                  <i class="fa-solid fa-record-vinyl mr-2.5 text-purple-400 w-4 text-center"></i>
-                  <span id="spinningLabelText"></span>
-                </div>
+              <!-- Tag 3: Record Label -->
+              <span id="spinningLabel" class="hidden inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/25 rounded-full text-xs font-medium shadow-sm backdrop-blur-md">
+                <i class="fa-solid fa-record-vinyl text-purple-400 text-[11px]"></i>
+                <span id="spinningLabelText"></span>
+              </span>
 
-                <!-- Line 4: Country / Pressing -->
-                <div id="spinningCountry" class="flex items-center justify-start text-stone-300 font-medium hidden">
-                  <i class="fa-solid fa-globe mr-2.5 text-emerald-400 w-4 text-center"></i>
-                  <span id="spinningCountryText"></span>
-                </div>
+              <!-- Tag 4: Country / Pressing -->
+              <span id="spinningCountry" class="hidden inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 rounded-full text-xs font-medium shadow-sm backdrop-blur-md">
+                <span id="spinningCountryText"></span>
+              </span>
 
-                <!-- Line 5: Catalog Number -->
-                <div id="spinningCatNo" class="flex items-center justify-start text-stone-300 font-medium hidden">
-                  <i class="fa-solid fa-barcode mr-2.5 text-sky-400 w-4 text-center"></i>
-                  <span id="spinningCatNoText"></span>
-                </div>
-              </div>
+              <!-- Tag 5: Catalog Number -->
+              <span id="spinningCatNo" class="hidden inline-flex items-center gap-1.5 px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/25 rounded-full text-xs font-medium shadow-sm backdrop-blur-md">
+                <i class="fa-solid fa-barcode text-sky-400 text-[11px]"></i>
+                <span id="spinningCatNoText"></span>
+              </span>
             </div>
 
 
@@ -2058,8 +2055,8 @@
 
         document.getElementById('spinningTitle').innerText = 'No Record Spinning';
         document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
-        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-2.5 text-stone-500 w-4 text-center"></i> <span>Standby</span>';
-        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-2.5 w-4 text-center"></i> <span>Ready</span>';
+        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc text-stone-500 text-[11px]"></i> <span>Standby</span>';
+        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 text-[11px]"></i> <span>Ready</span>';
 
 
         const countryEl = document.getElementById('spinningCountry');
@@ -2128,8 +2125,8 @@
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
-      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-2.5 text-amber-400 w-4 text-center"></i> <span>${rec.genre || 'Vinyl'}</span>`;
-      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-2.5 w-4 text-center"></i> <span>${rec.spinsCount} Spins</span>`;
+      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music text-amber-400 text-[11px]"></i> <span>${rec.genre || 'Vinyl'}</span>`;
+      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 text-[11px]"></i> <span>${rec.spinsCount} Spins</span>`;
 
 
       // Update Label Badge
