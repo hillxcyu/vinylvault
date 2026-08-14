@@ -296,16 +296,38 @@ class ClassicalService:
         if not raw_composers or not isinstance(raw_composers, list):
             raw_composers = self._compute_composer_stats(records)
 
+        def _get_composer_key(name: str) -> str:
+            if not name:
+                return ""
+            deaccent = "".join(c for c in unicodedata.normalize('NFD', str(name)) if unicodedata.category(c) != 'Mn')
+            tokens = [t for t in re.split(r'[\s\-_,.]+', deaccent.lower()) if t and t not in ["ii", "iii", "jr", "sr"]]
+            if not tokens:
+                return name.lower()
+            surname = tokens[-1]
+            if len(tokens) >= 2 and tokens[-2] in ["saint", "rimsky", "castelnuovo", "vaughan"]:
+                surname = f"{tokens[-2]}_{tokens[-1]}"
+            if surname == "strauss":
+                if "richard" in tokens:
+                    return "strauss_richard"
+                if "johann" in tokens:
+                    return "strauss_johann"
+            if surname == "bach":
+                if "cpe" in tokens or "carl" in tokens:
+                    return "bach_cpe"
+                if "js" in tokens or "johann" in tokens or "sebastian" in tokens:
+                    return "bach_js"
+            return surname
+
         reconciled = []
-        processed_names = set()
+        processed_keys = set()
 
         for comp in raw_composers:
             if not isinstance(comp, dict) or not comp.get("name"):
                 continue
             cname = comp.get("name")
-            if cname.lower() in processed_names:
+            ckey = _get_composer_key(cname)
+            if ckey in processed_keys:
                 continue
-            processed_names.add(cname.lower())
 
             matched_records = self._match_records_for_composer(cname, records, all_era_recs)
             if not matched_records:
@@ -315,18 +337,20 @@ class ClassicalService:
             comp["albums"] = [r.get("title") for r in matched_records if r.get("title")]
             comp["count"] = len(matched_records)
             reconciled.append(comp)
+            processed_keys.add(ckey)
 
         base_composers = self._compute_composer_stats(records)
         for bc in base_composers:
             bc_name = bc.get("name")
-            if bc_name and bc_name.lower() not in processed_names:
+            bckey = _get_composer_key(bc_name)
+            if bc_name and bckey not in processed_keys:
                 matched_records = self._match_records_for_composer(bc_name, records, all_era_recs)
                 if matched_records:
                     bc["records"] = matched_records
                     bc["albums"] = [r.get("title") for r in matched_records if r.get("title")]
                     bc["count"] = len(matched_records)
                     reconciled.append(bc)
-                    processed_names.add(bc_name.lower())
+                    processed_keys.add(bckey)
 
         reconciled.sort(key=lambda x: (self._extract_birth_year(x.get("lifespan", "")), -x.get("count", 0)))
         return reconciled
