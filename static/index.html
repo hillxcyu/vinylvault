@@ -353,12 +353,39 @@
               </button>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 text-sm text-gray-300 pt-1">
-              <span id="spinningGenre" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby</span>
-              <span id="spinningSpins" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center"><i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready</span>
-              <span id="spinningLabel" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-record-vinyl text-purple-400 mr-1.5"></i> <span id="spinningLabelText"></span></span>
-              <span id="spinningCountry" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-globe text-emerald-400 mr-1.5"></i> <span id="spinningCountryText"></span></span>
-              <span id="spinningCatNo" class="bg-stone-800/90 px-3 py-1 rounded-lg border border-stone-700/60 flex items-center hidden"><i class="fa-solid fa-barcode text-sky-400 mr-1.5"></i> <span id="spinningCatNoText"></span></span>
+            <!-- Metadata Info Panel (One Panel, One Item Per Line, Left Aligned) -->
+            <div class="pt-1.5 flex justify-center md:justify-start">
+              <div class="bg-stone-900/80 border border-stone-800/90 rounded-xl p-3 space-y-2 max-w-sm w-full shadow-lg text-xs">
+                <!-- Line 1: Genre / Category -->
+                <div id="spinningGenre" class="flex items-center justify-start text-stone-300 font-medium">
+                  <i class="fa-solid fa-compact-disc mr-2.5 text-stone-500 w-4 text-center"></i>
+                  <span>Standby</span>
+                </div>
+
+                <!-- Line 2: Spins Count -->
+                <div id="spinningSpins" class="flex items-center justify-start text-stone-300 font-medium">
+                  <i class="fa-solid fa-circle-pause mr-2.5 text-stone-500 w-4 text-center"></i>
+                  <span>Ready</span>
+                </div>
+
+                <!-- Line 3: Record Label -->
+                <div id="spinningLabel" class="flex items-center justify-start text-stone-300 font-medium hidden">
+                  <i class="fa-solid fa-record-vinyl mr-2.5 text-purple-400 w-4 text-center"></i>
+                  <span id="spinningLabelText"></span>
+                </div>
+
+                <!-- Line 4: Country / Pressing -->
+                <div id="spinningCountry" class="flex items-center justify-start text-stone-300 font-medium hidden">
+                  <i class="fa-solid fa-globe mr-2.5 text-emerald-400 w-4 text-center"></i>
+                  <span id="spinningCountryText"></span>
+                </div>
+
+                <!-- Line 5: Catalog Number -->
+                <div id="spinningCatNo" class="flex items-center justify-start text-stone-300 font-medium hidden">
+                  <i class="fa-solid fa-barcode mr-2.5 text-sky-400 w-4 text-center"></i>
+                  <span id="spinningCatNoText"></span>
+                </div>
+              </div>
             </div>
 
 
@@ -2031,8 +2058,8 @@
 
         document.getElementById('spinningTitle').innerText = 'No Record Spinning';
         document.getElementById('spinningArtist').innerText = 'Select an album from your Crate or Chronicle to start spinning';
-        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-1.5 text-stone-500"></i> Standby';
-        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-1.5"></i> Ready';
+        document.getElementById('spinningGenre').innerHTML = '<i class="fa-solid fa-compact-disc mr-2.5 text-stone-500 w-4 text-center"></i> <span>Standby</span>';
+        document.getElementById('spinningSpins').innerHTML = '<i class="fa-solid fa-circle-pause text-stone-500 mr-2.5 w-4 text-center"></i> <span>Ready</span>';
 
 
         const countryEl = document.getElementById('spinningCountry');
@@ -2101,8 +2128,8 @@
       document.getElementById('spinningCover').src = rec.coverUrl || SVG_PLACEHOLDER;
       document.getElementById('spinningTitle').innerText = rec.title;
       document.getElementById('spinningArtist').innerText = `${rec.artist} • ${rec.releaseYear || ''}`;
-      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-1.5 text-amber-400"></i> ${rec.genre || 'Vinyl'}`;
-      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-1.5"></i> ${rec.spinsCount} Spins`;
+      document.getElementById('spinningGenre').innerHTML = `<i class="fa-solid fa-music mr-2.5 text-amber-400 w-4 text-center"></i> <span>${rec.genre || 'Vinyl'}</span>`;
+      document.getElementById('spinningSpins').innerHTML = `<i class="fa-solid fa-fire text-amber-500 mr-2.5 w-4 text-center"></i> <span>${rec.spinsCount} Spins</span>`;
 
 
       // Update Label Badge
