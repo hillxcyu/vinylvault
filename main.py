@@ -517,40 +517,60 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
     exact_match_rec = None
     variant_match_rec = None
 
+    def check_rec_match(r: dict):
+        r_cat = (r.get("catalogNumber") or "").lower().strip()
+        r_cat_clean = "".join(c for c in r_cat if c.isalnum())
+        r_year = str(r.get("releaseYear") or "").strip()
+
+        all_r_cats = [r_cat_clean] + [
+            "".join(c for c in (p.get("catalogNumber") or "").lower() if c.isalnum())
+            for p in r.get("pressings", [])
+        ]
+        all_r_cats = [c for c in all_r_cats if c]
+
+        # 1. Exact catalog number match
+        if catno_clean and len(catno_clean) >= 3 and any(catno_clean == c for c in all_r_cats):
+            return "EXACT"
+
+        # 2. If catalog numbers exist on both sides and DO NOT match -> DIFFERENT_PRESSING
+        if catno_clean and all_r_cats and not any(catno_clean == c for c in all_r_cats):
+            return "VARIANT"
+
+        # 3. If release years exist on both sides and DO NOT match -> DIFFERENT_PRESSING
+        if year and r_year and year != r_year:
+            return "VARIANT"
+
+        return "EXACT"
+
+    # Evaluate candidate match_id from Gemini / AI
     if match_id and crate_records:
-        exact_match_rec = next((r for r in crate_records if r.get("id") == match_id), None)
-        
-    if crate_records:
+        candidate = next((r for r in crate_records if r.get("id") == match_id), None)
+        if candidate:
+            match_type = check_rec_match(candidate)
+            if match_type == "EXACT":
+                exact_match_rec = candidate
+            else:
+                variant_match_rec = candidate
+
+    # Search crate_records if exact match not yet confirmed
+    if not exact_match_rec and crate_records:
         for r in crate_records:
             r_title = (r.get("title") or "").lower().strip()
             r_artist = (r.get("artist") or "").lower().strip()
-            r_cat = (r.get("catalogNumber") or "").lower().strip()
-            r_cat_clean = "".join(c for c in r_cat if c.isalnum())
-            r_year = str(r.get("releaseYear") or "").strip()
 
-            # 1. Exact catalog number match
-            if catno_clean and len(catno_clean) >= 3 and catno_clean == r_cat_clean:
-                exact_match_rec = r
-                break
+            clean_title = "".join(c for c in title if c.isalnum())
+            clean_r_title = "".join(c for c in r_title if c.isalnum())
 
-            for p in r.get("pressings", []):
-                p_cat = (p.get("catalogNumber") or "").lower().strip()
-                p_cat_clean = "".join(c for c in p_cat if c.isalnum())
-                if catno_clean and len(catno_clean) >= 3 and catno_clean == p_cat_clean:
+            title_match = (title and r_title and (title == r_title or clean_title in clean_r_title or clean_r_title in clean_title))
+            artist_match = (artist and r_artist and (artist in r_artist or r_artist in artist))
+
+            if title_match or (artist_match and clean_title and clean_title in clean_r_title):
+                match_type = check_rec_match(r)
+                if match_type == "EXACT":
                     exact_match_rec = r
                     break
-            if exact_match_rec:
-                break
-
-            # 2. Title and artist match
-            if title and artist and title == r_title and artist == r_artist:
-                if catno_clean and r_cat_clean and catno_clean != r_cat_clean:
+                elif match_type == "VARIANT" and not variant_match_rec:
                     variant_match_rec = r
-                elif year and r_year and year != r_year:
-                    variant_match_rec = r
-                else:
-                    exact_match_rec = r
-                    break
 
     if exact_match_rec:
         rec_title = exact_match_rec.get("title", "")
@@ -563,8 +583,8 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
             "message": f"EXACT PRESSING ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
         }
 
-    if variant_match_rec or (is_in_crate and "different" in reason.lower()):
-        matching_rec = variant_match_rec or next((r for r in crate_records if (r.get("title") or "").lower().strip() == title), None)
+    if variant_match_rec or (is_in_crate and catno_clean):
+        matching_rec = variant_match_rec or next((r for r in crate_records if r.get("id") == match_id), None)
         rec_title = matching_rec.get("title", "") if matching_rec else title
         rec_cat = matching_rec.get("catalogNumber", "") if matching_rec else ""
         rec_year = matching_rec.get("releaseYear", "") if matching_rec else ""
