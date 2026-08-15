@@ -605,10 +605,15 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
         if rec_cat: details.append(f"Cat #: {rec_cat}")
         if rec_year: details.append(f"Year: {rec_year}")
         details_str = f" ({', '.join(details)})" if details else ""
+        if reason:
+            msg_text = reason
+        else:
+            msg_text = f"You own another edition of '{rec_title}' in your Crate{details_str}."
+
         return {
             "status": "DIFFERENT_PRESSING",
             "matchingRecord": matching_rec,
-            "message": f"Different release/pressing detected! {reason if reason else f'You own another edition of \"{rec_title}\" in your Crate{details_str}.'}"
+            "message": f"Different release/pressing detected! {msg_text}"
         }
 
 
@@ -1231,7 +1236,7 @@ async def get_listening_guide(req: ListeningGuideRequest):
     logger.info(f"Invoking Gemini 3.7 Flash + Grounding for listening guide generation: '{req.artist}' - '{req.albumTitle}' (catNo={cat_no}, label={lbl}, country={cntry})")
     guide = gemini_service.generate_listening_guide(
         artist=req.artist, 
-        title=req.albumTitle,
+        album_title=req.albumTitle,
         catalog_number=cat_no,
         label=lbl,
         country=cntry

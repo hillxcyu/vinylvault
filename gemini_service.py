@@ -555,16 +555,18 @@ class GeminiVisionService:
 
     def generate_listening_guide(
         self, 
-        album_title: str, 
-        artist: str, 
+        album_title: str = "", 
+        artist: str = "", 
         catalog_number: Optional[str] = None, 
         label: Optional[str] = None, 
-        country: Optional[str] = None
+        country: Optional[str] = None,
+        title: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate a rich audiophile listening guide using Gemini 3.7 Flash with Search Grounding.
         Returns detailed backstory/pressing notes, full tracklist with Side A/B positions, and foldable highlights.
         """
+        album_title = album_title or title or ""
         if self.client:
             start_t = time.time()
             try:
