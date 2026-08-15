@@ -1037,6 +1037,7 @@ class GeminiVisionService:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=AIChronicleResponseSchema,
+                max_output_tokens=65536,
                 thinking_config=types.ThinkingConfig(thinking_level="HIGH")
             )
 
