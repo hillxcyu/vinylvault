@@ -507,17 +507,30 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
     is_in_crate = metadata.get("isAlreadyInCrate", False)
     match_id = metadata.get("crateMatchId")
     reason = metadata.get("crateMatchReason") or ""
+    reason_lower = reason.lower()
     
     title = (metadata.get("albumTitle") or metadata.get("title") or "").lower().strip()
     artist = (metadata.get("artist") or "").lower().strip()
     catno = (metadata.get("catalogNumber") or metadata.get("catno") or "").lower().strip()
     catno_clean = "".join(c for c in catno if c.isalnum())
     year = str(metadata.get("releaseYear") or "").strip()
+
+    # Explicit indicators that this is a different pressing/release
+    is_explicit_different = (
+        "different" in reason_lower or 
+        "vs" in reason_lower or 
+        "variant" in reason_lower or 
+        ("pressing" in reason_lower and "different" in reason_lower) or
+        (not is_in_crate and match_id is not None)
+    )
     
     exact_match_rec = None
     variant_match_rec = None
 
     def check_rec_match(r: dict):
+        if is_explicit_different:
+            return "VARIANT"
+
         r_cat = (r.get("catalogNumber") or "").lower().strip()
         r_cat_clean = "".join(c for c in r_cat if c.isalnum())
         r_year = str(r.get("releaseYear") or "").strip()
@@ -540,7 +553,7 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
         if year and r_year and year != r_year:
             return "VARIANT"
 
-        return "EXACT"
+        return "EXACT" if is_in_crate else "VARIANT"
 
     # Evaluate candidate match_id from Gemini / AI
     if match_id and crate_records:
@@ -583,7 +596,7 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
             "message": f"EXACT PRESSING ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
         }
 
-    if variant_match_rec or (is_in_crate and catno_clean):
+    if variant_match_rec or match_id or (is_in_crate and catno_clean):
         matching_rec = variant_match_rec or next((r for r in crate_records if r.get("id") == match_id), None)
         rec_title = matching_rec.get("title", "") if matching_rec else title
         rec_cat = matching_rec.get("catalogNumber", "") if matching_rec else ""
@@ -595,7 +608,7 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
         return {
             "status": "DIFFERENT_PRESSING",
             "matchingRecord": matching_rec,
-            "message": f"Different release/pressing detected! You own another edition of '{rec_title}' in your Crate{details_str}."
+            "message": f"Different release/pressing detected! {reason if reason else f'You own another edition of \"{rec_title}\" in your Crate{details_str}.'}"
         }
 
 
