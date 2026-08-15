@@ -2360,6 +2360,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             artist, 
+            title,
             albumTitle: title, 
             catalogNumber: rec ? (rec.catalogNumber || rec.catno || null) : null,
             label: rec ? (rec.label || null) : null,
@@ -2659,6 +2660,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             artist: activeRec.artist,
+            title: activeRec.title,
             albumTitle: activeRec.title,
             message: displayMsg,
             images: payloadImages
@@ -3376,7 +3378,8 @@
             lastScannedMetadata = data.metadata || {};
           } else {
             lastScannedMetadata.artist = lastScannedMetadata.artist || data.metadata?.artist || '';
-            lastScannedMetadata.albumTitle = lastScannedMetadata.albumTitle || data.metadata?.albumTitle || '';
+            lastScannedMetadata.title = lastScannedMetadata.title || data.metadata?.title || data.metadata?.albumTitle || '';
+            lastScannedMetadata.albumTitle = lastScannedMetadata.title;
           }
 
           renderDuplicateResult(data.duplicateCheck, lastScannedMetadata, isDeepMetaFetching);
@@ -4069,7 +4072,7 @@
 
       // Fallback search by scanned title or catalog number if exact ID was not matched
       if (!rec && lastScannedMetadata) {
-        const targetTitle = (lastScannedMetadata.albumTitle || lastScannedMetadata.title || '').toLowerCase();
+        const targetTitle = (lastScannedMetadata.title || lastScannedMetadata.albumTitle || '').toLowerCase();
         const targetCat = (lastScannedMetadata.catalogNumber || '').toLowerCase();
 
         if (targetCat) {
@@ -4095,7 +4098,7 @@
       const metaBox = document.getElementById('scanMetadataBox');
       if (!metaBox) return;
 
-      if (!metadata || (!metadata.artist && !metadata.albumTitle && !metadata.title)) {
+      if (!metadata || (!metadata.artist && !metadata.title && !metadata.albumTitle)) {
         metaBox.innerHTML = `
           <div class="flex items-center justify-center py-6 gap-3 text-amber-400">
             <i class="fa-solid fa-compact-disc animate-spin text-2xl"></i>
@@ -4106,7 +4109,7 @@
       }
 
       const artist = metadata.artist || 'Unknown Artist';
-      const title = metadata.albumTitle || metadata.title || 'Untitled Album';
+      const title = metadata.title || metadata.albumTitle || 'Untitled Album';
       const label = metadata.label || '';
       const catNum = metadata.catalogNumber || '';
       const country = metadata.country || '';
@@ -4260,7 +4263,7 @@
       }
 
       const artist = lastScannedMetadata.artist || 'Unknown Artist';
-      const title = lastScannedMetadata.albumTitle || lastScannedMetadata.title || 'Untitled Album';
+      const title = lastScannedMetadata.title || lastScannedMetadata.albumTitle || 'Untitled Album';
       const label = lastScannedMetadata.label || 'Standard Release';
       const catalogNumber = lastScannedMetadata.catalogNumber || null;
       const country = lastScannedMetadata.country || 'Japan';

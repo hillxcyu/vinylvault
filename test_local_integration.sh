@@ -12,13 +12,13 @@ echo "  ✅ GET /api/records PASSED"
 echo "[2/6] Testing POST /api/check-duplicate..."
 curl -s -f -X POST "$BASE_URL/api/check-duplicate" \
   -H "Content-Type: application/json" \
-  -d '{"artist": "Bach", "albumTitle": "French Suites"}' > /dev/null
+  -d '{"artist": "Bach", "title": "French Suites"}' > /dev/null
 echo "  ✅ POST /api/check-duplicate PASSED"
 
 echo "[3/6] Testing POST /api/listening-guide..."
 curl -s -f -X POST "$BASE_URL/api/listening-guide" \
   -H "Content-Type: application/json" \
-  -d '{"artist": "Bach", "albumTitle": "French Suites"}' > /dev/null
+  -d '{"artist": "Bach", "title": "French Suites"}' > /dev/null
 echo "  ✅ POST /api/listening-guide PASSED"
 
 echo "[4/6] Testing POST /api/fetch-release-assets..."
@@ -30,7 +30,7 @@ echo "  ✅ POST /api/fetch-release-assets PASSED"
 echo "[5/6] Testing POST /api/chat-album..."
 curl -s -f -X POST "$BASE_URL/api/chat-album" \
   -H "Content-Type: application/json" \
-  -d '{"artist": "Bach", "albumTitle": "French Suites", "message": "Tell me about this pressing"}' > /dev/null
+  -d '{"artist": "Bach", "title": "French Suites", "message": "Tell me about this pressing"}' > /dev/null
 echo "  ✅ POST /api/chat-album PASSED"
 
 echo "[6/7] Testing POST /api/records..."

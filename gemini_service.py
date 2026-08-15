@@ -275,10 +275,10 @@ class GeminiVisionService:
             crate_context_str = "\n".join(crate_lines[:200])
             crate_context = (
                 f"\n\nCRATE COLLECTION INVENTORY:\n{crate_context_str}\n\n"
-                f"MATCHING RULES:\n"
-                f"1. Set 'isAlreadyInCrate': true ONLY if user owns the EXACT same pressing/release (matching catalog number, label, or release year).\n"
-                f"2. If user owns a DIFFERENT pressing/release of the same album or musical piece (different catalog number or release year), set 'isAlreadyInCrate': false and set 'crateMatchReason': 'Different release/pressing of album owned in collection'.\n"
-                f"3. Set 'crateMatchId' to matching record ID.\n"
+                f"DUPLICATE EVALUATION RULES:\n"
+                f"1. 'isAlreadyInCrate': boolean. Set to TRUE ONLY if user owns the EXACT same pressing/release (matching catalog number, label, or release year).\n"
+                f"2. If user owns a DIFFERENT pressing/release/edition of the same album or musical piece (different catalog number or release year), set 'isAlreadyInCrate': false, set 'crateMatchId': <matching record ID>, and set 'crateMatchReason': 'Different release/pressing of album owned in collection'.\n"
+                f"3. Set 'crateMatchId' to matching record ID for exact matches OR different pressing variants.\n"
                 f"4. Set 'crateMatchReason' to a 1-2 sentence explanation.\n"
                 f"5. If no match exists, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'."
             )
@@ -287,7 +287,7 @@ class GeminiVisionService:
             "Quickly read the album title and main artist from this vinyl cover image.\n"
             "Evaluate whether this album matches any item in the user's Crate Collection inventory below.\n"
             f"{crate_context}\n\n"
-            "Return JSON with 'artist', 'albumTitle', 'isAlreadyInCrate', 'crateMatchId', 'crateMatchReason', 'confidenceScore'."
+            "Return JSON with 'artist', 'title', 'isAlreadyInCrate', 'crateMatchId', 'crateMatchReason', 'confidenceScore'."
         )
 
         logger.info(f"🤖 [Gemini Call B] Requesting duplicate inventory check ({DEFAULT_MODEL})...")
@@ -298,9 +298,9 @@ class GeminiVisionService:
 
             class FastDuplicateCheckSchema(BaseModel):
                 artist: str = Field(default="", description="Main soloist, conductor, orchestra, or performer(s)")
-                albumTitle: str = Field(default="", description="Full album title or composer/work title")
-                isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
-                crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
+                title: str = Field(default="", description="Full album title or composer/work title")
+                isAlreadyInCrate: bool = Field(default=False, description="True if exact pressing is owned in Crate inventory")
+                crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned (exact or variant)")
                 crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
                 confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score")
 
@@ -328,15 +328,15 @@ class GeminiVisionService:
             elapsed = time.time() - start_t
             if not text:
                 logger.warning(f"Gemini Call B returned empty text in {elapsed:.2f}s")
-                return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "Empty response"}
+                return {"artist": "", "title": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": "Empty response"}
 
             parsed = json.loads(text)
-            logger.info(f"✨ [Gemini Call B] Duplicate check finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', confidenceScore={parsed.get('confidenceScore')}")
+            logger.info(f"✨ [Gemini Call B] Duplicate check finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('title')}', isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', confidenceScore={parsed.get('confidenceScore')}")
             return parsed
         except Exception as e:
             elapsed = time.time() - start_t
             logger.warning(f"Fast duplicate check warning after {elapsed:.2f}s: {e}")
-            return {"artist": "", "albumTitle": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": f"Error: {e}"}
+            return {"artist": "", "title": "", "isAlreadyInCrate": False, "crateMatchId": None, "crateMatchReason": f"Error: {e}"}
 
 
     def extract_album_metadata(self, image_bytes: bytes, filename: str = "cover.jpg") -> Dict[str, Any]:
@@ -347,10 +347,9 @@ class GeminiVisionService:
         if not self.client:
             return {}
 
-        optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=85)
-
+        optimized_image_bytes = downsample_image_bytes(image_bytes, max_dim=1024, quality=80)
         prompt = (
-            "Read artist, albumTitle, catalogNumber, label, country, releaseYear, and genre "
+            "Read artist, title, catalogNumber, label, country, releaseYear, and genre "
             "from the provided image of a vinyl album cover, box set, spine, or obi strip. "
             "Infer any missing fields if you can, else return null."
         )
@@ -363,7 +362,7 @@ class GeminiVisionService:
 
             class AlbumMetadataSchema(BaseModel):
                 artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
-                albumTitle: str = Field(description="Full album title or composer/work title")
+                title: str = Field(description="Full album title or composer/work title")
                 catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number or null")
                 label: Optional[str] = Field(default=None, description="Record label name or null")
                 country: Optional[str] = Field(default=None, description="Release country or null")
@@ -397,7 +396,9 @@ class GeminiVisionService:
                 return {}
 
             parsed = json.loads(text)
-            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}'")
+            if "title" in parsed and "albumTitle" not in parsed:
+                parsed["albumTitle"] = parsed["title"]
+            logger.info(f"✨ [Gemini Call C] Fast metadata finished in {elapsed:.2f}s: artist='{parsed.get('artist')}', title='{parsed.get('title')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}', genre='{parsed.get('genre')}'")
             return parsed
         except Exception as e:
             elapsed = time.time() - start_t
@@ -450,10 +451,11 @@ class GeminiVisionService:
                         f"Perform fuzzy semantic and musicological matching against the user's Crate Collection inventory below:\n"
                         f"{crate_context_str}\n\n"
                         f"MANDATORY MATCHING RULES:\n"
-                        f"1. You MUST set 'isAlreadyInCrate': true if the user owns ANY pressing, reissue, or release of this album. Match by album title / main composition or main performers/artists (e.g. '24 Songs and One Guitar' by Belina & Siegfried Behrend matches '24 Songs & 1 Guitar'). Do NOT require exact catalog number or label match to mark as owned.\n"
-                        f"2. Set 'crateMatchId' to the exact 'id' string of the matching record in the crate list above.\n"
-                        f"3. Set 'crateMatchReason' to a 1-2 sentence musicological summary (e.g. 'ALREADY IN YOUR CRATE! You own this album: \"[Title]\" by [Artist] (Record ID: [id])').\n"
-                        f"4. If no album with equivalent title/performers exists in the crate list, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'.\n"
+                        f"1. You MUST set 'isAlreadyInCrate': true ONLY if the user owns the EXACT same pressing/release (matching catalog number, label, or release year).\n"
+                        f"2. If user owns a DIFFERENT pressing, release, or edition of the same album/work, set 'isAlreadyInCrate': false, set 'crateMatchId': <matching record ID>, and set 'crateMatchReason': 'Different release/pressing of album owned in collection'.\n"
+                        f"3. Set 'crateMatchId' to the exact 'id' string of the matching record in the crate list above.\n"
+                        f"4. Set 'crateMatchReason' to a 1-2 sentence musicological summary.\n"
+                        f"5. If no album with equivalent title/performers exists in the crate list, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'.\n"
                     )
 
                 prompt = (
@@ -467,14 +469,14 @@ class GeminiVisionService:
                     f"{crate_context}\n\n"
                     "Extract and return ONLY a valid JSON object with the following fields:\n"
                     "1. 'artist': Main soloist, conductor, orchestra, or performer(s).\n"
-                    "2. 'albumTitle': Full album title or composer/work title.\n"
+                    "2. 'title': Full album title or composer/work title.\n"
                     "3. 'catalogNumber': Exact catalog number assigned to this specific pressing (or null if not visible/known).\n"
                     "4. 'label': Exact record label name (or null if not visible/known).\n"
                     "5. 'country': Release country or pressing origin (or null if not visible/known).\n"
                     "6. 'releaseYear': Exact 4-digit release year integer printed on jacket/obi or known from internal knowledge (or null if unknown).\n"
                     "7. 'genre': Musical genre/style (or null if unknown).\n"
                     "8. 'confidenceScore': Number between 0 and 1.\n"
-                    "9. 'isAlreadyInCrate': boolean (true if already owned in Crate inventory, false otherwise).\n"
+                    "9. 'isAlreadyInCrate': boolean (true if exact pressing owned in Crate inventory, false otherwise).\n"
                     "10. 'crateMatchId': string or null (matching record ID if owned).\n"
                     "11. 'crateMatchReason': string (1-2 sentence explanation).\n"
                     "12. 'box_2d': Array of 4 integers [ymin, xmin, ymax, xmax] normalized 0-1000.\n"
@@ -485,14 +487,14 @@ class GeminiVisionService:
 
                 class AlbumScanMetadataSchema(BaseModel):
                     artist: str = Field(description="Main soloist, conductor, orchestra, or performer(s)")
-                    albumTitle: str = Field(description="Full album title or composer/work title")
+                    title: str = Field(description="Full album title or composer/work title")
                     catalogNumber: Optional[str] = Field(default=None, description="Exact catalog number assigned to this specific pressing or null")
                     label: Optional[str] = Field(default=None, description="Exact record label name or null")
                     country: Optional[str] = Field(default=None, description="Release country or null")
                     releaseYear: Optional[int] = Field(default=None, description="Exact 4-digit release year integer or null if unknown")
                     genre: Optional[str] = Field(default=None, description="Musical genre or style or null")
                     confidenceScore: Optional[float] = Field(default=0.95, description="Confidence score between 0 and 1")
-                    isAlreadyInCrate: bool = Field(default=False, description="True if already owned in Crate inventory")
+                    isAlreadyInCrate: bool = Field(default=False, description="True if exact pressing is owned in Crate inventory")
                     crateMatchId: Optional[str] = Field(default=None, description="Matching record ID if owned")
                     crateMatchReason: Optional[str] = Field(default="", description="Explanation of match or non-match")
                     box_2d: Optional[List[int]] = Field(default=None, description="2D bounding box [ymin, xmin, ymax, xmax] normalized 0-1000")
@@ -543,7 +545,12 @@ class GeminiVisionService:
                     else:
                         raise err
 
-                logger.info(f"✨ [Gemini Vision] Album cover analysis finished: artist='{parsed.get('artist')}', albumTitle='{parsed.get('albumTitle')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}, isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', box_2d={parsed.get('box_2d')}, mask={parsed.get('mask')}")
+                if "title" in parsed and "albumTitle" not in parsed:
+                    parsed["albumTitle"] = parsed["title"]
+                elif "albumTitle" in parsed and "title" not in parsed:
+                    parsed["title"] = parsed["albumTitle"]
+
+                logger.info(f"✨ [Gemini Vision] Album cover analysis finished: artist='{parsed.get('artist')}', title='{parsed.get('title')}', catalogNumber='{parsed.get('catalogNumber')}', label='{parsed.get('label')}', country='{parsed.get('country')}', releaseYear={parsed.get('releaseYear')}, genre='{parsed.get('genre')}', confidenceScore={parsed.get('confidenceScore')}, isAlreadyInCrate={parsed.get('isAlreadyInCrate')}, crateMatchId='{parsed.get('crateMatchId')}', crateMatchReason='{parsed.get('crateMatchReason')}', box_2d={parsed.get('box_2d')}, mask={parsed.get('mask')}")
                 return parsed
             except Exception as e:
                 logger.error(f"Error in Gemini Vision API call ({DEFAULT_MODEL}): {e}")

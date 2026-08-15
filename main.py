@@ -96,8 +96,9 @@ app.mount("/static", RedirectingStaticFiles(directory=static_dir), name="static"
 
 
 class DuplicateCheckQuery(BaseModel):
-    artist: str
-    albumTitle: str
+    artist: Optional[str] = ""
+    title: Optional[str] = ""
+    albumTitle: Optional[str] = ""
     catalogNumber: Optional[str] = None
 
 class LogSpinRequest(BaseModel):
@@ -122,8 +123,9 @@ class AddRecordRequest(BaseModel):
 
 
 class ListeningGuideRequest(BaseModel):
-    artist: str
-    albumTitle: str
+    artist: Optional[str] = ""
+    title: Optional[str] = ""
+    albumTitle: Optional[str] = ""
     catalogNumber: Optional[str] = None
     label: Optional[str] = None
     country: Optional[str] = None
@@ -507,108 +509,36 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
     is_in_crate = metadata.get("isAlreadyInCrate", False)
     match_id = metadata.get("crateMatchId")
     reason = metadata.get("crateMatchReason") or ""
-    reason_lower = reason.lower()
-    
-    title = (metadata.get("albumTitle") or metadata.get("title") or "").lower().strip()
-    artist = (metadata.get("artist") or "").lower().strip()
-    catno = (metadata.get("catalogNumber") or metadata.get("catno") or "").lower().strip()
-    catno_clean = "".join(c for c in catno if c.isalnum())
-    year = str(metadata.get("releaseYear") or "").strip()
 
-    # Explicit indicators that this is a different pressing/release
-    is_explicit_different = (
-        "different" in reason_lower or 
-        "vs" in reason_lower or 
-        "variant" in reason_lower or 
-        ("pressing" in reason_lower and "different" in reason_lower) or
-        (not is_in_crate and match_id is not None)
-    )
-    
-    exact_match_rec = None
-    variant_match_rec = None
+    artist = metadata.get("artist") or ""
+    title = metadata.get("title") or metadata.get("albumTitle") or ""
 
-    def check_rec_match(r: dict):
-        if is_explicit_different:
-            return "VARIANT"
-
-        r_cat = (r.get("catalogNumber") or "").lower().strip()
-        r_cat_clean = "".join(c for c in r_cat if c.isalnum())
-        r_year = str(r.get("releaseYear") or "").strip()
-
-        all_r_cats = [r_cat_clean] + [
-            "".join(c for c in (p.get("catalogNumber") or "").lower() if c.isalnum())
-            for p in r.get("pressings", [])
-        ]
-        all_r_cats = [c for c in all_r_cats if c]
-
-        # 1. Exact catalog number match
-        if catno_clean and len(catno_clean) >= 3 and any(catno_clean == c for c in all_r_cats):
-            return "EXACT"
-
-        # 2. If catalog numbers exist on both sides and DO NOT match -> DIFFERENT_PRESSING
-        if catno_clean and all_r_cats and not any(catno_clean == c for c in all_r_cats):
-            return "VARIANT"
-
-        # 3. If release years exist on both sides and DO NOT match -> DIFFERENT_PRESSING
-        if year and r_year and year != r_year:
-            return "VARIANT"
-
-        return "EXACT" if is_in_crate else "VARIANT"
-
-    # Evaluate candidate match_id from Gemini / AI
+    matching_rec = None
     if match_id and crate_records:
-        candidate = next((r for r in crate_records if r.get("id") == match_id), None)
-        if candidate:
-            match_type = check_rec_match(candidate)
-            if match_type == "EXACT":
-                exact_match_rec = candidate
-            else:
-                variant_match_rec = candidate
+        matching_rec = next((r for r in crate_records if r.get("id") == match_id), None)
 
-    # Search crate_records if exact match not yet confirmed
-    if not exact_match_rec and crate_records:
-        for r in crate_records:
-            r_title = (r.get("title") or "").lower().strip()
-            r_artist = (r.get("artist") or "").lower().strip()
-
-            clean_title = "".join(c for c in title if c.isalnum())
-            clean_r_title = "".join(c for c in r_title if c.isalnum())
-
-            title_match = (title and r_title and (title == r_title or clean_title in clean_r_title or clean_r_title in clean_title))
-            artist_match = (artist and r_artist and (artist in r_artist or r_artist in artist))
-
-            if title_match or (artist_match and clean_title and clean_title in clean_r_title):
-                match_type = check_rec_match(r)
-                if match_type == "EXACT":
-                    exact_match_rec = r
-                    break
-                elif match_type == "VARIANT" and not variant_match_rec:
-                    variant_match_rec = r
-
-    if exact_match_rec:
-        rec_title = exact_match_rec.get("title", "")
-        rec_cat = exact_match_rec.get("catalogNumber", "")
+    # 1. Exact Pressing Match: Gemini confirmed isAlreadyInCrate == True and provided matching record
+    if is_in_crate and matching_rec:
+        rec_title = matching_rec.get("title", "")
+        rec_cat = matching_rec.get("catalogNumber", "")
         cat_info = f" (Cat #: {rec_cat})" if rec_cat else ""
         fallback_msg = f'Exact pressing match for "{rec_title}"{cat_info} in your collection.'
         return {
             "status": "EXACT_MATCH",
-            "matchingRecord": exact_match_rec,
+            "matchingRecord": matching_rec,
             "message": f"EXACT PRESSING ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
         }
 
-    if variant_match_rec or match_id or (is_in_crate and catno_clean):
-        matching_rec = variant_match_rec or next((r for r in crate_records if r.get("id") == match_id), None)
-        rec_title = matching_rec.get("title", "") if matching_rec else title
-        rec_cat = matching_rec.get("catalogNumber", "") if matching_rec else ""
-        rec_year = matching_rec.get("releaseYear", "") if matching_rec else ""
+    # 2. Different Pressing / Variant: Gemini set isAlreadyInCrate == False with a crateMatchId
+    if not is_in_crate and matching_rec:
+        rec_title = matching_rec.get("title", "")
+        rec_cat = matching_rec.get("catalogNumber", "")
+        rec_year = matching_rec.get("releaseYear", "")
         details = []
         if rec_cat: details.append(f"Cat #: {rec_cat}")
         if rec_year: details.append(f"Year: {rec_year}")
         details_str = f" ({', '.join(details)})" if details else ""
-        if reason:
-            msg_text = reason
-        else:
-            msg_text = f"You own another edition of '{rec_title}' in your Crate{details_str}."
+        msg_text = reason if reason else f"You own another edition of '{rec_title}' in your Crate{details_str}."
 
         return {
             "status": "DIFFERENT_PRESSING",
@@ -616,16 +546,17 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
             "message": f"Different release/pressing detected! {msg_text}"
         }
 
-
+    # 3. Wishlist Match
     if metadata.get("isWishlistMatch"):
         return {
             "status": "WISHLIST_MATCH",
             "message": metadata.get("wishlistMatchReason") or "This album is currently on your wishlist!"
         }
 
+    # 4. New Record
     return {
         "status": "NEW_RECORD",
-        "message": f"NEW ALBUM DISCOVERED! Clean copy verified: '{metadata.get('artist', '')} - {metadata.get('albumTitle', '')}'."
+        "message": f"NEW ALBUM DISCOVERED! Clean copy verified: '{artist} - {title}'."
     }
 
 @app.post("/api/check-duplicate")
@@ -1174,8 +1105,9 @@ def sanitize_cache_key(name: str) -> str:
 
 @app.post("/api/listening-guide")
 async def get_listening_guide(req: ListeningGuideRequest):
-    logger.info(f"Received /api/listening-guide request for '{req.artist}' - '{req.albumTitle}' (forceRefresh={req.forceRefresh}, recordId={req.recordId})")
-    guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req.albumTitle)}"
+    req_title = req.title or req.albumTitle or ""
+    logger.info(f"Received /api/listening-guide request for '{req.artist}' - '{req.title}' (forceRefresh={req.forceRefresh}, recordId={req.recordId})")
+    guide_key = f"{sanitize_cache_key(req.artist)}_{sanitize_cache_key(req_title)}"
     
     # 0. Check if target record in database already holds listeningGuide on the record object
     if not req.forceRefresh:
@@ -1187,7 +1119,7 @@ async def get_listening_guide(req: ListeningGuideRequest):
                 return {"status": "success", "guide": guide, "cached": True}
 
         all_recs = db.get_all_records()
-        norm_req_title = (req.albumTitle or "").strip().lower()
+        norm_req_title = req_title.strip().lower()
         norm_req_artist = (req.artist or "").strip().lower()
         for r in all_recs:
             r_t = (r.get("title") or "").strip().lower()
@@ -1233,10 +1165,10 @@ async def get_listening_guide(req: ListeningGuideRequest):
                 cntry = rec.get("country")
 
     # 3. Call Gemini 3.7 Flash to generate fresh guide
-    logger.info(f"Invoking Gemini 3.7 Flash + Grounding for listening guide generation: '{req.artist}' - '{req.albumTitle}' (catNo={cat_no}, label={lbl}, country={cntry})")
+    logger.info(f"Invoking Gemini 3.7 Flash + Grounding for listening guide generation: '{req.artist}' - '{req_title}' (catNo={cat_no}, label={lbl}, country={cntry})")
     guide = gemini_service.generate_listening_guide(
         artist=req.artist, 
-        album_title=req.albumTitle,
+        title=req_title,
         catalog_number=cat_no,
         label=lbl,
         country=cntry
@@ -1363,6 +1295,7 @@ def get_local_grounding_context(artist: str, title: str) -> Dict[str, Any]:
 
 class ChatAlbumRequest(BaseModel):
     artist: Optional[str] = ""
+    title: Optional[str] = ""
     albumTitle: Optional[str] = ""
     message: Optional[str] = ""
     images: Optional[List[str]] = []
@@ -1370,11 +1303,12 @@ class ChatAlbumRequest(BaseModel):
 
 @app.post("/api/chat-album")
 async def chat_album_endpoint(req: ChatAlbumRequest):
-    grounding_ctx = get_local_grounding_context(req.artist or "", req.albumTitle or "")
+    req_title = req.title or req.albumTitle or ""
+    grounding_ctx = get_local_grounding_context(req.artist or "", req_title)
     msg = req.message or "Analyze the attached image(s) for this vinyl album."
     reply = gemini_service.chat_about_album(
         req.artist or "",
-        req.albumTitle or "",
+        req_title,
         msg,
         req.history,
         grounding_context=grounding_ctx,
@@ -1384,7 +1318,8 @@ async def chat_album_endpoint(req: ChatAlbumRequest):
 
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatAlbumRequest):
-    grounding_ctx = get_local_grounding_context(req.artist or "", req.albumTitle or "")
+    req_title = req.title or req.albumTitle or ""
+    grounding_ctx = get_local_grounding_context(req.artist or "", req_title)
     record_ctx = grounding_ctx.get("recordDetails") if isinstance(grounding_ctx, dict) else None
     crate_cat = grounding_ctx.get("crateCatalog") if isinstance(grounding_ctx, dict) else None
     msg = req.message or "Analyze the attached image(s) for this vinyl album."
