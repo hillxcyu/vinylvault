@@ -438,10 +438,10 @@
             <i class="fa-solid fa-headphones"></i> Guide
           </h3>
           <div class="flex items-center gap-2">
-            <button onclick="refreshCurrentGuide()" class="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-md border border-amber-500/20 transition-all flex items-center gap-1.5" title="Force Gemini 3.6 Flash to generate a fresh listening guide">
+            <button onclick="refreshCurrentGuide()" class="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-md border border-amber-500/20 transition-all flex items-center gap-1.5" title="Force Gemini 3.7 Flash to generate a fresh listening guide">
               <i class="fa-solid fa-rotate-right text-xs"></i> Refresh Guide
             </button>
-            <span class="text-xs text-stone-400 font-medium hidden sm:inline">Gemini 3.6 Flash + Grounding</span>
+            <span class="text-xs text-stone-400 font-medium hidden sm:inline">Gemini 3.7 Flash + Grounding</span>
           </div>
         </div>
 
@@ -620,7 +620,7 @@
         <span>•</span>
         <span class="text-indigo-400"><i class="fa-solid fa-shield-halved mr-1"></i> Duplicate Shield Active</span>
       </div>
-      <div class="text-stone-500">Vinyl Vault &copy; 2026 • Powered by Gemini 3.6 Flash</div>
+      <div class="text-stone-500">Vinyl Vault &copy; 2026 • Powered by Gemini 3.7 Flash</div>
     </div>
   </footer>
 
@@ -657,7 +657,7 @@
             </div>
 
             <div class="mt-3 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400">
-              <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
+              <span class="text-[11px] text-stone-500 font-medium">Gemini 3.7 Flash</span>
               <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak message via Gemini 3.1 Flash TTS">
                 <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
                 <span>Speak</span>
@@ -977,6 +977,23 @@
     let lastScannedMetadata = null;
     let activeTab = 'landing';
     const releaseAssetsCache = {};
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatEraDisplay(eraVal) {
+      if (!eraVal || eraVal === 'undefined' || eraVal === 'null') return 'Classical Era';
+      let str = String(eraVal).trim();
+      if (str.toLowerCase().endsWith('era')) return str;
+      return `${str} Era`;
+    }
 
     function showToast(message, icon = 'fa-sparkles') {
       const toast = document.getElementById('toastNotification');
@@ -1348,7 +1365,7 @@
               </div>
               <p class="text-sm text-stone-300 line-clamp-2 leading-relaxed font-normal">${comp.highlights || ''}</p>
               <div class="text-xs font-bold text-stone-400 border-t border-stone-800/80 pt-2 flex items-center justify-between">
-                <span class="text-amber-500/90">${comp.era || 'Classical'} Era</span>
+                <span class="text-amber-500/90">${formatEraDisplay(comp.era)}</span>
                 <span class="text-stone-300 group-hover:translate-x-1 transition-transform flex items-center gap-1 font-semibold">Explore Deep-Dive <i class="fa-solid fa-arrow-right text-xs"></i></span>
               </div>
             `;
@@ -1373,7 +1390,9 @@
       chronicleData.eras.forEach(era => {
         const btn = document.createElement('button');
         btn.className = `px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors whitespace-nowrap flex-shrink-0 ${selectedEraFilter === era.id ? 'bg-amber-500 text-black' : 'bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700/60'}`;
-        btn.innerHTML = `${era.icon} ${era.name} (${era.count})`;
+        const eraIcon = (era.icon && era.icon !== 'undefined') ? era.icon : '🎼';
+        const eraName = (era.name && era.name !== 'undefined') ? era.name : 'Classical Era';
+        btn.innerHTML = `${eraIcon} ${eraName} (${era.count || 0})`;
         btn.onclick = () => { selectedEraFilter = era.id; renderChronicle(); };
         rail.appendChild(btn);
       });
@@ -1417,16 +1436,21 @@
           recordsHtml = `<div class="col-span-full py-4 text-center text-sm text-stone-400 italic">No classical records in your crate for this era yet.</div>`;
         }
 
+        const eraIcon = (era.icon && era.icon !== 'undefined') ? era.icon : '🎼';
+        const eraName = (era.name && era.name !== 'undefined') ? era.name : 'Classical Era';
+        const eraYears = (era.years && era.years !== 'undefined') ? era.years : '1600 – Present';
+        const eraDesc = (era.description && era.description !== 'undefined') ? era.description : '';
+
         section.innerHTML = `
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-800/60 pb-3">
             <div>
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                <span>${era.icon}</span> ${era.name} <span class="text-xs font-normal text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">${era.years}</span>
+                <span>${eraIcon}</span> ${eraName} <span class="text-xs font-normal text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">${eraYears}</span>
               </h3>
-              <p class="text-xs text-stone-400 mt-1">${era.description}</p>
+              ${eraDesc ? `<p class="text-xs text-stone-400 mt-1">${eraDesc}</p>` : ''}
             </div>
             <div class="text-xs font-bold text-stone-300 bg-stone-900 px-3 py-1 rounded-lg border border-stone-800 flex-shrink-0">
-              ${era.count} Record${era.count === 1 ? '' : 's'}
+              ${era.count || 0} Record${era.count === 1 ? '' : 's'}
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
@@ -1439,7 +1463,7 @@
 
     function openComposerModal(comp) {
       document.getElementById('composerModalFlag').innerText = comp.flag || '🎼';
-      document.getElementById('composerModalEra').innerText = `${comp.era || 'Classical'} Era`;
+      document.getElementById('composerModalEra').innerText = formatEraDisplay(comp.era);
       document.getElementById('composerModalName').innerText = comp.name;
       document.getElementById('composerModalLifespan').innerText = `${comp.lifespan || ''} • ${comp.country || ''}`;
       document.getElementById('composerModalBio').innerText = comp.bio || comp.highlights || 'Master composer of classical music history.';
@@ -2681,7 +2705,7 @@
           const speakerBar = document.createElement('div');
           speakerBar.className = 'mt-3 pt-2.5 border-t border-stone-800/60 flex items-center justify-between text-xs text-stone-400 w-full';
           speakerBar.innerHTML = `
-            <span class="text-[11px] text-stone-500 font-medium">Gemini 3.6 Flash</span>
+            <span class="text-[11px] text-stone-500 font-medium">Gemini 3.7 Flash</span>
             <button onclick="speakChatResponse(this)" class="px-2.5 py-1 bg-stone-800/80 hover:bg-stone-700/80 text-stone-300 hover:text-amber-400 border border-stone-700/50 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" title="Speak full AI response via Gemini 3.1 Flash TTS">
               <i class="fa-solid fa-volume-high text-amber-400 text-xs"></i>
               <span>Speak Full Response</span>
@@ -3191,9 +3215,15 @@
       reader.readAsDataURL(file);
     }
 
+    let activeRawObjectUrl = null;
+
     function closeScannerModal() {
       if (!isDeskewApplied && rescanTargetRecordForDeskew) {
         ensureDeskewApplied();
+      }
+      if (activeRawObjectUrl) {
+        URL.revokeObjectURL(activeRawObjectUrl);
+        activeRawObjectUrl = null;
       }
       resetScannerPlaceholder();
       document.getElementById('scannerModal').classList.add('hidden');
@@ -3227,7 +3257,12 @@
       currentRawFile = await compressScanImageFile(file, 1800, 0.92);
 
       // Render uploaded photo preview so user can adjust 4 corner handles
-      const rawUrl = URL.createObjectURL(currentRawFile);
+      if (activeRawObjectUrl) {
+        URL.revokeObjectURL(activeRawObjectUrl);
+        activeRawObjectUrl = null;
+      }
+      activeRawObjectUrl = URL.createObjectURL(currentRawFile);
+      const rawUrl = activeRawObjectUrl;
       const placeholder = document.getElementById('scannerPlaceholderContent');
       const previewContainer = document.getElementById('scannerPreviewContainer');
       const actionsBar = document.getElementById('scannerActionsBar');
@@ -4139,9 +4174,9 @@
 
       renderScanMetadataBox(metadata, isDeepMetaLoading);
 
-      if (result.status === 'EXACT_MATCH' || result.status === 'VARIANT_MATCH') {
+      if (result.status === 'EXACT_MATCH') {
         badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ALREADY IN YOUR COLLECTION`;
+        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> EXACT PRESSING IN YOUR COLLECTION`;
 
         // Auto-update missing cover art in local state
         const matchRec = result.matchingRecord;
@@ -4161,8 +4196,24 @@
 
         const matchRecId = matchRec ? matchRec.id : '';
         actionBox.innerHTML = `
-          <button onclick="viewMatchingRecordSpinning('${matchRecId}')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-4 sm:mb-2">
+          <button onclick="viewMatchingRecordSpinning('${matchRecId}')" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-2">
             <i class="fa-solid fa-circle-play text-base"></i> Spin This Album
+          </button>
+        `;
+      } else if (result.status === 'DIFFERENT_PRESSING' || result.status === 'VARIANT_MATCH') {
+        badge.className = 'px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        badge.innerHTML = `<i class="fa-solid fa-layer-group"></i> DIFFERENT PRESSING / EDITION DETECTED`;
+
+        const matchRec = result.matchingRecord;
+        const matchRecId = matchRec ? matchRec.id : '';
+        const matchCat = matchRec ? (matchRec.catalogNumber || 'Owned Edition') : 'Owned Edition';
+
+        actionBox.innerHTML = `
+          <button id="addRecordModalBtn" onclick="addLastScannedRecord(this)" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black text-sm font-extrabold rounded-xl shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 mb-2">
+            <i class="fa-solid fa-plus text-base"></i> Add as New Pressing/Edition to Crate
+          </button>
+          <button onclick="viewMatchingRecordSpinning('${matchRecId}')" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold rounded-xl border border-stone-700 flex items-center justify-center gap-2 transition-all active:scale-95 mb-2">
+            <i class="fa-solid fa-circle-play text-xs"></i> Or Spin Existing Copy (${matchCat})
           </button>
         `;
       }
@@ -4521,23 +4572,27 @@
         }
 
         group.items.forEach(spin => {
+          const isDeleted = spin.isDeleted || spin.title === 'Deleted Record';
           const title = spin.title || 'Unknown Title';
           const artist = spin.artist || 'Unknown Artist';
-          const coverUrl = spin.coverUrl || SVG_PLACEHOLDER;
+          const coverUrl = isDeleted ? SVG_PLACEHOLDER : (spin.coverUrl || SVG_PLACEHOLDER);
           const catNo = spin.catalogNumber || '';
 
           const card = document.createElement('div');
-          card.className = 'apple-card p-3.5 sm:p-4 rounded-2xl border border-stone-800/80 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group shadow-md min-w-0 max-w-full';
+          card.className = `apple-card p-3.5 sm:p-4 rounded-2xl border ${isDeleted ? 'border-red-900/30 bg-red-950/5 opacity-80' : 'border-stone-800/80 hover:border-amber-500/40'} transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group shadow-md min-w-0 max-w-full`;
           
           card.innerHTML = `
             <div class="flex items-center gap-3 min-w-0 max-w-full flex-1">
-              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-stone-900 border border-stone-700/60 flex-shrink-0 relative group-hover:scale-105 transition-transform">
-                <img src="${coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover" />
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-stone-900 border border-stone-700/60 flex-shrink-0 relative group-hover:scale-105 transition-transform flex items-center justify-center">
+                ${isDeleted ? `<i class="fa-solid fa-record-vinyl text-2xl text-stone-600"></i>` : `<img src="${coverUrl}" onerror="handleImageError(this)" class="w-full h-full object-cover" />`}
               </div>
               <div class="min-w-0 max-w-full flex-1 space-y-0.5">
-                <h5 class="text-sm sm:text-base font-extrabold text-white break-words group-hover:text-amber-400 transition-colors leading-snug">${title}</h5>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h5 class="text-sm sm:text-base font-extrabold ${isDeleted ? 'text-stone-400 italic' : 'text-white group-hover:text-amber-400'} break-words transition-colors leading-snug">${title}</h5>
+                  ${isDeleted ? `<span class="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-[10px] text-red-400 font-bold tracking-wider uppercase flex items-center gap-1"><i class="fa-solid fa-trash-can text-[9px]"></i> Deleted from Crate</span>` : ''}
+                </div>
                 <div class="flex flex-wrap items-center gap-1.5 text-xs text-stone-300 font-semibold break-words">
-                  <span>${artist}</span>
+                  <span class="${isDeleted ? 'text-stone-500 font-normal' : ''}">${artist}</span>
                   ${catNo ? `<span class="px-1.5 py-0.5 rounded bg-stone-900/90 border border-stone-800 text-[10px] font-mono font-bold text-amber-400 break-all">${catNo}</span>` : ''}
                 </div>
                 ${spin.timeStr ? `<p class="text-[10px] text-stone-400 font-mono flex items-center gap-1 pt-0.5"><i class="fa-solid fa-clock text-amber-500/80 text-[9px]"></i> ${spin.timeStr}</p>` : ''}
@@ -4545,7 +4600,7 @@
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 border-stone-800/50 pt-2 sm:pt-0 flex-shrink-0">
-              ${spin.recordId ? `
+              ${(!isDeleted && spin.recordId) ? `
                 <button onclick="spinRecord('${spin.recordId}'); switchTab('nowSpinning');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-xs rounded-full shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer flex-shrink-0">
                   <i class="fa-solid fa-circle-play text-xs"></i>
                   <span>Spin Again</span>

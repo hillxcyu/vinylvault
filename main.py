@@ -6,10 +6,13 @@ os.environ["GCS_BUCKET_NAME"] = "universal-trail-492014-n5-vinyl-vault-hk-data"
 
 
 container_adc = "/root/.config/gcloud/application_default_credentials.json"
+project_adc = os.path.join(os.path.dirname(os.path.abspath(__file__)), "adc.json")
 host_adc = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
 
 if os.path.exists(container_adc):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = container_adc
+elif os.path.exists(project_adc) and os.path.getsize(project_adc) > 10:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = project_adc
 elif os.path.exists(host_adc):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = host_adc
 
@@ -437,12 +440,35 @@ async def get_stats():
 @app.get("/api/spins")
 async def get_spins_endpoint(limit: int = 10, offset: int = 0):
     spins = db.get_spins_log() or []
+    records_by_id = {r.get("id"): r for r in db.get_all_records() if isinstance(r, dict) and r.get("id")}
     
     def parse_time(s):
         ts = s.get("timestamp") or s.get("spunAt") or s.get("time") or ""
         return str(ts)
 
-    sorted_spins = sorted(spins, key=parse_time, reverse=True)
+    enriched_spins = []
+    for s in spins:
+        spin_copy = dict(s) if isinstance(s, dict) else {}
+        rec_id = spin_copy.get("recordId")
+        rec = records_by_id.get(rec_id) if rec_id else None
+        
+        if rec:
+            spin_copy["title"] = rec.get("title") or "Unknown Title"
+            spin_copy["artist"] = rec.get("artist") or "Unknown Artist"
+            spin_copy["coverUrl"] = rec.get("coverUrl") or ""
+            spin_copy["catalogNumber"] = rec.get("catalogNumber") or ""
+            spin_copy["isDeleted"] = False
+        else:
+            spin_copy["title"] = "Deleted Record"
+            spin_copy["artist"] = "This record has been removed from crate"
+            spin_copy["coverUrl"] = ""
+            spin_copy["catalogNumber"] = ""
+            spin_copy["isDeleted"] = True
+        
+        spin_copy["timestamp"] = spin_copy.get("timestamp") or spin_copy.get("spunAt") or "2026-08-01T12:00:00Z"
+        enriched_spins.append(spin_copy)
+
+    sorted_spins = sorted(enriched_spins, key=parse_time, reverse=True)
     
     if not sorted_spins:
         records = db.get_all_records()
@@ -482,46 +508,74 @@ def build_duplicate_result(metadata: dict, crate_records: list = None) -> dict:
     match_id = metadata.get("crateMatchId")
     reason = metadata.get("crateMatchReason") or ""
     
-    matching_rec = None
+    title = (metadata.get("albumTitle") or metadata.get("title") or "").lower().strip()
+    artist = (metadata.get("artist") or "").lower().strip()
+    catno = (metadata.get("catalogNumber") or metadata.get("catno") or "").lower().strip()
+    catno_clean = "".join(c for c in catno if c.isalnum())
+    year = str(metadata.get("releaseYear") or "").strip()
+    
+    exact_match_rec = None
+    variant_match_rec = None
+
     if match_id and crate_records:
-        matching_rec = next((r for r in crate_records if r.get("id") == match_id), None)
+        exact_match_rec = next((r for r in crate_records if r.get("id") == match_id), None)
         
-    if not matching_rec and crate_records:
-        title = (metadata.get("albumTitle") or metadata.get("title") or "").lower().strip()
-        artist = (metadata.get("artist") or "").lower().strip()
-        catno = (metadata.get("catalogNumber") or "").lower().strip()
-        catno_clean = "".join(c for c in catno if c.isalnum())
-        
+    if crate_records:
         for r in crate_records:
+            r_title = (r.get("title") or "").lower().strip()
+            r_artist = (r.get("artist") or "").lower().strip()
             r_cat = (r.get("catalogNumber") or "").lower().strip()
             r_cat_clean = "".join(c for c in r_cat if c.isalnum())
+            r_year = str(r.get("releaseYear") or "").strip()
+
+            # 1. Exact catalog number match
             if catno_clean and len(catno_clean) >= 3 and catno_clean == r_cat_clean:
-                matching_rec = r
+                exact_match_rec = r
                 break
 
             for p in r.get("pressings", []):
                 p_cat = (p.get("catalogNumber") or "").lower().strip()
                 p_cat_clean = "".join(c for c in p_cat if c.isalnum())
                 if catno_clean and len(catno_clean) >= 3 and catno_clean == p_cat_clean:
-                    matching_rec = r
+                    exact_match_rec = r
                     break
-            if matching_rec:
+            if exact_match_rec:
                 break
 
-            r_title = (r.get("title") or "").lower().strip()
-            r_artist = (r.get("artist") or "").lower().strip()
+            # 2. Title and artist match
             if title and artist and title == r_title and artist == r_artist:
-                matching_rec = r
-                break
+                if catno_clean and r_cat_clean and catno_clean != r_cat_clean:
+                    variant_match_rec = r
+                elif year and r_year and year != r_year:
+                    variant_match_rec = r
+                else:
+                    exact_match_rec = r
+                    break
 
-
-    if is_in_crate or matching_rec:
-        rec_title = matching_rec.get("title", "") if matching_rec else metadata.get("albumTitle", "")
-        fallback_msg = f'Matches record "{rec_title}".' if rec_title else 'Matches existing album in collection.'
+    if exact_match_rec:
+        rec_title = exact_match_rec.get("title", "")
+        rec_cat = exact_match_rec.get("catalogNumber", "")
+        cat_info = f" (Cat #: {rec_cat})" if rec_cat else ""
+        fallback_msg = f'Exact pressing match for "{rec_title}"{cat_info} in your collection.'
         return {
             "status": "EXACT_MATCH",
+            "matchingRecord": exact_match_rec,
+            "message": f"EXACT PRESSING ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
+        }
+
+    if variant_match_rec or (is_in_crate and "different" in reason.lower()):
+        matching_rec = variant_match_rec or next((r for r in crate_records if (r.get("title") or "").lower().strip() == title), None)
+        rec_title = matching_rec.get("title", "") if matching_rec else title
+        rec_cat = matching_rec.get("catalogNumber", "") if matching_rec else ""
+        rec_year = matching_rec.get("releaseYear", "") if matching_rec else ""
+        details = []
+        if rec_cat: details.append(f"Cat #: {rec_cat}")
+        if rec_year: details.append(f"Year: {rec_year}")
+        details_str = f" ({', '.join(details)})" if details else ""
+        return {
+            "status": "DIFFERENT_PRESSING",
             "matchingRecord": matching_rec,
-            "message": f"ALREADY IN YOUR COLLECTION! {reason if reason else fallback_msg}"
+            "message": f"Different release/pressing detected! You own another edition of '{rec_title}' in your Crate{details_str}."
         }
 
 
@@ -870,22 +924,32 @@ async def add_record(req: AddRecordRequest, background_tasks: BackgroundTasks):
     # Idempotency check: prevent duplicate insertions if user clicked 'Add' multiple times
     norm_art = (req.artist or "").strip().lower()
     norm_title = (req.title or "").strip().lower()
-    norm_cat = (req.catalogNumber or "").strip().lower()
+    norm_cat = "".join(c for c in (req.catalogNumber or "").lower() if c.isalnum())
+    norm_year = str(req.releaseYear or "").strip()
 
     if norm_art and norm_title:
         for existing in db.get_all_records():
             ex_art = (existing.get("artist") or "").strip().lower()
             ex_title = (existing.get("title") or "").strip().lower()
-            ex_cat = (existing.get("catalogNumber") or "").strip().lower()
+            ex_cat = "".join(c for c in (existing.get("catalogNumber") or "").lower() if c.isalnum())
+            ex_year = str(existing.get("releaseYear") or "").strip()
 
             if norm_art == ex_art and norm_title == ex_title:
-                if not norm_cat or not ex_cat or norm_cat == ex_cat:
+                if norm_cat and ex_cat and norm_cat == ex_cat:
                     if req.coverUrl and "shopping_cover_2.jpg" not in req.coverUrl:
                         existing["coverUrl"] = req.coverUrl
                         existing["originalScannedCoverUrl"] = req.coverUrl
                         db.update_record(existing)
 
-                    logger.info(f"Idempotency catch: Record '{req.title}' by {req.artist} updated with scanned coverUrl.")
+                    logger.info(f"Idempotency catch: Exact pressing '{req.title}' (Cat #{req.catalogNumber}) updated.")
+                    return {"status": "success", "record": existing, "message": "Exact pressing updated in collection"}
+                elif not norm_cat and not ex_cat and (not norm_year or not ex_year or norm_year == ex_year):
+                    if req.coverUrl and "shopping_cover_2.jpg" not in req.coverUrl:
+                        existing["coverUrl"] = req.coverUrl
+                        existing["originalScannedCoverUrl"] = req.coverUrl
+                        db.update_record(existing)
+
+                    logger.info(f"Idempotency catch: Record '{req.title}' updated with scanned coverUrl.")
                     return {"status": "success", "record": existing, "message": "Record updated in collection"}
 
 
@@ -1130,8 +1194,8 @@ async def get_listening_guide(req: ListeningGuideRequest):
             if not cntry:
                 cntry = rec.get("country")
 
-    # 3. Call Gemini 3.6 Flash to generate fresh guide
-    logger.info(f"Invoking Gemini 3.6 Flash + Grounding for listening guide generation: '{req.artist}' - '{req.albumTitle}' (catNo={cat_no}, label={lbl}, country={cntry})")
+    # 3. Call Gemini 3.7 Flash to generate fresh guide
+    logger.info(f"Invoking Gemini 3.7 Flash + Grounding for listening guide generation: '{req.artist}' - '{req.albumTitle}' (catNo={cat_no}, label={lbl}, country={cntry})")
     guide = gemini_service.generate_listening_guide(
         artist=req.artist, 
         title=req.albumTitle,

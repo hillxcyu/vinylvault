@@ -174,7 +174,7 @@ class GeminiVisionService:
 
     def get_album_segmentation_corners(self, image_bytes: bytes) -> Optional[List[List[int]]]:
         """
-        Extract 4-point polygon segmentation corners of the album cover via Gemini 3.6 Flash.
+        Extract 4-point polygon segmentation corners of the album cover via Gemini 3.7 Flash.
         Returns a list of 4 [x, y] coordinates normalized to 0-1000 scale, or None if unavailable.
         """
         if not self.client:
@@ -276,10 +276,11 @@ class GeminiVisionService:
             crate_context = (
                 f"\n\nCRATE COLLECTION INVENTORY:\n{crate_context_str}\n\n"
                 f"MATCHING RULES:\n"
-                f"1. Set 'isAlreadyInCrate': true if user owns ANY release/pressing of this album title or main performers.\n"
-                f"2. Set 'crateMatchId' to matching record ID.\n"
-                f"3. Set 'crateMatchReason' to a 1-2 sentence explanation.\n"
-                f"4. If no match exists, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'."
+                f"1. Set 'isAlreadyInCrate': true ONLY if user owns the EXACT same pressing/release (matching catalog number, label, or release year).\n"
+                f"2. If user owns a DIFFERENT pressing/release of the same album or musical piece (different catalog number or release year), set 'isAlreadyInCrate': false and set 'crateMatchReason': 'Different release/pressing of album owned in collection'.\n"
+                f"3. Set 'crateMatchId' to matching record ID.\n"
+                f"4. Set 'crateMatchReason' to a 1-2 sentence explanation.\n"
+                f"5. If no match exists, set 'isAlreadyInCrate': false, 'crateMatchId': null, and 'crateMatchReason': 'NOT IN COLLECTION. Safe to add!'."
             )
 
         prompt = (
@@ -410,7 +411,7 @@ class GeminiVisionService:
 
     def analyze_album_cover(self, image_bytes: bytes, filename: str = "cover.jpg", crate_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
-        Analyze album cover photo using Gemini 3.6 Flash Vision model with minimal thinking level for fast metadata and duplicate checking.
+        Analyze album cover photo using Gemini 3.7 Flash Vision model with minimal thinking level for fast metadata and duplicate checking.
         """
 
         if self.client:
@@ -554,14 +555,14 @@ class GeminiVisionService:
 
     def generate_listening_guide(
         self, 
+        album_title: str, 
         artist: str, 
-        title: str, 
         catalog_number: Optional[str] = None, 
         label: Optional[str] = None, 
         country: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Generate a rich audiophile listening guide using Gemini 3.6 Flash with Search Grounding.
+        Generate a rich audiophile listening guide using Gemini 3.7 Flash with Search Grounding.
         Returns detailed backstory/pressing notes, full tracklist with Side A/B positions, and foldable highlights.
         """
         if self.client:
@@ -738,7 +739,7 @@ class GeminiVisionService:
     ) -> str:
 
         """
-        Interactive chat about the currently spinning album using Gemini 3.6 Flash grounded with local database facts and Google Search grounding.
+        Interactive chat about the currently spinning album using Gemini 3.7 Flash grounded with local database facts and Google Search grounding.
         """
         context_str = ""
         if grounding_context:
@@ -922,7 +923,7 @@ class GeminiVisionService:
 
     def generate_chronicle_ai(self, records: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """
-        Calls Gemini 3.6 Flash to analyze collection records and generate a structured JSON 
+        Calls Gemini 3.7 Flash to analyze collection records and generate a structured JSON 
         Classical Music Chronicle categorized by composer era with musicological insights.
         """
         if not self.client:

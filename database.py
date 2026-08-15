@@ -63,12 +63,16 @@ class FirestoreManager:
         if not self.db:
             return False, "Firestore client is not initialized (self.db is None)"
         try:
-            batch = self.db.batch()
-            for r in records:
-                ref = self.db.collection("records").document(r["id"])
-                batch.set(ref, r)
-            batch.commit()
-            print(f"Batch saved {len(records)} records to Firestore.")
+            CHUNK_SIZE = 400
+            valid_records = [r for r in records if isinstance(r, dict) and r.get("id")]
+            for i in range(0, len(valid_records), CHUNK_SIZE):
+                chunk = valid_records[i:i + CHUNK_SIZE]
+                batch = self.db.batch()
+                for r in chunk:
+                    ref = self.db.collection("records").document(r["id"])
+                    batch.set(ref, r)
+                batch.commit()
+            print(f"Batch saved {len(valid_records)} records to Firestore across chunks.")
             return True, "OK"
         except Exception as e:
             err_str = str(e)
@@ -195,57 +199,29 @@ class FirestoreManager:
 
 class VinylDatabase:
     def __init__(self):
+        import threading
+        self._lock = threading.RLock()
         os.makedirs(DATA_DIR, exist_ok=True)
         self.firestore = FirestoreManager()
-        self._has_synced_firestore = False
 
         self.wishlist = list(INITIAL_WISHLIST)
-        
-        # Load local storage first for instant server startup (< 0.1s)
-        self.records = self._load_records()
         self.spins_log = self._load_spins()
         self.chronicle = self._load_chronicle()
         self.now_spinning = None  # In-memory only state (resets to Standby on cold boot)
 
-        # Non-blocking background Firestore sync
+        # Directly load active records from Firestore (single source of truth)
+        self.records = []
         if self.firestore.db:
-            import threading
-            threading.Thread(target=self.sync_firestore_on_startup, daemon=True).start()
-
-    def ensure_firestore_synced(self):
-        """Lazy-syncs Firestore in a non-blocking background thread when /api/records is called."""
-        if self._has_synced_firestore:
-            return
-        self._has_synced_firestore = True
-        import threading
-        threading.Thread(target=self.sync_firestore_on_startup, daemon=True).start()
-
-    def sync_firestore_on_startup(self):
-        """Non-blocking background sync called after web server binds to PORT."""
-        if not self.firestore.db:
-            print("Firestore client unavailable; skipping startup sync.")
-            return
-
-        try:
             fs_recs, err = self.firestore.get_records()
-            if fs_recs is None:
-                print(f"Firestore get_records returned None ({err}); preserving existing records.")
-                return
-
-            if len(fs_recs) > 0:
-                print(f"Firestore active with {len(fs_recs)} records.")
+            if fs_recs is not None:
                 self.records = fs_recs
-                self._save_json(RECORDS_FILE, fs_recs)
                 self._rebuild_record_map()
-                print(f"Startup sync complete: {len(self.records)} records active from Firestore.")
+                print(f"VinylDatabase initialized with {len(self.records)} records directly from Firestore.")
             else:
-                print("Firestore collection returned 0 records. Preserving local disk records.")
-                if not self.records:
-                    self.records = []
-                    self.save_records()
-
-        except Exception as e:
-            print(f"Background Firestore sync warning: {e}")
+                print(f"Firestore get_records returned None ({err}); initializing empty collection.")
+        else:
+            self.records = self._load_records()
+            self._rebuild_record_map()
 
 
 
@@ -263,12 +239,17 @@ class VinylDatabase:
         # No automatic reseeding from INITIAL_RECORDS
         filtered = [r for r in loaded if r.get("id") != "rec-001" and r.get("title") != "In Rainbows"]
         
-        # Deduplicate records by normalized (title, artist)
+        # Deduplicate exact identical records by (title, artist, catalogNumber, releaseYear)
         seen_keys = set()
         deduped = []
         for r in filtered:
-            key = ((r.get("title") or "").strip().lower(), (r.get("artist") or "").strip().lower())
-            if key not in seen_keys:
+            key = (
+                (r.get("title") or "").strip().lower(),
+                (r.get("artist") or "").strip().lower(),
+                "".join(c for c in (r.get("catalogNumber") or "").lower() if c.isalnum()),
+                str(r.get("releaseYear") or "")
+            )
+            if key not in seen_keys or not any(key[:3]):
                 seen_keys.add(key)
                 deduped.append(r)
 
@@ -407,12 +388,14 @@ class VinylDatabase:
                 try:
                     fs_recs, err = self.firestore.get_records()
                     if fs_recs is not None and len(fs_recs) > 0:
-                        self.records = fs_recs
-                        self._save_json(RECORDS_FILE, fs_recs)
-                        self._rebuild_record_map()
+                        with self._lock:
+                            self.records = fs_recs
+                            self._save_json(RECORDS_FILE, fs_recs)
+                            self._rebuild_record_map()
                 except Exception as e:
                     print(f"Error fetching direct records from Firestore: {e}")
-        return self.records
+        with self._lock:
+            return list(self.records)
 
     def get_all_records_with_status(self, sync_if_needed: bool = True) -> Tuple[List[Dict[str, Any]], bool, Optional[str]]:
         fs_connected = True
@@ -427,9 +410,10 @@ class VinylDatabase:
                 try:
                     fs_recs, err = self.firestore.get_records()
                     if fs_recs is not None:
-                        self.records = fs_recs
-                        self._save_json(RECORDS_FILE, fs_recs)
-                        self._rebuild_record_map()
+                        with self._lock:
+                            self.records = fs_recs
+                            self._save_json(RECORDS_FILE, fs_recs)
+                            self._rebuild_record_map()
                     else:
                         fs_connected = False
                         fs_error = err or (self.firestore.last_error if self.firestore else "Firestore query returned None")
@@ -440,61 +424,73 @@ class VinylDatabase:
                 fs_connected = False
                 fs_error = self.firestore.last_error if self.firestore else "Firestore client not initialized"
 
-        return self.records, fs_connected, fs_error
-
-
+        with self._lock:
+            return list(self.records), fs_connected, fs_error
 
     def _rebuild_record_map(self):
         self._record_map = {r["id"]: r for r in self.records if r and isinstance(r, dict) and r.get("id")}
 
     def get_record_by_id(self, record_id: str) -> Optional[Dict[str, Any]]:
-        if hasattr(self, "_record_map") and self._record_map:
-            return self._record_map.get(record_id)
-        for r in self.records:
-            if r.get("id") == record_id:
-                return r
-        return None
-
+        with self._lock:
+            if hasattr(self, "_record_map") and self._record_map:
+                return self._record_map.get(record_id)
+            for r in self.records:
+                if isinstance(r, dict) and r.get("id") == record_id:
+                    return r
+            return None
 
     def add_record(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Check for existing duplicate record by normalized title and artist
-        norm_title = (record_data.get("title") or "").strip().lower()
-        norm_artist = (record_data.get("artist") or "").strip().lower()
+        with self._lock:
+            # Check for existing duplicate record by normalized title, artist, catalog number, and release year
+            norm_title = (record_data.get("title") or "").strip().lower()
+            norm_artist = (record_data.get("artist") or "").strip().lower()
+            norm_cat = "".join(c for c in (record_data.get("catalogNumber") or "").lower() if c.isalnum())
+            norm_year = str(record_data.get("releaseYear") or "").strip()
 
-        for existing in self.records:
-            e_title = (existing.get("title") or "").strip().lower()
-            e_artist = (existing.get("artist") or "").strip().lower()
-            if norm_title == e_title and norm_artist == e_artist:
-                print(f"Prevented adding duplicate record for '{record_data.get('title')}'")
-                return existing
+            for existing in self.records:
+                if not isinstance(existing, dict):
+                    continue
+                e_title = (existing.get("title") or "").strip().lower()
+                e_artist = (existing.get("artist") or "").strip().lower()
+                e_cat = "".join(c for c in (existing.get("catalogNumber") or "").lower() if c.isalnum())
+                e_year = str(existing.get("releaseYear") or "").strip()
 
-        new_id = f"rec-user-{uuid.uuid4().hex[:8]}"
+                if norm_title == e_title and norm_artist == e_artist:
+                    # Prevent duplicate insertion only if catalog numbers match, or neither has catalog number and release years match/unspecified
+                    if norm_cat and e_cat and norm_cat == e_cat:
+                        print(f"Prevented adding exact duplicate record (Cat #{norm_cat}) for '{record_data.get('title')}'")
+                        return existing
+                    elif not norm_cat and not e_cat:
+                        if not norm_year or not e_year or norm_year == e_year:
+                            print(f"Prevented adding exact duplicate record for '{record_data.get('title')}'")
+                            return existing
 
-        record_data["id"] = new_id
-        record_data["createdAt"] = datetime.utcnow().isoformat() + "Z"
-        record_data["spinsCount"] = 0
-        if "pressings" not in record_data or not record_data["pressings"]:
-            record_data["pressings"] = [{
-                "id": f"press-{new_id}",
-                "recordId": new_id,
-                "label": record_data.get("label", "Standard Release"),
-                "formatDetails": "Standard Vinyl Pressing",
-                "catalogNumber": record_data.get("catalogNumber", "")
-            }]
-        self.records.insert(0, record_data)
-        self.save_records()
+            new_id = f"rec-user-{uuid.uuid4().hex[:8]}"
 
-        fs_saved = False
-        try:
-            if self.firestore.db:
-                fs_saved = self.firestore.save_record(record_data)
-                print(f"Saved new record '{new_id}' ({record_data.get('title')}) to Firestore: {fs_saved}")
-        except Exception as e:
-            print(f"Error saving new record '{new_id}' to Firestore: {e}")
+            record_data["id"] = new_id
+            record_data["createdAt"] = datetime.utcnow().isoformat() + "Z"
+            record_data["spinsCount"] = 0
+            if "pressings" not in record_data or not record_data["pressings"]:
+                record_data["pressings"] = [{
+                    "id": f"press-{new_id}",
+                    "recordId": new_id,
+                    "label": record_data.get("label", "Standard Release"),
+                    "formatDetails": "Standard Vinyl Pressing",
+                    "catalogNumber": record_data.get("catalogNumber", "")
+                }]
+            self.records.insert(0, record_data)
+            self.save_records()
 
-        self.clear_chronicle()
-        return record_data
+            fs_saved = False
+            try:
+                if self.firestore.db:
+                    fs_saved = self.firestore.save_record(record_data)
+                    print(f"Saved new record '{new_id}' ({record_data.get('title')}) to Firestore: {fs_saved}")
+            except Exception as e:
+                print(f"Error saving new record '{new_id}' to Firestore: {e}")
 
+            self.clear_chronicle()
+            return record_data
 
     def update_record(self, record_data: Any, record_dict_fallback: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -510,59 +506,66 @@ class VinylDatabase:
         if not rec_id:
             return record_data if isinstance(record_data, dict) else {}
 
-        for i, r in enumerate(self.records):
-            if r.get("id") == rec_id:
-                self.records[i] = record_data
-                break
-        else:
-            self.records.insert(0, record_data)
+        with self._lock:
+            for i, r in enumerate(self.records):
+                if isinstance(r, dict) and r.get("id") == rec_id:
+                    self.records[i] = record_data
+                    break
+            else:
+                self.records.insert(0, record_data)
 
-        self.save_records()
+            self.save_records()
 
+            try:
+                if self.firestore.db:
+                    success = self.firestore.save_record(record_data)
+                    print(f"Persisted record update '{rec_id}' to Firestore: {success}")
+            except Exception as e:
+                print(f"Error persisting record update '{rec_id}' to Firestore: {e}")
 
-        try:
-            if self.firestore.db:
-                success = self.firestore.save_record(record_data)
-                print(f"Persisted record update '{rec_id}' to Firestore: {success}")
-        except Exception as e:
-            print(f"Error persisting record update '{rec_id}' to Firestore: {e}")
-
-        self.clear_chronicle()
-        return record_data
-
+            self.clear_chronicle()
+            return record_data
 
     def log_spin(self, record_id: str, notes: str = "") -> Dict[str, Any]:
-        rec = self.get_record_by_id(record_id)
-        now_str = datetime.utcnow().isoformat() + "Z"
-        if rec:
-            rec["spinsCount"] += 1
-            rec["lastSpunAt"] = now_str
-            self.save_records()
-            self.firestore.save_record(rec)
-        spin_entry = {
-            "id": f"spin-{len(self.spins_log) + 1}",
-            "recordId": record_id,
-            "spunAt": now_str,
-            "notes": notes
-        }
-        self.spins_log.insert(0, spin_entry)
-        self.save_spins()
-        self.firestore.save_spin(spin_entry)
-        return spin_entry
+        with self._lock:
+            rec = self.get_record_by_id(record_id)
+            now_str = datetime.utcnow().isoformat() + "Z"
+            if rec:
+                rec["spinsCount"] += 1
+                rec["lastSpunAt"] = now_str
+                self.save_records()
+                if self.firestore.db:
+                    self.firestore.save_record(rec)
+
+            spin_entry = {
+                "id": f"spin-{len(self.spins_log) + 1}",
+                "recordId": record_id,
+                "spunAt": now_str,
+                "notes": notes
+            }
+            self.spins_log.insert(0, spin_entry)
+            self.save_spins()
+            if self.firestore.db:
+                self.firestore.save_spin(spin_entry)
+            return spin_entry
 
     def get_wishlist(self) -> List[Dict[str, Any]]:
-        return self.wishlist
+        with self._lock:
+            return list(self.wishlist)
 
     def get_spins_log(self) -> List[Dict[str, Any]]:
-        return self.spins_log
+        with self._lock:
+            return list(self.spins_log)
 
     def delete_record(self, record_id: str) -> bool:
-        initial_len = len(self.records)
-        self.records = [r for r in self.records if r["id"] != record_id]
-        if len(self.records) < initial_len:
-            self.save_records()
-            self.firestore.delete_record(record_id)
-            return True
-        return False
+        with self._lock:
+            initial_len = len(self.records)
+            self.records = [r for r in self.records if isinstance(r, dict) and r.get("id") != record_id]
+            if len(self.records) < initial_len:
+                self.save_records()
+                if self.firestore.db:
+                    self.firestore.delete_record(record_id)
+                return True
+            return False
 
 db = VinylDatabase()

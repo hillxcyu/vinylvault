@@ -15,7 +15,7 @@ This proposal outlines key architectural improvements to scale **Vinyl Vault** f
 +------------------------+     +-------------------+     +------------------------+
 | Frontend Component UI  |     | FastAPI Backend   |     | Database & AI Engine   |
 |  (ES6 Modules / State) | <-> | (GZip / SSE Stream| <-> | (SQLite WAL / GCS Sync |
-|  - 0ms Optimistic UI   |     |   / Background)   |     |  Gemini 3.6 SSE Stream)|
+|  - 0ms Optimistic UI   |     |   / Background)   |     |  Gemini 3.7 SSE Stream)|
 +------------------------+     +-------------------+     +------------------------+
 ```
 
@@ -35,7 +35,7 @@ This proposal outlines key architectural improvements to scale **Vinyl Vault** f
 ---
 
 ### 2️⃣ AI Engine Optimization: Real-Time SSE Token Streaming
-* **Current Bottleneck**: The AI Chat (`POST /api/chat`) and Listening Guides wait for Gemini 3.6 Flash to finish generating the entire response before returning HTTP 200.
+* **Current Bottleneck**: The AI Chat (`POST /api/chat`) and Listening Guides wait for Gemini 3.7 Flash to finish generating the entire response before returning HTTP 200.
 * **Proposed Solution**:
   - Implement **Server-Sent Events (SSE)** via FastAPI `StreamingResponse` and `client.models.generate_content_stream()`.
   - Stream Gemini chat responses token-by-token in real time.

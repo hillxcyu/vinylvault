@@ -542,20 +542,25 @@ class ClassicalService:
         try:
             ai_chronicle = gemini_service.generate_chronicle_ai(records)
             if ai_chronicle and isinstance(ai_chronicle, dict) and "eras" in ai_chronicle:
-                ai_chronicle["source"] = "gemini_3.6_flash"
+                ai_chronicle["source"] = "gemini_3.7_flash"
 
                 unique_classical_ids = set()
+                era_lookup = {e["id"]: e for e in CLASSICAL_ERAS}
                 for era in ai_chronicle.get("eras", []):
                     raw_name = era.get("era") or era.get("name") or era.get("id") or "Classical"
-                    norm_k = raw_name.lower()
+                    norm_k = str(raw_name).lower()
                     if "baroque" in norm_k: era_id = "baroque"
                     elif "romantic" in norm_k: era_id = "romantic"
                     elif "modern" in norm_k or "20th" in norm_k: era_id = "modern_20th"
                     elif "contemporary" in norm_k: era_id = "contemporary"
                     else: era_id = "classical"
 
+                    meta = era_lookup.get(era_id, {})
                     era["id"] = era_id
-                    era["name"] = era.get("name") or f"{raw_name.title()} Era"
+                    era["name"] = era.get("name") or meta.get("name") or f"{raw_name.title()} Era"
+                    era["icon"] = era.get("icon") or meta.get("icon") or "🎼"
+                    era["years"] = era.get("years") or meta.get("years") or "1600 – Present"
+                    era["description"] = era.get("description") or meta.get("description") or "Classical music compositions."
 
                     rec_list = era.get("records") or []
                     for rec in rec_list:
@@ -591,18 +596,69 @@ class ClassicalService:
                 ai_chronicle["composerStats"] = self._reconcile_composer_stats(records, ai_chronicle)
 
                 db.save_chronicle(ai_chronicle)
-                logger.info(f"Saved fresh Gemini 3.6 Flash AI Chronicle ({len(unique_classical_ids)} classical / {len(records)} total records) to Database/Disk in background.")
+                logger.info(f"Saved fresh Gemini 3.7 Flash AI Chronicle ({len(unique_classical_ids)} classical / {len(records)} total records) to Database/Disk in background.")
         except Exception as e:
             logger.error(f"Background AI chronicle rebuild error: {e}")
         finally:
             self.is_rebuilding = False
+
+    def _enrich_chronicle_eras(self, chronicle: Dict[str, Any]) -> Dict[str, Any]:
+        if not chronicle or not isinstance(chronicle, dict) or "eras" not in chronicle:
+            return chronicle
+        era_lookup = {e["id"]: e for e in CLASSICAL_ERAS}
+        composers = chronicle.get("composers") or chronicle.get("composerStats") or []
+
+        # Build mapping from era_id -> list of record dicts
+        era_records_map = {e["id"]: [] for e in CLASSICAL_ERAS}
+        seen_record_ids_by_era = {e["id"]: set() for e in CLASSICAL_ERAS}
+
+        for comp in composers:
+            raw_comp_era = str(comp.get("era") or "").lower()
+            if any(k in raw_comp_era for k in ["baroque", "early", "medieval", "renaissance"]): target_era_id = "baroque"
+            elif "romantic" in raw_comp_era: target_era_id = "romantic"
+            elif any(k in raw_comp_era for k in ["modern", "20th", "impressionis"]): target_era_id = "modern_20th"
+            elif any(k in raw_comp_era for k in ["contemporary", "minimalis", "post-"]): target_era_id = "contemporary"
+            else: target_era_id = "classical"
+
+            comp_name = comp.get("name") or "Classical Master"
+            comp_highlight = comp.get("highlights") or comp.get("bio") or ""
+
+            for rec in comp.get("records", []):
+                rec_copy = dict(rec) if isinstance(rec, dict) else {}
+                rec_id = str(rec_copy.get("id") or rec_copy.get("title") or "")
+                if target_era_id in era_records_map and rec_id not in seen_record_ids_by_era[target_era_id]:
+                    seen_record_ids_by_era[target_era_id].add(rec_id)
+                    rec_copy["detectedComposer"] = comp_name
+                    rec_copy["aiInsight"] = comp_highlight
+                    era_records_map[target_era_id].append(rec_copy)
+
+        for era in chronicle.get("eras", []):
+            raw_id = str(era.get("id") or era.get("era") or era.get("name") or "classical").lower()
+            if "baroque" in raw_id: era_id = "baroque"
+            elif "romantic" in raw_id: era_id = "romantic"
+            elif "modern" in raw_id or "20th" in raw_id: era_id = "modern_20th"
+            elif "contemporary" in raw_id: era_id = "contemporary"
+            else: era_id = "classical"
+
+            meta = era_lookup.get(era_id, {})
+            era["id"] = era_id
+            era["name"] = era.get("name") or meta.get("name") or "Classical Era"
+            era["icon"] = era.get("icon") or meta.get("icon") or "🎼"
+            era["years"] = era.get("years") or meta.get("years") or "1600 – Present"
+            era["description"] = era.get("description") or meta.get("description") or "Classical compositions."
+
+            recs = era_records_map.get(era_id, [])
+            era["records"] = recs
+            era["count"] = len(recs)
+
+        return chronicle
 
     def get_chronicle_data(self, records: List[Dict[str, Any]], force_ai_refresh: bool = False) -> Dict[str, Any]:
         """
         Returns Classical Music Chronicle categorized by composer era.
         Uses database-persisted AI Chronicle if available (< 5ms).
         If missing or force_ai_refresh=True, returns immediate rule-based fallback (< 10ms)
-        and triggers Gemini 3.6 Flash rebuilding asynchronously in a background thread.
+        and triggers Gemini 3.7 Flash rebuilding asynchronously in a background thread.
         """
         import threading
         from database import db
@@ -613,7 +669,7 @@ class ClassicalService:
             cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
             cached["composerStats"] = self._reconcile_composer_stats(records, cached)
-            return cached
+            return self._enrich_chronicle_eras(cached)
 
         if not self.is_rebuilding:
             threading.Thread(target=self._rebuild_ai_chronicle_bg, args=(records,), daemon=True).start()
@@ -622,13 +678,13 @@ class ClassicalService:
             cached["isRebuilding"] = self.is_rebuilding
             cached["totalRecordsInCrate"] = len(records)
             cached["composerStats"] = self._reconcile_composer_stats(records, cached)
-            return cached
+            return self._enrich_chronicle_eras(cached)
 
         fallback = self._rule_based_chronicle_data(records)
         fallback["composerStats"] = self._reconcile_composer_stats(records, fallback)
         db.save_chronicle(fallback)
         fallback["isRebuilding"] = self.is_rebuilding
-        return fallback
+        return self._enrich_chronicle_eras(fallback)
 
 
 

@@ -44,20 +44,20 @@ class DeskewService:
             from PIL import Image, ImageOps
             import io
 
-            img = Image.open(io.BytesIO(image_bytes))
-            transposed_img = ImageOps.exif_transpose(img)
-            if transposed_img is not img:
-                buf = io.BytesIO()
-                transposed_img.convert('RGB').save(buf, format="JPEG", quality=95)
-                logger.info("Applied EXIF orientation transpose to scan image.")
-                return buf.getvalue()
+            with Image.open(io.BytesIO(image_bytes)) as img:
+                transposed_img = ImageOps.exif_transpose(img)
+                if transposed_img is not img:
+                    buf = io.BytesIO()
+                    transposed_img.convert('RGB').save(buf, format="JPEG", quality=95)
+                    logger.info("Applied EXIF orientation transpose to scan image.")
+                    return buf.getvalue()
         except Exception as e:
             logger.warning(f"EXIF transpose warning: {e}")
         return image_bytes
 
     def auto_deskew_image(self, image_bytes: bytes, target_size: int = 1024, gemini_service: Any = None) -> Tuple[bytes, bool, List[List[float]]]:
         """
-        Detects album cover quadrilateral in image_bytes via Gemini 3.6 Flash segmentation or CV contours,
+        Detects album cover quadrilateral in image_bytes via Gemini 3.7 Flash segmentation or CV contours,
         applies 4-point perspective warp, and returns (processed_image_bytes, is_deskewed_flag, detected_corners).
         """
         if not OPENCV_AVAILABLE:
@@ -81,7 +81,7 @@ class DeskewService:
             rect = None
             norm_corners = []
 
-            # 2. Attempt Gemini 3.6 Flash Segmentation Corner Detection
+            # 2. Attempt Gemini 3.7 Flash Segmentation Corner Detection
             if gemini_service:
                 try:
                     gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
@@ -90,7 +90,7 @@ class DeskewService:
                         pts = np.array([[(pt[1] / 1000.0) * w, (pt[0] / 1000.0) * h] for pt in gemini_corners], dtype="float32")
                         rect = self._order_points(pts)
                         norm_corners = [[round(float(p[0] / w), 4), round(float(p[1] / h), 4)] for p in rect]
-                        logger.info(f"Derived 4 corners via Gemini 3.6 Flash segmentation: {norm_corners}")
+                        logger.info(f"Derived 4 corners via Gemini 3.7 Flash segmentation: {norm_corners}")
 
                 except Exception as e:
                     logger.warning(f"Gemini corner segmentation fallback to CV: {e}")
@@ -321,7 +321,7 @@ class DeskewService:
 
     def detect_corners(self, image_bytes: bytes, gemini_service: Any = None) -> List[List[float]]:
         """
-        Detects 4 physical corners of album cover in image_bytes via Gemini 3.6 Flash segmentation or CV contours and returns
+        Detects 4 physical corners of album cover in image_bytes via Gemini 3.7 Flash segmentation or CV contours and returns
         normalized 0.0..1.0 container coordinates [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
         ordered as [TL, TR, BR, BL] accounting for container letterboxing.
         """
@@ -358,7 +358,7 @@ class DeskewService:
                 offset_x = (1.0 - w_rendered) / 2.0
                 offset_y = 0.0
 
-            # 1. Attempt Gemini 3.6 Flash Segmentation Corner Detection
+            # 1. Attempt Gemini 3.7 Flash Segmentation Corner Detection
             if gemini_service:
                 try:
                     gemini_corners = gemini_service.get_album_segmentation_corners(image_bytes)
