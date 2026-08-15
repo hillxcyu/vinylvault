@@ -455,17 +455,26 @@ async def get_spins_endpoint(limit: int = 10, offset: int = 0):
         rec = records_by_id.get(rec_id) if rec_id else None
         
         if rec:
-            spin_copy["title"] = rec.get("title") or "Unknown Title"
-            spin_copy["artist"] = rec.get("artist") or "Unknown Artist"
-            spin_copy["coverUrl"] = rec.get("coverUrl") or ""
-            spin_copy["catalogNumber"] = rec.get("catalogNumber") or ""
+            spin_copy["title"] = rec.get("title") or spin_copy.get("title") or spin_copy.get("albumTitle") or "Unknown Title"
+            spin_copy["artist"] = rec.get("artist") or spin_copy.get("artist") or "Unknown Artist"
+            spin_copy["coverUrl"] = rec.get("coverUrl") or spin_copy.get("coverUrl") or ""
+            spin_copy["catalogNumber"] = rec.get("catalogNumber") or spin_copy.get("catalogNumber") or ""
             spin_copy["isDeleted"] = False
         else:
-            spin_copy["title"] = "Deleted Record"
-            spin_copy["artist"] = "This record has been removed from crate"
-            spin_copy["coverUrl"] = ""
-            spin_copy["catalogNumber"] = ""
-            spin_copy["isDeleted"] = True
+            saved_title = spin_copy.get("title") or spin_copy.get("albumTitle")
+            saved_artist = spin_copy.get("artist")
+            if saved_title:
+                spin_copy["title"] = saved_title
+                spin_copy["artist"] = saved_artist or "Unknown Artist"
+                spin_copy["coverUrl"] = spin_copy.get("coverUrl") or ""
+                spin_copy["catalogNumber"] = spin_copy.get("catalogNumber") or ""
+                spin_copy["isDeleted"] = False
+            else:
+                spin_copy["title"] = "Deleted Record"
+                spin_copy["artist"] = "This record has been removed from crate"
+                spin_copy["coverUrl"] = ""
+                spin_copy["catalogNumber"] = ""
+                spin_copy["isDeleted"] = True
         
         spin_copy["timestamp"] = spin_copy.get("timestamp") or spin_copy.get("spunAt") or "2026-08-01T12:00:00Z"
         enriched_spins.append(spin_copy)

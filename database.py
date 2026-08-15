@@ -258,6 +258,14 @@ class VinylDatabase:
         return deduped
 
     def _load_spins(self) -> List[Dict[str, Any]]:
+        if self.firestore and self.firestore.db:
+            fs_spins = self.firestore.get_spins()
+            if fs_spins is not None:
+                def get_spin_time(x):
+                    return str(x.get("spunAt") or x.get("timestamp") or "")
+                fs_spins.sort(key=get_spin_time, reverse=True)
+                print(f"VinylDatabase initialized with {len(fs_spins)} spins directly from Firestore.")
+                return fs_spins
         if os.path.exists(SPINS_FILE):
             try:
                 with open(SPINS_FILE, "r", encoding="utf-8") as f:
@@ -540,6 +548,10 @@ class VinylDatabase:
             spin_entry = {
                 "id": f"spin-{len(self.spins_log) + 1}",
                 "recordId": record_id,
+                "artist": rec.get("artist", "") if rec else "",
+                "title": (rec.get("title") or rec.get("albumTitle", "")) if rec else "",
+                "coverUrl": rec.get("coverUrl", "") if rec else "",
+                "catalogNumber": rec.get("catalogNumber", "") if rec else "",
                 "spunAt": now_str,
                 "notes": notes
             }
