@@ -1065,7 +1065,7 @@ class GeminiVisionService:
             return None
 
     def generate_pronunciation(self, text: str) -> Optional[Dict[str, Any]]:
-        """Generates clear audio pronunciation for composer/album/track name using gemini-3.1-flash-tts-preview with in-memory caching."""
+        """Generates clear audio pronunciation for composer/album/track name using gemini-3.8-flash-tts with streaming mode and in-memory caching."""
         if not text or not text.strip():
             return None
 
@@ -1081,8 +1081,8 @@ class GeminiVisionService:
             from google.genai import types
             prompt = f"Pronounce clearly and naturally as a composer, album, or track name from a vinyl record: {text}"
             
-            response = self.client.models.generate_content(
-                model="gemini-3.1-flash-tts-preview",
+            response_stream = self.client.models.generate_content_stream(
+                model="gemini-3.8-flash-tts",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_modalities=["AUDIO"],
@@ -1096,44 +1096,51 @@ class GeminiVisionService:
                 )
             )
 
-            for candidate in (response.candidates or []):
-                for part in (candidate.content.parts or []):
-                    if part.inline_data and part.inline_data.data:
-                        raw_pcm = part.inline_data.data
-                        mime = part.inline_data.mime_type or "audio/l16; rate=24000"
-                        
-                        sample_rate = 24000
-                        if "rate=" in mime:
-                            try:
-                                sample_rate = int(mime.split("rate=")[1].split(";")[0].strip())
-                            except Exception:
-                                sample_rate = 24000
+            audio_chunks = []
+            sample_rate = 24000
 
-                        wav_io = io.BytesIO()
-                        with wave.open(wav_io, 'wb') as wf:
-                            wf.setnchannels(1)
-                            wf.setsampwidth(2)
-                            wf.setframerate(sample_rate)
-                            wf.writeframes(raw_pcm)
-                        
-                        wav_bytes = wav_io.getvalue()
-                        audio_b64 = base64.b64encode(wav_bytes).decode('utf-8')
-                        result = {
-                            "audio_b64": audio_b64,
-                            "mime_type": "audio/wav",
-                            "model": "gemini-3.1-flash-tts-preview",
-                            "voice": "Aoede"
-                        }
-                        if len(self._pronunciation_cache) >= 100:
-                            first_key = next(iter(self._pronunciation_cache))
-                            self._pronunciation_cache.pop(first_key, None)
-                        self._pronunciation_cache[cache_key] = result
-                        return result
+            for chunk in response_stream:
+                if chunk.candidates:
+                    for candidate in chunk.candidates:
+                        if candidate.content and candidate.content.parts:
+                            for part in candidate.content.parts:
+                                if part.inline_data and part.inline_data.data:
+                                    raw_pcm = part.inline_data.data
+                                    mime = part.inline_data.mime_type or ""
+                                    if "rate=" in mime:
+                                        try:
+                                            sample_rate = int(mime.split("rate=")[1].split(";")[0].strip())
+                                        except Exception:
+                                            pass
+                                    audio_chunks.append(raw_pcm)
+
+            if audio_chunks:
+                full_pcm = b"".join(audio_chunks)
+                wav_io = io.BytesIO()
+                with wave.open(wav_io, 'wb') as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(2)
+                    wf.setframerate(sample_rate)
+                    wf.writeframes(full_pcm)
+                
+                wav_bytes = wav_io.getvalue()
+                audio_b64 = base64.b64encode(wav_bytes).decode('utf-8')
+                result = {
+                    "audio_b64": audio_b64,
+                    "mime_type": "audio/wav",
+                    "model": "gemini-3.8-flash-tts",
+                    "voice": "Aoede"
+                }
+                if len(self._pronunciation_cache) >= 100:
+                    first_key = next(iter(self._pronunciation_cache))
+                    self._pronunciation_cache.pop(first_key, None)
+                self._pronunciation_cache[cache_key] = result
+                return result
 
         except Exception as e:
-            logger.error(f"Error generating pronunciation with gemini-3.1-flash-tts-preview for '{text}': {e}")
+            logger.error(f"Error generating pronunciation with gemini-3.8-flash-tts for '{text}': {e}")
             return {"error": str(e)}
-        return {"error": "No audio parts returned from gemini-3.1-flash-tts-preview"}
+        return {"error": "No audio parts returned from gemini-3.8-flash-tts"}
 
     def generate_daily_poster_insights(self, record_data: Dict[str, Any]) -> Dict[str, Any]:
         """
