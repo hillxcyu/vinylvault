@@ -3,7 +3,7 @@ import urllib.parse
 import re
 
 headers = {
-    "User-Agent": "VinylVaultApp/1.0 +http://vinyl-vault-456465962826.us-central1.run.app"
+    "User-Agent": "VinylVaultApp/1.0 +https://github.com/hillxcyu/vinylvault"
 }
 
 def clean_term(text: str) -> str:

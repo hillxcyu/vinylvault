@@ -40,7 +40,7 @@ def repair_unique_covers():
     from google.cloud import firestore, storage
     import google.oauth2.credentials
 
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "your-gcp-project")
     db_id = os.environ.get("FIRESTORE_DATABASE", "vinylvault-hk")
 
     # Get gcloud token for authenticated GCP client

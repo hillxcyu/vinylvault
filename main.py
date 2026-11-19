@@ -1,8 +1,8 @@
 import os
-os.environ["GOOGLE_CLOUD_PROJECT"] = "universal-trail-492014-n5"
-os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
-os.environ["FIRESTORE_DATABASE_ID"] = "vinylvault-hk"
-os.environ["GCS_BUCKET_NAME"] = "universal-trail-492014-n5-vinyl-vault-hk-data"
+os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "global")
+os.environ.setdefault("FIRESTORE_DATABASE_ID", "vinylvault")
+if os.environ.get("GOOGLE_CLOUD_PROJECT") and not os.environ.get("GCS_BUCKET_NAME"):
+    os.environ["GCS_BUCKET_NAME"] = f"{os.environ['GOOGLE_CLOUD_PROJECT']}-vinyl-vault-data"
 
 
 container_adc = "/root/.config/gcloud/application_default_credentials.json"

@@ -1,0 +1,43 @@
+file_type: demo
+type: application
+title: Multimodal Visual Cataloging and AI Asset Intelligence with Vertex AI
+thumbnail_summary: Turn skewed smartphone photos of physical media and collectibles into perspective-deskewed, deduplicated, and enriched Firestore catalog records in seconds using Vertex AI Gemini.
+purpose: |
+  Built for **Media Archive Directors, Retail Collectibles Leaders, and Digital Asset Management (DAM) Teams**, this interactive studio demonstrates how to eliminate slow, error-prone manual physical inventory cataloging.
+
+  During a live customer pitch, sellers walk buyers through scanning a tilted smartphone photo of a physical vinyl record: Vertex AI Gemini Vision predicts the exact four-corner sleeve boundary, applies perspective homography deskewing, checks Cloud Firestore in real time to block duplicate acquisitions, enriches pressing metadata, and powers streaming collection Q&A plus multilingual audio pronunciation.
+business_value: |
+  * **Compress Intake Cataloging Time by 85%:** Converts angled mobile photos into standardized, searchable catalog entries with structured metadata and clean WebP cover art in under 5 seconds per item.
+  * **Prevent Costly Duplicate Acquisitions:** Runs real-time multimodal and catalog-number deduplication against live Cloud Firestore inventory before purchase or ingestion, eliminating redundant stock.
+  * **Unlock Multilingual Archive Discovery:** Generates curatorial listening guides, conversational search answers, and native-quality spoken pronunciations for international artists and composers without manual translation.
+technical_value: |
+  * **Unified Multimodal Vision and Audio on Vertex AI:** Pairs Gemini 3.6 Flash for four-corner polygon segmentation, OCR, and streaming RAG chat with Gemini Flash TTS for low-latency spoken pronunciation synthesis.
+  * **Automated Perspective Deskew and Cloud Storage Pipeline:** Normalizes mobile EXIF orientation, warps skewed item boundaries into square WebP thumbnails, and persists media assets in Cloud Storage with uniform bucket-level access.
+  * **Argolis-Compliant Serverless Architecture:** Runs FastAPI on Cloud Run with load-balancer-only ingress behind an External HTTPS Application Load Balancer and Identity-Aware Proxy, backed by Cloud Firestore Native and Secret Manager.
+owner: xcyu
+team_owner: 1670033130013
+demo_guide: https://docs.google.com/document/d/1bUkc0_MkmdCr7pUdcfPdn_4BWFzYWFMMrr4yCNRd-20/edit?resourcekey=0-ipW4bPrqFxrvT0C7F09oYA
+products:
+  - vertex_ai
+  - cloud_run
+  - firestore
+  - cloud_storage
+industries:
+  - media_entertainment
+  - retail
+artifacts:
+  - title: GitHub Source Repository
+
+    type: code_repo
+
+    link: https://github.com/hillxcyu/vinylvault
+
+  - title: Click-to-Deploy Terraform Infrastructure
+
+    type: blueprint
+
+    link: https://github.com/hillxcyu/vinylvault/tree/main/click-to-deploy
+featured_artifact_title: GitHub Source Repository
+# images:
+#   - https://storage.cloud.google.com/your-bucket/hero-card.png
+# click_to_deploy_path: <demo_id>-vinylvault/tree/main/click-to-deploy

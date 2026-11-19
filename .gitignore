@@ -6,17 +6,34 @@ secrets/
 *.pem
 *.key
 
+# Agent & Workflow Artifacts
+.agents/
+PLAN.md
+DEFINE.md
+ACTION.md
+
 # Python Bytecode & Cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
+.venv/
+venv/
 
-# Data Store Temporary Caches (optional)
-/*.webarchive
+# Data Store & Local Uploads
+*.webarchive
+purchase_vinyl.webarchive
 data_store/*.json
 data_store/**/*.json
+static/uploads/
+
+# Terraform State & Local Cache
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!click-to-deploy/org_policy/project_config.json
 
 # System Files
 .DS_Store

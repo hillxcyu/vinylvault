@@ -2,7 +2,7 @@ import requests
 import urllib.parse
 
 headers = {
-    "User-Agent": "VinylVaultApp/1.0 +http://vinyl-vault-456465962826.us-central1.run.app"
+    "User-Agent": "VinylVaultApp/1.0 +https://github.com/hillxcyu/vinylvault"
 }
 
 def test_vinyl_only_discogs(artist: str, title: str):

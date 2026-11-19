@@ -145,7 +145,7 @@ class GeminiVisionService:
 
     def __init__(self):
 
-        self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+        self.project = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
         self.location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
         self.client = None
         self._pronunciation_cache = {}

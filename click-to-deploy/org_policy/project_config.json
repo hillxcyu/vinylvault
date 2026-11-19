@@ -1,0 +1,17 @@
+{
+  "require_shielded_vm": "true",
+  "require_oslogin": "true",
+  "disable_serial_port_logging": "true",
+  "disable_nested_virtualization": "true",
+  "restrict_protocol_forwarding": "true",
+  "restrict_vpc_peering": "true",
+  "restrict_shared_vpc_subnetworks": "true",
+  "restrict_vm_external_ip": "true",
+  "restrict_cloudsql_public_ip": "true",
+  "require_sql_ssl": "true",
+  "disable_service_account_creation": "true",
+  "disable_service_account_key_creation": "true",
+  "uniform_bucket_level_access": "true",
+  "public_access_prevention": "true",
+  "allowed_ingress_settings": "true"
+}

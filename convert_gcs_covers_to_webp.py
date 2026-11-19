@@ -20,10 +20,10 @@ def convert_gcs_covers_to_webp():
     from google.cloud import storage, firestore
     import google.oauth2.credentials
 
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
+    default_bucket = f"{project_id}-vinyl-vault-data" if project_id else "your-gcp-project-vinyl-vault-data"
     buckets = [
-        os.environ.get("GCS_BUCKET_NAME", "universal-trail-492014-n5-vinyl-vault-hk-data"),
-        "universal-trail-492014-n5-vinyl-vault-data"
+        os.environ.get("GCS_BUCKET_NAME", default_bucket),
     ]
     
     token = get_gcloud_token()

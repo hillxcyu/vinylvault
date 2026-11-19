@@ -30,16 +30,16 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:latest']
 
-  # Step 4: Deploy to Cloud Run in asia-east2 (Hong Kong)
+  # Step 4: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args: [
-      'run', 'deploy', 'vinyl-vault-hk',
+      'run', 'deploy', 'vinyl-vault',
       '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/vinyl-vault-repo/vinyl-vault:${_SHORT_SHA}',
-      '--region', 'asia-east2',
+      '--region', 'us-central1',
       '--platform', 'managed',
-      '--allow-unauthenticated',
-      '--set-env-vars', 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,FIRESTORE_DATABASE_ID=vinylvault-hk,GCS_BUCKET_NAME=universal-trail-492014-n5-vinyl-vault-hk-data'
+      '--ingress', 'internal-and-cloud-load-balancing',
+      '--set-env-vars', 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,FIRESTORE_DATABASE_ID=vinylvault,GCS_BUCKET_NAME=${PROJECT_ID}-vinyl-vault-data'
     ]
 
 images:

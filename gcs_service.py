@@ -6,11 +6,9 @@ logger = logging.getLogger("vinyl_vault")
 
 class GCSStorageManager:
     def __init__(self):
-        self.bucket_name = os.environ.get(
-            "GCS_BUCKET_NAME", "universal-trail-492014-n5-vinyl-vault-hk-data"
-        )
-
-        self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+        self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
+        default_bucket = f"{self.project_id}-vinyl-vault-data" if self.project_id else "your-gcp-project-vinyl-vault-data"
+        self.bucket_name = os.environ.get("GCS_BUCKET_NAME", default_bucket)
         self.client = None
         self.bucket = None
         self._init_gcs()

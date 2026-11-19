@@ -10,7 +10,7 @@ logger.setLevel(logging.INFO)
 class DiscogsService:
     def __init__(self):
         self.headers = {
-            "User-Agent": "VinylVaultApp/1.0 +http://vinyl-vault-456465962826.us-central1.run.app"
+            "User-Agent": "VinylVaultApp/1.0 (+https://github.com/hillxcyu/vinylvault)"
         }
 
     def clean_search_term(self, text: str) -> str:
@@ -285,6 +285,6 @@ discogs_service = DiscogsService()
 
 if __name__ == "__main__":
     print("\n--- Testing Strict Discogs Vinyl Assets for Isaac Stern ---")
-    assets1 = discogs_service.fetch_all_release_assets("Isaac Stern (伊萨克·斯特恩)", "Sibelius & Bruch: Violin Concertos", "https://storage.googleapis.com/universal-trail-492014-n5-vinyl-vault-data/covers/shopping_cover_3.jpg")
+    assets1 = discogs_service.fetch_all_release_assets("Isaac Stern (伊萨克·斯特恩)", "Sibelius & Bruch: Violin Concertos", "/api/covers/shopping_cover_3.jpg")
     for a in assets1:
         print(f" - [{a['type']}]: {a['url']}")

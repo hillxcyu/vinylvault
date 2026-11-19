@@ -22,4 +22,3 @@ static/extracted_covers/*
 !static/extracted_covers/.gitkeep
 static/uploads/*
 !static/uploads/.gitkeep
-

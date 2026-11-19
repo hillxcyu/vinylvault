@@ -20,9 +20,9 @@ def repair_firestore_covers():
     from google.cloud import firestore, storage
     import google.oauth2.credentials
 
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "universal-trail-492014-n5")
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "your-gcp-project")
     db_id = os.environ.get("FIRESTORE_DATABASE", "vinylvault-hk")
-    bucket_name = "universal-trail-492014-n5-vinyl-vault-data"
+    bucket_name = "your-gcp-project-vinyl-vault-data"
 
     token = get_gcloud_token()
     credentials = google.oauth2.credentials.Credentials(token) if token else None
