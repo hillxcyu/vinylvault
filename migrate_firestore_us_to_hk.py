@@ -2,9 +2,9 @@ import os
 import sys
 from google.cloud import firestore
 
-PROJECT_ID = "universal-trail-492014-n5"
-OLD_DB_ID = "vinylvault"
-NEW_DB_ID = "vinylvault-hk"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "your-gcp-project-id")
+OLD_DB_ID = os.environ.get("SOURCE_FIRESTORE_DB", "vinylvault")
+NEW_DB_ID = os.environ.get("TARGET_FIRESTORE_DB", "vinylvault-target")
 
 def migrate_collections():
     print(f"Connecting to source Firestore database '{OLD_DB_ID}' (nam5)...")

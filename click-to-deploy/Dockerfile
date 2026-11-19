@@ -21,7 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV GOOGLE_CLOUD_LOCATION=global
 
-# Install supply-chain verified dependencies (b/391732366)
+# Install supply-chain verified dependencies
 COPY click-to-deploy/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 

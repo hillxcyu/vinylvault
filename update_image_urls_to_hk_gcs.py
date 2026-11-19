@@ -1,10 +1,10 @@
 import os
 from google.cloud import firestore
 
-PROJECT_ID = "universal-trail-492014-n5"
-DB_ID = "vinylvault-hk"
-OLD_BUCKET = "universal-trail-492014-n5-vinyl-vault-data"
-NEW_BUCKET = "universal-trail-492014-n5-vinyl-vault-hk-data"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "your-gcp-project-id")
+DB_ID = os.environ.get("FIRESTORE_DATABASE_ID", "vinylvault")
+OLD_BUCKET = os.environ.get("SOURCE_GCS_BUCKET", "your-source-vinyl-vault-data")
+NEW_BUCKET = os.environ.get("TARGET_GCS_BUCKET", "your-target-vinyl-vault-data")
 
 def replace_bucket(val):
     if isinstance(val, str) and OLD_BUCKET in val:
