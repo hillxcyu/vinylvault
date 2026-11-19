@@ -38,6 +38,6 @@ artifacts:
 
     link: https://github.com/hillxcyu/vinylvault/tree/main/click-to-deploy
 featured_artifact_title: GitHub Source Repository
-# images:
-#   - https://storage.cloud.google.com/your-bucket/hero-card.png
-# click_to_deploy_path: <demo_id>-vinylvault/tree/main/click-to-deploy
+images:
+  - https://screenshot.googleplex.com/bmCYokzXHzYZbgi.png
+click_to_deploy_path: 2381-multimodal-visual-cataloging-and-ai-asset-intelligence-with-vertex-ai/tree/main/click-to-deploy
